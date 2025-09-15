@@ -1,0 +1,289 @@
+[
+  {
+    "model": "users.user",
+    "pk": "550e8400-e29b-41d4-a716-446655440001",
+    "fields": {
+      "password": "pbkdf2_sha256$720000$admin123$hash_here",
+      "last_login": null,
+      "is_superuser": true,
+      "username": "admin",
+      "first_name": "Admin",
+      "last_name": "System",
+      "email": "admin@crm.com",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z",
+      "role": "admin",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": "550e8400-e29b-41d4-a716-446655440002",
+    "fields": {
+      "password": "pbkdf2_sha256$720000$nhanvien1$hash_here",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "nhanvien1",
+      "first_name": "Nguyễn",
+      "last_name": "Văn A",
+      "email": "nhanvien1@crm.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z",
+      "role": "nhanvien",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": "550e8400-e29b-41d4-a716-446655440003",
+    "fields": {
+      "password": "pbkdf2_sha256$720000$nhanvien2$hash_here",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "nhanvien2",
+      "first_name": "Trần",
+      "last_name": "Thị B",
+      "email": "nhanvien2@crm.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z",
+      "role": "nhanvien",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": "550e8400-e29b-41d4-a716-446655440004",
+    "fields": {
+      "password": "pbkdf2_sha256$720000$hocvien1$hash_here",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "hocvien1",
+      "first_name": "Lê",
+      "last_name": "Văn C",
+      "email": "hocvien1@crm.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z",
+      "role": "hocvien",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": "550e8400-e29b-41d4-a716-446655440005",
+    "fields": {
+      "password": "pbkdf2_sha256$720000$hocvien2$hash_here",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "hocvien2",
+      "first_name": "Phạm",
+      "last_name": "Thị D",
+      "email": "hocvien2@crm.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z",
+      "role": "hocvien",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "hocviens.hocvien",
+    "pk": "550e8400-e29b-41d4-a716-446655440010",
+    "fields": {
+      "ten": "Lê Văn C",
+      "email": "hocvien1@crm.com",
+      "sdt": "0901234567",
+      "ngay_sinh": "2000-01-01",
+      "trang_thai_hoc_phi": "dadong",
+      "ghi_chu": "Học viên tích cực",
+      "user": "550e8400-e29b-41d4-a716-446655440004",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "hocviens.hocvien",
+    "pk": "550e8400-e29b-41d4-a716-446655440011",
+    "fields": {
+      "ten": "Phạm Thị D",
+      "email": "hocvien2@crm.com",
+      "sdt": "0901234568",
+      "ngay_sinh": "2001-02-02",
+      "trang_thai_hoc_phi": "conno",
+      "ghi_chu": "Cần theo dõi học phí",
+      "user": "550e8400-e29b-41d4-a716-446655440005",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "hocviens.hocvien",
+    "pk": "550e8400-e29b-41d4-a716-446655440012",
+    "fields": {
+      "ten": "Nguyễn Văn E",
+      "email": "hocvien3@crm.com",
+      "sdt": "0901234569",
+      "ngay_sinh": "1999-03-03",
+      "trang_thai_hoc_phi": "chuadong",
+      "ghi_chu": "Học viên mới",
+      "user": null,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "khoahocs.khoahoc",
+    "pk": "550e8400-e29b-41d4-a716-446655440020",
+    "fields": {
+      "ten": "Tiếng Anh Giao Tiếp Cơ Bản",
+      "lich_hoc": "Thứ 2, 4, 6 - 18:00-20:00",
+      "giang_vien": "Cô Sarah Johnson",
+      "so_buoi": 24,
+      "hoc_phi": "5000000",
+      "mo_ta": "Khóa học tiếng Anh giao tiếp cơ bản cho người mới bắt đầu",
+      "trang_thai": "dang_mo",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "khoahocs.khoahoc",
+    "pk": "550e8400-e29b-41d4-a716-446655440021",
+    "fields": {
+      "ten": "Tiếng Anh Thương Mại",
+      "lich_hoc": "Thứ 3, 5, 7 - 19:00-21:00",
+      "giang_vien": "Thầy Michael Brown",
+      "so_buoi": 20,
+      "hoc_phi": "6000000",
+      "mo_ta": "Khóa học tiếng Anh thương mại và kinh doanh",
+      "trang_thai": "dang_mo",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "khoahocs.khoahoc",
+    "pk": "550e8400-e29b-41d4-a716-446655440022",
+    "fields": {
+      "ten": "Luyện Thi IELTS",
+      "lich_hoc": "Thứ 7, Chủ nhật - 14:00-17:00",
+      "giang_vien": "Cô Emily Davis",
+      "so_buoi": 30,
+      "hoc_phi": "8000000",
+      "mo_ta": "Khóa học luyện thi IELTS chuyên sâu",
+      "trang_thai": "sap_mo",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "dangky.dangkykhoahoc",
+    "pk": "550e8400-e29b-41d4-a716-446655440030",
+    "fields": {
+      "hocvien": "550e8400-e29b-41d4-a716-446655440010",
+      "khoahoc": "550e8400-e29b-41d4-a716-446655440020",
+      "ngay_dang_ky": "2024-01-01T00:00:00Z",
+      "phan_tram_hoan_thanh": 75,
+      "trang_thai": "dang_hoc",
+      "ghi_chu": "Học viên tiến bộ tốt",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "dangky.dangkykhoahoc",
+    "pk": "550e8400-e29b-41d4-a716-446655440031",
+    "fields": {
+      "hocvien": "550e8400-e29b-41d4-a716-446655440011",
+      "khoahoc": "550e8400-e29b-41d4-a716-446655440021",
+      "ngay_dang_ky": "2024-01-01T00:00:00Z",
+      "phan_tram_hoan_thanh": 50,
+      "trang_thai": "dang_hoc",
+      "ghi_chu": "Cần hỗ trợ thêm",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "thanhtoans.thanhtoan",
+    "pk": "550e8400-e29b-41d4-a716-446655440040",
+    "fields": {
+      "hocvien": "550e8400-e29b-41d4-a716-446655440010",
+      "so_tien": "5000000",
+      "ngay_dong": "2024-01-01T00:00:00Z",
+      "hinh_thuc": "chuyenkhoan",
+      "so_bien_lai": "TT001",
+      "ghi_chu": "Thanh toán đầy đủ khóa học",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "thanhtoans.thanhtoan",
+    "pk": "550e8400-e29b-41d4-a716-446655440041",
+    "fields": {
+      "hocvien": "550e8400-e29b-41d4-a716-446655440011",
+      "so_tien": "3000000",
+      "ngay_dong": "2024-01-01T00:00:00Z",
+      "hinh_thuc": "tienmat",
+      "so_bien_lai": "TT002",
+      "ghi_chu": "Thanh toán một phần",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "chamsoc.chamsochocvien",
+    "pk": "550e8400-e29b-41d4-a716-446655440050",
+    "fields": {
+      "hocvien": "550e8400-e29b-41d4-a716-446655440010",
+      "nhanvien": "550e8400-e29b-41d4-a716-446655440002",
+      "loai_cham_soc": "tuvan",
+      "noi_dung": "Tư vấn về lộ trình học tập tiếp theo",
+      "ngay": "2024-01-01T00:00:00Z",
+      "trang_thai": "hoan_thanh",
+      "attachments": null,
+      "ghi_chu": "Học viên hài lòng với tư vấn",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "thongbaos.thongbao",
+    "pk": "550e8400-e29b-41d4-a716-446655440060",
+    "fields": {
+      "tieu_de": "Chào mừng học viên mới",
+      "noi_dung": "Chào mừng các bạn học viên mới đến với trung tâm tiếng Anh của chúng tôi!",
+      "ngay_gui": "2024-01-01T00:00:00Z",
+      "nguoi_nhan": "tatca",
+      "user": null,
+      "trang_thai": "da_gui",
+      "loai_thong_bao": "thong_bao",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "thongbaos.thongbao",
+    "pk": "550e8400-e29b-41d4-a716-446655440061",
+    "fields": {
+      "tieu_de": "Lịch thi cuối khóa",
+      "noi_dung": "Thông báo lịch thi cuối khóa cho các học viên sắp hoàn thành",
+      "ngay_gui": "2024-01-01T00:00:00Z",
+      "nguoi_nhan": "hocvien",
+      "user": null,
+      "trang_thai": "da_gui",
+      "loai_thong_bao": "thong_tin",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  }
+]
