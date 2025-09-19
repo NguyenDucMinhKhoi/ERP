@@ -10,10 +10,10 @@ import {
 
 export default function Sidebar() {
   return (
-    <aside className="sticky top-0 hidden h-screen w-[260px] border-slate-200 bg-[#F8F9FA] px-3 py-4 lg:block">
+    <aside className="sticky top-0 hidden h-screen w-[260px] border-slate-200 bg-background px-3 py-4 lg:block">
       {/* Brand trên cùng */}
       <div className="mb-6 flex items-center gap-3 px-2">
-        <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 text-white shadow">
+        <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary-main text-white shadow">
           <LayoutGrid size={18} />
         </div>
         <div className="text-sm font-semibold tracking-tight">
@@ -56,7 +56,7 @@ function NavItem({ icon, label, active, pill }) {
     <button
       className={`group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
         active
-          ? "bg-white text-primary-700 shadow-sm ring-1 ring-primary-200"
+          ? "bg-surface text-primary-main shadow-sm ring-1 ring-primary-light"
           : "text-slate-600 hover:bg-slate-100"
       }`}
     >
@@ -65,8 +65,8 @@ function NavItem({ icon, label, active, pill }) {
           pill ? "full" : "lg"
         } border ${
           active
-            ? "border-primary-200 bg-primary-50 text-primary-600"
-            : "border-slate-200 bg-white text-slate-600"
+            ? "border-primary-light bg-primary-light text-primary-main"
+            : "border-slate-200 bg-surface text-slate-600"
         }`}
       >
         {icon}

@@ -14,7 +14,7 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 border-slate-200 bg-[#F8F9FA] backdrop-blur">
+    <header className="sticky top-0 z-30 border-slate-200 bg-background backdrop-blur">
       <div className="flex h-16 items-center gap-4 px-4">
         {/* Breadcrumb */}
         <div className="hidden text-sm text-slate-500 lg:block">
@@ -32,12 +32,12 @@ export default function Header() {
             />
             <input
               placeholder="Type here..."
-              className="w-full rounded-full border border-slate-200 bg-white px-10 py-2 text-sm outline-none ring-primary-300 placeholder:text-slate-400 focus:ring-2"
+              className="w-full rounded-full border border-slate-200 bg-surface px-10 py-2 text-sm outline-none ring-primary-light placeholder:text-slate-400 focus:ring-2"
             />
           </div>
 
           {/* Bell */}
-          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-100">
+          <button className="relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-surface hover:bg-slate-100">
             <Bell size={18} />
             <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-error-500 px-1 text-[10px] font-bold text-white">
               3
@@ -48,7 +48,7 @@ export default function Header() {
           <div ref={ref} className="relative">
             <button
               onClick={() => setOpen((v) => !v)}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 hover:bg-slate-100"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-surface px-3 py-1.5 hover:bg-slate-100"
             >
               <img
                 src="https://i.pravatar.cc/32?img=11"
@@ -62,7 +62,7 @@ export default function Header() {
             </button>
 
             {open && (
-              <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+              <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-surface shadow-lg">
                 <button className="block w-full px-4 py-2 text-left text-sm hover:bg-slate-100">
                   Profile
                 </button>
