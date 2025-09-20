@@ -125,6 +125,10 @@ Sau khi load seed data, bạn có thể sử dụng các tài khoản sau:
 - **Username**: hocvien1 / hocvien2
 - **Password**: Hocvien@123
 
+### Database Diagram
+
+<img width="1396" height="917" alt="ERPTable" src="https://github.com/user-attachments/assets/63d3064a-57d5-4036-9cc9-432ce16b69ce" />
+
 ## API Endpoints
 
 ### Authentication
