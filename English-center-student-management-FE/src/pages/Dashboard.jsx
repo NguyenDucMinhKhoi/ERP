@@ -150,7 +150,6 @@ export default function Dashboard() {
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-
         {/* Revenue Chart */}
         <div className="card p-6 xl:col-span-2">
           <div className="mb-4 flex items-center justify-between">
@@ -263,8 +262,6 @@ export default function Dashboard() {
     </div>
   );
 }
-
-
 // KPI Card Component
 function KPICard({ title, value, delta, tone, icon, description }) {
   const toneMap = {
@@ -375,4 +372,3 @@ function ActivityItem({ icon, title, time, type }) {
     </div>
   );
 }
-
