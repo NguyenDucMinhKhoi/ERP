@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Bell, Search, ChevronDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const onClick = (e) => {
@@ -47,7 +49,7 @@ export default function Header() {
           {/* Profile */}
           <div ref={ref} className="relative">
             <button
-              onClick={() => setOpen((v) => !v)}
+              onClick={() => navigate("/login")}
               className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-surface px-3 py-1.5 hover:bg-slate-100"
             >
               <img
@@ -58,23 +60,8 @@ export default function Header() {
               <span className="hidden text-sm font-medium sm:block">
                 Sign In
               </span>
-              <ChevronDown size={16} />
+              {/* <ChevronDown size={16} /> */}
             </button>
-
-            {open && (
-              <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-surface shadow-lg">
-                <button className="block w-full px-4 py-2 text-left text-sm hover:bg-slate-100">
-                  Profile
-                </button>
-                <button className="block w-full px-4 py-2 text-left text-sm hover:bg-slate-100">
-                  Settings
-                </button>
-                <div className="h-px bg-slate-200" />
-                <button className="block w-full px-4 py-2 text-left text-sm text-error-600 hover:bg-slate-100">
-                  Log out
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>
