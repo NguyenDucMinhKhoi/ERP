@@ -1,41 +1,36 @@
 import React, { useState } from 'react';
-import { 
-  Users, 
-  MessageSquare, 
-  BarChart3, 
-  Phone,
-  Mail,
-  Calendar,
+import {
+  Users,
+  MessageSquare,
+  BarChart3,
   TrendingUp,
   UserCheck,
   AlertCircle
 } from 'lucide-react';
-import StudentList from './StudentList';
-import StudentProfile from './StudentProfile';
-import CRMReports from './CRMReports';
-import CareLogForm from '../../components/CRM/CareLogForm';
+import { StudentList, StudentProfile, CRMReports } from '../components/CRM';
+import CareLogForm from '../components/CRM/CareLogForm';
 
-export default function CRM() {
+export default function CRMpage() {
   const [activeTab, setActiveTab] = useState('students');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showCareLogForm, setShowCareLogForm] = useState(false);
 
   const tabs = [
-    { 
-      id: 'students', 
-      label: 'Danh Sách Học Viên', 
+    {
+      id: 'students',
+      label: 'Danh Sách Học Viên',
       icon: Users,
       description: 'Quản lý thông tin học viên'
     },
-    { 
-      id: 'profile', 
-      label: 'Hồ Sơ Học Viên', 
+    {
+      id: 'profile',
+      label: 'Hồ Sơ Học Viên',
       icon: UserCheck,
       description: 'Chi tiết học viên và timeline'
     },
-    { 
-      id: 'reports', 
-      label: 'Báo Cáo CRM', 
+    {
+      id: 'reports',
+      label: 'Báo Cáo CRM',
       icon: BarChart3,
       description: 'Phân tích hiệu suất và chuyển đổi'
     }
@@ -52,7 +47,6 @@ export default function CRM() {
   };
 
   const handleSaveCareLog = (careLogData) => {
-    console.log('Care log saved:', careLogData);
     // TODO: Implement API call to save care log
     setShowCareLogForm(false);
   };
@@ -60,25 +54,33 @@ export default function CRM() {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'students':
-        return <StudentList onStudentSelect={handleStudentSelect} onAddCareLog={handleAddCareLog} />;
+        return (
+          <StudentList
+            onStudentSelect={handleStudentSelect}
+            onAddCareLog={handleAddCareLog}
+          />
+        );
       case 'profile':
         return <StudentProfile student={selectedStudent} />;
       case 'reports':
         return <CRMReports />;
       default:
-        return <StudentList onStudentSelect={handleStudentSelect} onAddCareLog={handleAddCareLog} />;
+        return (
+          <StudentList
+            onStudentSelect={handleStudentSelect}
+            onAddCareLog={handleAddCareLog}
+          />
+        );
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-slate-800">CRM - Quản Lý Học Viên</h1>
         <p className="text-slate-600 mt-1">Hệ thống chăm sóc khách hàng và quản lý học viên</p>
       </div>
 
-      {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="card p-6">
           <div className="flex items-center justify-between">
@@ -137,7 +139,6 @@ export default function CRM() {
         </div>
       </div>
 
-      {/* Navigation Tabs */}
       <div className="border-b border-slate-200">
         <nav className="-mb-px flex space-x-8">
           {tabs.map((tab) => {
@@ -160,12 +161,10 @@ export default function CRM() {
         </nav>
       </div>
 
-      {/* Tab Content */}
       <div className="min-h-[600px]">
         {renderTabContent()}
       </div>
 
-      {/* Care Log Form Modal */}
       {showCareLogForm && selectedStudent && (
         <CareLogForm
           isOpen={showCareLogForm}
@@ -178,3 +177,5 @@ export default function CRM() {
     </div>
   );
 }
+
+

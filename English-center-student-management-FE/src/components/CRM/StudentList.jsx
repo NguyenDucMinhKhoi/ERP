@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Users, 
-  Search, 
-  Filter, 
-  Plus, 
-  Eye, 
-  Phone, 
+import {
+  Users,
+  Search,
+  Filter,
+  Plus,
+  Eye,
+  Phone,
   Mail,
   Calendar,
   DollarSign,
@@ -13,14 +13,13 @@ import {
   AlertCircle
 } from 'lucide-react';
 
-export default function StudentList() {
+export default function StudentList({ onStudentSelect, onAddCareLog }) {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
-  // Mock data - sẽ thay thế bằng API call
   useEffect(() => {
     const mockStudents = [
       {
@@ -54,11 +53,11 @@ export default function StudentList() {
         created_at: '2024-01-25T09:45:00Z'
       }
     ];
-    
+
     setTimeout(() => {
       setStudents(mockStudents);
       setLoading(false);
-    }, 1000);
+    }, 500);
   }, []);
 
   const getStatusBadge = (status) => {
@@ -67,7 +66,7 @@ export default function StudentList() {
       'conno': { label: 'Còn nợ', color: 'bg-warning text-white' },
       'chuadong': { label: 'Chưa đóng', color: 'bg-error text-white' }
     };
-    
+
     const config = statusConfig[status] || statusConfig['chuadong'];
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
@@ -109,7 +108,6 @@ export default function StudentList() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Danh Sách Học Viên</h1>
@@ -121,7 +119,6 @@ export default function StudentList() {
         </button>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <div className="card p-4">
           <div className="flex items-center justify-between">
@@ -167,10 +164,8 @@ export default function StudentList() {
         </div>
       </div>
 
-      {/* Search and Filters */}
       <div className="card p-6">
         <div className="flex flex-col md:flex-row gap-4">
-          {/* Search */}
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input
@@ -181,8 +176,7 @@ export default function StudentList() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          
-          {/* Filter Button */}
+
           <button
             onClick={() => setShowFilters(!showFilters)}
             className="btn btn-outline flex items-center gap-2"
@@ -192,7 +186,6 @@ export default function StudentList() {
           </button>
         </div>
 
-        {/* Filter Options */}
         {showFilters && (
           <div className="mt-4 pt-4 border-t border-slate-200">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -216,7 +209,6 @@ export default function StudentList() {
         )}
       </div>
 
-      {/* Students Table */}
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -288,13 +280,13 @@ export default function StudentList() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center gap-2">
-                      <button className="text-primary-main hover:text-primary-dark">
+                      <button className="text-primary-main hover:text-primary-dark" onClick={() => onStudentSelect && onStudentSelect(student)}>
                         <Eye className="h-4 w-4" />
                       </button>
                       <button className="text-info hover:text-info-dark">
                         <Phone className="h-4 w-4" />
                       </button>
-                      <button className="text-success hover:text-success-dark">
+                      <button className="text-success hover:text-success-dark" onClick={() => onAddCareLog && onAddCareLog(student)}>
                         <Mail className="h-4 w-4" />
                       </button>
                     </div>
@@ -304,7 +296,7 @@ export default function StudentList() {
             </tbody>
           </table>
         </div>
-        
+
         {filteredStudents.length === 0 && (
           <div className="text-center py-8">
             <Users className="h-12 w-12 text-slate-400 mx-auto mb-4" />
@@ -315,3 +307,5 @@ export default function StudentList() {
     </div>
   );
 }
+
+
