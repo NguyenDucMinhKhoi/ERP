@@ -3,9 +3,9 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./components/layouts/MainLayout.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import CRM from "./pages/CRM/index.jsx";
-import LoginPage from "./pages/Login/LoginPage.jsx";
-import ForgotPasswordPage from "./pages/Login/ForgotPasswordPage.jsx";
-import RegisterPage from "./pages/Login/RegisterPage.jsx";
+import LoginPage from "./pages/Login_Register/LoginPage.jsx";
+import ForgotPasswordPage from "./pages/Login_Register/ForgotPasswordPage.jsx";
+import RegisterPage from "./pages/Login_Register/RegisterPage.jsx";
 
 export default function App() {
   return (
