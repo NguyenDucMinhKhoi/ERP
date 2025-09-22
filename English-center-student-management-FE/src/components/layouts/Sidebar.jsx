@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Home,
   Table2,
@@ -6,9 +7,19 @@ import {
   UserRound,
   ChevronRight,
   LayoutGrid,
+  Users,
+  BarChart3,
+  MessageSquare,
 } from "lucide-react";
 
 export default function Sidebar() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleNavigation = (path) => {
+    navigate(path);
+  };
+
   return (
     <aside className="sticky top-0 hidden h-screen w-[260px] border-slate-200 bg-background px-3 py-4 lg:block">
       {/* Brand trên cùng */}
@@ -17,22 +28,60 @@ export default function Sidebar() {
           <LayoutGrid size={18} />
         </div>
         <div className="text-sm font-semibold tracking-tight">
-          PURITY UI DASHBOARD
+          ENGLISH CENTER ERP
         </div>
       </div>
 
       {/* Groups */}
-      <NavSection title="Pages">
-        <NavItem icon={<Home size={18} />} label="Dashboard" />
-        <NavItem icon={<Table2 size={18} />} label="Tables" />
-        <NavItem icon={<Receipt size={18} />} label="Billing" />
-        <NavItem icon={<ChevronRight size={18} />} label="RTL" />
+      <NavSection title="Trang Chính">
+        <NavItem 
+          icon={<Home size={18} />} 
+          label="Dashboard" 
+          active={location.pathname === '/' || location.pathname === '/dashboard'}
+          onClick={() => handleNavigation('/dashboard')}
+        />
+        <NavItem 
+          icon={<Users size={18} />} 
+          label="CRM - Học Viên" 
+          active={location.pathname === '/crm'}
+          onClick={() => handleNavigation('/crm')}
+        />
+        <NavItem 
+          icon={<Table2 size={18} />} 
+          label="Danh Sách" 
+          active={location.pathname === '/tables'}
+          onClick={() => handleNavigation('/tables')}
+        />
+        <NavItem 
+          icon={<Receipt size={18} />} 
+          label="Thanh Toán" 
+          active={location.pathname === '/billing'}
+          onClick={() => handleNavigation('/billing')}
+        />
       </NavSection>
 
-      <NavSection title="Account Pages">
-        <NavItem icon={<UserRound size={18} />} label="Profile" />
-        <NavItem icon={<ChevronRight size={18} />} label="Sign In" />
-        <NavItem icon={<ChevronRight size={18} />} label="Sign Up" />
+      <NavSection title="Báo Cáo & Phân Tích">
+        <NavItem 
+          icon={<BarChart3 size={18} />} 
+          label="Báo Cáo CRM" 
+          active={location.pathname === '/crm-reports'}
+          onClick={() => handleNavigation('/crm')}
+        />
+        <NavItem 
+          icon={<MessageSquare size={18} />} 
+          label="Thông Báo" 
+          active={location.pathname === '/notifications'}
+          onClick={() => handleNavigation('/notifications')}
+        />
+      </NavSection>
+
+      <NavSection title="Tài Khoản">
+        <NavItem 
+          icon={<UserRound size={18} />} 
+          label="Hồ Sơ" 
+          active={location.pathname === '/profile'}
+          onClick={() => handleNavigation('/profile')}
+        />
       </NavSection>
     </aside>
   );
@@ -51,12 +100,13 @@ function NavSection({ title, children }) {
   );
 }
 
-function NavItem({ icon, label, active, pill }) {
+function NavItem({ icon, label, active, pill, onClick }) {
   return (
     <button
+      onClick={onClick}
       className={`group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
         active
-          ? "bg-surface text-primary-main shadow-sm ring-1 ring-primary-light"
+          ? "bg-surface text-primary-main shadow-sm"
           : "text-slate-600 hover:bg-slate-100"
       }`}
     >
