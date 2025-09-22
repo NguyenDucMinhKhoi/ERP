@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Users, 
-  UserCheck, 
-  UserX,
+import {
+  TrendingUp,
+  TrendingDown,
+  Users,
+  UserCheck,
   DollarSign,
   Calendar,
   Filter,
@@ -17,7 +16,6 @@ export default function CRMReports() {
   const [dateRange, setDateRange] = useState('30days');
   const [reportData, setReportData] = useState(null);
 
-  // Mock data - sẽ thay thế bằng API call
   useEffect(() => {
     const mockData = {
       conversionFunnel: {
@@ -54,7 +52,7 @@ export default function CRMReports() {
     setTimeout(() => {
       setReportData(mockData);
       setLoading(false);
-    }, 1000);
+    }, 500);
   }, [dateRange]);
 
   const getTrendIcon = (trend) => {
@@ -69,7 +67,7 @@ export default function CRMReports() {
     return trend === 'up' ? 'text-success' : 'text-error';
   };
 
-  if (loading) {
+  if (loading || !reportData) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-main"></div>
@@ -79,7 +77,6 @@ export default function CRMReports() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Báo Cáo CRM</h1>
@@ -107,7 +104,6 @@ export default function CRMReports() {
         </div>
       </div>
 
-      {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="card p-6">
           <div className="flex items-center justify-between">
@@ -182,35 +178,14 @@ export default function CRMReports() {
         </div>
       </div>
 
-      {/* Conversion Funnel */}
       <div className="card p-6">
         <h3 className="text-lg font-semibold mb-6">Phễu Chuyển Đổi (Conversion Funnel)</h3>
         <div className="space-y-4">
           {[
-            { 
-              stage: 'Lead', 
-              count: reportData.conversionFunnel.leads, 
-              percentage: 100,
-              color: 'bg-primary-main'
-            },
-            { 
-              stage: 'Đã Liên Hệ', 
-              count: reportData.conversionFunnel.contacted, 
-              percentage: (reportData.conversionFunnel.contacted / reportData.conversionFunnel.leads * 100).toFixed(1),
-              color: 'bg-info'
-            },
-            { 
-              stage: 'Quan Tâm', 
-              count: reportData.conversionFunnel.interested, 
-              percentage: (reportData.conversionFunnel.interested / reportData.conversionFunnel.leads * 100).toFixed(1),
-              color: 'bg-warning'
-            },
-            { 
-              stage: 'Đăng Ký', 
-              count: reportData.conversionFunnel.enrolled, 
-              percentage: (reportData.conversionFunnel.enrolled / reportData.conversionFunnel.leads * 100).toFixed(1),
-              color: 'bg-success'
-            }
+            { stage: 'Lead', count: reportData.conversionFunnel.leads, percentage: 100, color: 'bg-primary-main' },
+            { stage: 'Đã Liên Hệ', count: reportData.conversionFunnel.contacted, percentage: (reportData.conversionFunnel.contacted / reportData.conversionFunnel.leads * 100).toFixed(1), color: 'bg-info' },
+            { stage: 'Quan Tâm', count: reportData.conversionFunnel.interested, percentage: (reportData.conversionFunnel.interested / reportData.conversionFunnel.leads * 100).toFixed(1), color: 'bg-warning' },
+            { stage: 'Đăng Ký', count: reportData.conversionFunnel.enrolled, percentage: (reportData.conversionFunnel.enrolled / reportData.conversionFunnel.leads * 100).toFixed(1), color: 'bg-success' }
           ].map((stage) => (
             <div key={stage.stage} className="flex items-center gap-4">
               <div className="w-24 text-sm font-medium text-slate-700">
@@ -222,10 +197,7 @@ export default function CRMReports() {
                   <span className="text-sm font-medium text-slate-800">{stage.percentage}%</span>
                 </div>
                 <div className="w-full bg-slate-200 rounded-full h-2">
-                  <div 
-                    className={`h-2 rounded-full ${stage.color}`}
-                    style={{ width: `${stage.percentage}%` }}
-                  ></div>
+                  <div className={`h-2 rounded-full ${stage.color}`} style={{ width: `${stage.percentage}%` }}></div>
                 </div>
               </div>
             </div>
@@ -233,7 +205,6 @@ export default function CRMReports() {
         </div>
       </div>
 
-      {/* Lead Sources */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="card p-6">
           <h3 className="text-lg font-semibold mb-6">Nguồn Lead</h3>
@@ -241,9 +212,7 @@ export default function CRMReports() {
             {reportData.leadSources.map((source, index) => (
               <div key={source.source} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={`h-3 w-3 rounded-full ${
-                    ['bg-primary-main', 'bg-info', 'bg-success', 'bg-warning', 'bg-slate-500'][index]
-                  }`}></div>
+                  <div className={`h-3 w-3 rounded-full ${['bg-primary-main', 'bg-info', 'bg-success', 'bg-warning', 'bg-slate-500'][index]}`}></div>
                   <span className="text-sm font-medium">{source.source}</span>
                 </div>
                 <div className="text-right">
@@ -261,9 +230,7 @@ export default function CRMReports() {
             <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
               <div>
                 <p className="text-sm text-slate-600">Tháng hiện tại</p>
-                <p className="text-2xl font-bold text-slate-800">
-                  {reportData.churnRate.churnRate}%
-                </p>
+                <p className="text-2xl font-bold text-slate-800">{reportData.churnRate.churnRate}%</p>
               </div>
               <div className="text-right">
                 <div className="flex items-center gap-1">
@@ -276,7 +243,7 @@ export default function CRMReports() {
                 <p className="text-xs text-slate-500">vs tháng trước</p>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-3 bg-slate-50 rounded-lg">
                 <p className="text-sm text-slate-600">Tổng học viên</p>
@@ -291,19 +258,18 @@ export default function CRMReports() {
         </div>
       </div>
 
-      {/* Monthly Trends Chart Placeholder */}
       <div className="card p-6">
         <h3 className="text-lg font-semibold mb-6">Xu Hướng 6 Tháng Gần Đây</h3>
         <div className="h-64 bg-gradient-to-r from-primary-50 to-primary-100 rounded-lg flex items-center justify-center">
           <div className="text-center">
             <TrendingUp className="h-12 w-12 text-primary-main mx-auto mb-2" />
             <p className="text-slate-600">Biểu đồ xu hướng sẽ được hiển thị ở đây</p>
-            <p className="text-sm text-slate-500 mt-1">
-              Dữ liệu: {reportData.monthlyTrends.length} tháng
-            </p>
+            <p className="text-sm text-slate-500 mt-1">Dữ liệu: {reportData.monthlyTrends.length} tháng</p>
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+

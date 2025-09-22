@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   ArrowLeft,
   User,
   Phone,
@@ -15,15 +15,15 @@ import {
   History
 } from 'lucide-react';
 
-export default function StudentProfile() {
-  const [student, setStudent] = useState(null);
+export default function StudentProfile({ student: providedStudent }) {
+  const [student, setStudent] = useState(providedStudent || null);
   const [careLogs, setCareLogs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!providedStudent);
   const [activeTab, setActiveTab] = useState('overview');
   const [, setShowAddCareLog] = useState(false);
 
-  // Mock data - sẽ thay thế bằng API call
   useEffect(() => {
+    if (providedStudent) return;
     const mockStudent = {
       id: '1',
       ten: 'Nguyễn Văn An',
@@ -67,8 +67,8 @@ export default function StudentProfile() {
       setStudent(mockStudent);
       setCareLogs(mockCareLogs);
       setLoading(false);
-    }, 1000);
-  }, []);
+    }, 500);
+  }, [providedStudent]);
 
   const getStatusBadge = (status) => {
     const statusConfig = {
@@ -76,7 +76,7 @@ export default function StudentProfile() {
       'conno': { label: 'Còn nợ', color: 'bg-warning text-white' },
       'chuadong': { label: 'Chưa đóng', color: 'bg-error text-white' }
     };
-    
+
     const config = statusConfig[status] || statusConfig['chuadong'];
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
@@ -102,7 +102,7 @@ export default function StudentProfile() {
       'hoan_thanh': { label: 'Hoàn thành', color: 'bg-success text-white' },
       'dong': { label: 'Đóng', color: 'bg-slate-500 text-white' }
     };
-    
+
     const config = statusConfig[status] || statusConfig['moi'];
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
@@ -145,7 +145,6 @@ export default function StudentProfile() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center gap-4">
         <button className="btn btn-outline">
           <ArrowLeft className="h-4 w-4" />
@@ -156,10 +155,8 @@ export default function StudentProfile() {
         </div>
       </div>
 
-      {/* Student Info Card */}
       <div className="card p-6">
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Avatar and Basic Info */}
           <div className="flex flex-col items-center md:items-start">
             <div className="h-24 w-24 rounded-full bg-primary-main flex items-center justify-center text-white text-2xl font-bold mb-4">
               {student.ten.split(' ').pop().charAt(0)}
@@ -175,7 +172,6 @@ export default function StudentProfile() {
             </div>
           </div>
 
-          {/* Contact Info */}
           <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-3">
               <div className="flex items-center gap-3">
@@ -213,7 +209,6 @@ export default function StudentProfile() {
             </div>
           </div>
 
-          {/* Actions */}
           <div className="flex flex-col gap-2">
             <button className="btn btn-primary">
               <Edit className="h-4 w-4" />
@@ -226,7 +221,6 @@ export default function StudentProfile() {
           </div>
         </div>
 
-        {/* Notes */}
         {student.ghi_chu && (
           <div className="mt-6 pt-6 border-t border-slate-200">
             <h3 className="text-sm font-medium text-slate-700 mb-2">Ghi chú</h3>
@@ -235,7 +229,6 @@ export default function StudentProfile() {
         )}
       </div>
 
-      {/* Tabs */}
       <div className="border-b border-slate-200">
         <nav className="-mb-px flex space-x-8">
           {[
@@ -259,10 +252,8 @@ export default function StudentProfile() {
         </nav>
       </div>
 
-      {/* Tab Content */}
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Quick Stats */}
           <div className="card p-6">
             <h3 className="text-lg font-semibold mb-4">Thống Kê Nhanh</h3>
             <div className="space-y-4">
@@ -283,7 +274,6 @@ export default function StudentProfile() {
             </div>
           </div>
 
-          {/* Recent Activities */}
           <div className="card p-6">
             <h3 className="text-lg font-semibold mb-4">Hoạt Động Gần Đây</h3>
             <div className="space-y-3">
@@ -304,10 +294,9 @@ export default function StudentProfile() {
 
       {activeTab === 'care' && (
         <div className="space-y-6">
-          {/* Add Care Log Button */}
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">Lịch Sử Chăm Sóc</h3>
-            <button 
+            <button
               onClick={() => setShowAddCareLog(true)}
               className="btn btn-primary"
             >
@@ -316,7 +305,6 @@ export default function StudentProfile() {
             </button>
           </div>
 
-          {/* Care Logs Timeline */}
           <div className="card p-6">
             <div className="space-y-6">
               {careLogs.map((log, index) => (
@@ -365,3 +353,5 @@ export default function StudentProfile() {
     </div>
   );
 }
+
+
