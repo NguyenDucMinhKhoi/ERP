@@ -7,14 +7,37 @@ import {
   TrendingUp,
   AlertCircle,
   CheckCircle,
-  Clock,
-  UserCheck,
-  BookOpen,
-  CreditCard,
-  MessageSquare
+  UserCheck
 } from "lucide-react";
+import { 
+  KPICard, 
+  MetricCard, 
+  ChartPlaceholder 
+} from "../components/shared";
+import { 
+  QuickActions, 
+  ModuleOverview, 
+  RecentActivities 
+} from "../components/dashboard";
+import { APITester } from "../components/CRM";
 
 export default function Dashboard() {
+  // Event handlers
+  const handleQuickAction = (action, actionData) => {
+    console.log('Quick action clicked:', action, actionData);
+    // TODO: Implement navigation or modal opening
+  };
+
+  const handleModuleAction = (moduleTitle, action, actionIndex) => {
+    console.log('Module action clicked:', moduleTitle, action, actionIndex);
+    // TODO: Implement navigation to specific module pages
+  };
+
+  const handleActivityClick = (activity, index) => {
+    console.log('Activity clicked:', activity, index);
+    // TODO: Implement navigation to activity details
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -89,273 +112,34 @@ export default function Dashboard() {
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        {/* Revenue Chart */}
-        <div className="card p-6 xl:col-span-2">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Doanh Thu Theo Tháng</h3>
-            <div className="flex gap-2">
-              <button className="rounded-lg bg-primary-main px-3 py-1 text-xs text-white">6 tháng</button>
-              <button className="rounded-lg bg-slate-100 px-3 py-1 text-xs text-slate-600">1 năm</button>
-            </div>
-          </div>
-          <div className="h-64 rounded-xl bg-gradient-to-r from-primary-50 to-primary-100 flex items-center justify-center">
-            <div className="text-center">
-              <TrendingUp className="h-12 w-12 text-primary-main mx-auto mb-2" />
-              <p className="text-slate-600">Biểu đồ doanh thu sẽ được hiển thị ở đây</p>
-            </div>
-          </div>
+        {/* Revenue Chart - 2/3 width */}
+        <div className="xl:col-span-2">
+          <ChartPlaceholder
+            title="Doanh Thu Theo Tháng"
+            icon={TrendingUp}
+            description="Biểu đồ doanh thu sẽ được hiển thị ở đây"
+            height="h-64"
+            showFilters={true}
+          />
         </div>
 
-        {/* Quick Actions */}
-        <div className="card p-6">
-          <h3 className="mb-4 text-lg font-semibold">Thao Tác Nhanh</h3>
-          <div className="space-y-3">
-            <QuickActionButton
-              icon={<Users className="h-4 w-4" />}
-              title="Thêm Học Viên"
-              description="Đăng ký học viên mới"
-              color="bg-primary-main"
-            />
-            <QuickActionButton
-              icon={<GraduationCap className="h-4 w-4" />}
-              title="Tạo Khóa Học"
-              description="Thêm khóa học mới"
-              color="bg-info"
-            />
-            <QuickActionButton
-              icon={<CreditCard className="h-4 w-4" />}
-              title="Ghi Thanh Toán"
-              description="Nhập thanh toán học phí"
-              color="bg-success"
-            />
-            <QuickActionButton
-              icon={<MessageSquare className="h-4 w-4" />}
-              title="Gửi Thông Báo"
-              description="Thông báo đến học viên"
-              color="bg-warning"
-            />
-          </div>
+        {/* Quick Actions - 1/3 width */}
+        <div className="xl:col-span-1">
+          <QuickActions onActionClick={handleQuickAction} />
         </div>
       </div>
 
       {/* Module Overview */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        {/* CRM Module */}
-        <ModuleCard
-          title="CRM - Quản Lý Học Viên"
-          icon={<Users className="h-6 w-6" />}
-          color="bg-primary-main"
-          stats={[
-            { label: "Tổng học viên", value: "1,247" },
-            { label: "Lead mới", value: "89" },
-            { label: "Chuyển đổi", value: "23%" }
-          ]}
-          actions={[
-            "Xem danh sách học viên",
-            "Thêm học viên mới",
-            "Chăm sóc học viên"
-          ]}
-        />
-
-        {/* Academic Module */}
-        <ModuleCard
-          title="Academic - Quản Lý Khóa Học"
-          icon={<BookOpen className="h-6 w-6" />}
-          color="bg-info"
-          stats={[
-            { label: "Khóa đang mở", value: "24" },
-            { label: "Buổi học hôm nay", value: "12" },
-            { label: "Tỷ lệ điểm danh", value: "94%" }
-          ]}
-          actions={[
-            "Quản lý lịch học",
-            "Điểm danh",
-            "Xem tiến độ"
-          ]}
-        />
-
-        {/* Finance Module */}
-        <ModuleCard
-          title="Finance - Quản Lý Tài Chính"
-          icon={<DollarSign className="h-6 w-6" />}
-          color="bg-success"
-          stats={[
-            { label: "Doanh thu tháng", value: "₫2.4B" },
-            { label: "Học viên nợ phí", value: "23" },
-            { label: "Tỷ lệ thu phí", value: "97%" }
-          ]}
-          actions={[
-            "Ghi thanh toán",
-            "Xuất hóa đơn",
-            "Báo cáo doanh thu"
-          ]}
-        />
-
-        {/* Operations Module */}
-        <ModuleCard
-          title="Operations - Vận Hành"
-          icon={<Calendar className="h-6 w-6" />}
-          color="bg-warning"
-          stats={[
-            { label: "Đăng ký mới", value: "45" },
-            { label: "Hoàn thành", value: "32" },
-            { label: "Tỷ lệ hoàn thành", value: "87%" }
-          ]}
-          actions={[
-            "Quản lý đăng ký",
-            "Phân lớp học viên",
-            "Báo cáo tổng hợp"
-          ]}
-        />
-      </div>
+      <ModuleOverview onModuleAction={handleModuleAction} />
 
       {/* Recent Activities */}
-      <div className="card p-6">
-        <h3 className="mb-4 text-lg font-semibold">Hoạt Động Gần Đây</h3>
-        <div className="space-y-3">
-          <ActivityItem
-            icon={<UserCheck className="h-4 w-4" />}
-            title="Học viên Nguyễn Văn A đăng ký khóa IELTS"
-            time="2 phút trước"
-            type="success"
-          />
-          <ActivityItem
-            icon={<CreditCard className="h-4 w-4" />}
-            title="Thanh toán ₫5,000,000 từ học viên Trần Thị B"
-            time="15 phút trước"
-            type="info"
-          />
-          <ActivityItem
-            icon={<AlertCircle className="h-4 w-4" />}
-            title="Học viên Lê Văn C vắng mặt 2 buổi liên tiếp"
-            time="1 giờ trước"
-            type="warning"
-          />
-          <ActivityItem
-            icon={<CheckCircle className="h-4 w-4" />}
-            title="Khóa TOEIC Basic hoàn thành với 15/18 học viên"
-            time="2 giờ trước"
-            type="success"
-          />
-        </div>
+      <RecentActivities onActivityClick={handleActivityClick} />
+
+      {/* API Tester - Development Only */}
+      <div className="mt-8">
+        <APITester />
       </div>
     </div>
   );
 }
 
-// KPI Card Component
-function KPICard({ title, value, delta, tone, icon, description }) {
-  const toneMap = {
-    success: "text-success bg-success-50",
-    error: "text-error bg-error-50",
-    info: "text-info bg-info-50",
-    warning: "text-warning bg-warning-50",
-  };
-  const chip = toneMap[tone] || "text-primary-main bg-primary-light";
-  
-  return (
-    <div className="card p-6">
-      <div className="flex items-center justify-between">
-        <div className="flex-1">
-          <p className="text-sm text-slate-600">{title}</p>
-          <p className="mt-2 text-3xl font-bold text-slate-800">{value}</p>
-          <p className="mt-1 text-xs text-slate-500">{description}</p>
-        </div>
-        <div className="rounded-full bg-slate-100 p-3">
-          {icon}
-        </div>
-      </div>
-      <div className={`mt-4 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${chip}`}>
-        {delta}
-      </div>
-    </div>
-  );
-}
-
-// Metric Card Component
-function MetricCard({ title, value, icon, color }) {
-  return (
-    <div className="card p-4">
-      <div className="flex items-center gap-3">
-        <div className={`rounded-lg bg-slate-100 p-2 ${color}`}>
-          {icon}
-        </div>
-        <div>
-          <p className="text-sm text-slate-600">{title}</p>
-          <p className="text-xl font-bold text-slate-800">{value}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Quick Action Button Component
-function QuickActionButton({ icon, title, description, color }) {
-  return (
-    <button className="flex w-full items-center gap-3 rounded-lg border border-slate-200 p-3 text-left transition-colors hover:bg-slate-50">
-      <div className={`rounded-lg p-2 text-white ${color}`}>
-        {icon}
-      </div>
-      <div>
-        <p className="text-sm font-medium text-slate-800">{title}</p>
-        <p className="text-xs text-slate-600">{description}</p>
-      </div>
-    </button>
-  );
-}
-
-// Module Card Component
-function ModuleCard({ title, icon, color, stats, actions }) {
-  return (
-    <div className="card p-6">
-      <div className="mb-4 flex items-center gap-3">
-        <div className={`rounded-lg p-2 text-white ${color}`}>
-          {icon}
-        </div>
-        <h3 className="text-lg font-semibold">{title}</h3>
-      </div>
-      
-      <div className="mb-4 grid grid-cols-3 gap-4">
-        {stats.map((stat, index) => (
-          <div key={index} className="text-center">
-            <p className="text-2xl font-bold text-slate-800">{stat.value}</p>
-            <p className="text-xs text-slate-600">{stat.label}</p>
-          </div>
-        ))}
-      </div>
-      
-      <div className="space-y-2">
-        {actions.map((action, index) => (
-          <button
-            key={index}
-            className="block w-full rounded-lg bg-slate-50 px-3 py-2 text-left text-sm text-slate-700 transition-colors hover:bg-slate-100"
-          >
-            {action}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// Activity Item Component
-function ActivityItem({ icon, title, time, type }) {
-  const typeMap = {
-    success: "text-success",
-    info: "text-info",
-    warning: "text-warning",
-    error: "text-error",
-  };
-  
-  return (
-    <div className="flex items-start gap-3">
-      <div className={`rounded-full bg-slate-100 p-2 ${typeMap[type]}`}>
-        {icon}
-      </div>
-      <div className="flex-1">
-        <p className="text-sm text-slate-800">{title}</p>
-        <p className="text-xs text-slate-500">{time}</p>
-      </div>
-    </div>
-  );
-}
