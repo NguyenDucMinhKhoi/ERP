@@ -21,7 +21,7 @@ class HocVienListView(generics.ListCreateAPIView):
     serializer_class = HocVienSerializer
     permission_classes = [IsStaffUser]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['trang_thai_hoc_phi', 'co_tai_khoan']
+    filterset_fields = ['trang_thai_hoc_phi']
     search_fields = ['ten', 'email', 'sdt']
     ordering_fields = ['ten', 'ngay_sinh', 'created_at', 'trang_thai_hoc_phi']
 
