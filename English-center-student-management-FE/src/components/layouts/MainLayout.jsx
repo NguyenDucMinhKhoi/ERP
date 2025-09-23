@@ -4,7 +4,7 @@ import Sidebar from "./Sidebar.jsx";
 
 export default function MainLayout({ children }) {
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
+    <div className="min-h-screen bg-[#F8F9FA] px-4">
       {/* 2 cột: Sidebar + Content */}
       <div className="mx-auto grid max-w-full grid-cols-1 gap-0 lg:grid-cols-[260px_1fr]">
         {/* Sidebar luôn ở cột trái, sticky full-height */}
