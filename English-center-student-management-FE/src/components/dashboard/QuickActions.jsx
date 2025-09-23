@@ -11,10 +11,10 @@ export default function QuickActions({ onActionClick }) {
   const actions = [
     {
       icon: <Users className="h-4 w-4" />,
-      title: "Thêm Học Viên",
-      description: "Đăng ký học viên mới",
+      title: "Tạo tài khoản",
+      description: "Tạo tài khoản nhân viên/giáo viên mới",
       color: "bg-primary-main",
-      action: "add-student"
+      action: "add-employee"
     },
     {
       icon: <GraduationCap className="h-4 w-4" />,
