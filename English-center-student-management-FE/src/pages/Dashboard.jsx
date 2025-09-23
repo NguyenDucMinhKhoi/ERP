@@ -1,40 +1,41 @@
 import React from "react";
-import { 
-  Users, 
-  GraduationCap, 
-  DollarSign, 
+import { useNavigate } from "react-router-dom";
+import {
+  Users,
+  GraduationCap,
+  DollarSign,
   Calendar,
   TrendingUp,
   AlertCircle,
   CheckCircle,
-  UserCheck
+  UserCheck,
 } from "lucide-react";
-import { 
-  KPICard, 
-  MetricCard, 
-  ChartPlaceholder 
-} from "../components/shared";
-import { 
-  QuickActions, 
-  ModuleOverview, 
-  RecentActivities 
+import { KPICard, MetricCard, ChartPlaceholder } from "../components/shared";
+import {
+  QuickActions,
+  ModuleOverview,
+  RecentActivities,
 } from "../components/dashboard";
 import { APITester } from "../components/CRM";
 
 export default function Dashboard() {
   // Event handlers
+  const navigate = useNavigate();
   const handleQuickAction = (action, actionData) => {
-    console.log('Quick action clicked:', action, actionData);
-    // TODO: Implement navigation or modal opening
+    if (action === "add-employee") {
+      navigate("/accounts/create");
+      return;
+    }
+    console.log("Quick action clicked:", action, actionData);
   };
 
   const handleModuleAction = (moduleTitle, action, actionIndex) => {
-    console.log('Module action clicked:', moduleTitle, action, actionIndex);
+    console.log("Module action clicked:", moduleTitle, action, actionIndex);
     // TODO: Implement navigation to specific module pages
   };
 
   const handleActivityClick = (activity, index) => {
-    console.log('Activity clicked:', activity, index);
+    console.log("Activity clicked:", activity, index);
     // TODO: Implement navigation to activity details
   };
 
@@ -42,8 +43,12 @@ export default function Dashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-800">Dashboard Quản Lý Trung Tâm Tiếng Anh</h1>
-        <p className="text-slate-600 mt-1">Tổng quan hệ thống ERP - Quản lý học viên, khóa học và tài chính</p>
+        <h1 className="text-2xl font-bold text-slate-800">
+          Dashboard Quản Lý Trung Tâm Tiếng Anh
+        </h1>
+        <p className="text-slate-600 mt-1">
+          Tổng quan hệ thống ERP - Quản lý học viên, khóa học và tài chính
+        </p>
       </div>
 
       {/* KPI Cards - Top Level Metrics */}
@@ -142,4 +147,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
