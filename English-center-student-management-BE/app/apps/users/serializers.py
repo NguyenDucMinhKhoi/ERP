@@ -48,17 +48,25 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 class LoginSerializer(serializers.Serializer):
     """
-    Serializer cho đăng nhập
+    Serializer cho đăng nhập bằng email
     """
-    username = serializers.CharField()
+    email = serializers.EmailField()
     password = serializers.CharField()
 
     def validate(self, attrs):
-        username = attrs.get('username')
+        email = (attrs.get('email') or '').strip()
         password = attrs.get('password')
 
-        if username and password:
-            user = authenticate(username=username, password=password)
+        if email and password:
+            # Tìm user theo email (không phân biệt hoa thường)
+            try:
+                user_obj = User.objects.get(email__iexact=email)
+            except User.DoesNotExist:
+                raise serializers.ValidationError('Thông tin đăng nhập không chính xác.')
+            except User.MultipleObjectsReturned:
+                raise serializers.ValidationError('Email này thuộc về nhiều tài khoản. Vui lòng liên hệ quản trị.')
+
+            user = authenticate(username=user_obj.username, password=password)
             if not user:
                 raise serializers.ValidationError('Thông tin đăng nhập không chính xác.')
             if not user.is_active:
