@@ -1,5 +1,5 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Users,
   GraduationCap,
@@ -21,6 +21,16 @@ import { APITester } from "../components/CRM";
 export default function Dashboard() {
   // Event handlers
   const navigate = useNavigate();
+  const location = useLocation();
+  const [successData, setSuccessData] = useState(null);
+
+  useEffect(() => {
+    if (location.state && location.state.accountCreated) {
+      setSuccessData(location.state.accountCreated);
+      // Clear the navigation state so dialog doesn't reappear on refresh
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location, navigate]);
   const handleQuickAction = (action, actionData) => {
     if (action === "add-employee") {
       navigate("/accounts/create");

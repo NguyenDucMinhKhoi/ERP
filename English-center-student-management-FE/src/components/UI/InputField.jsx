@@ -11,10 +11,13 @@ export default function InputField({
   required,
 }) {
   return (
-    <div className="space-y-1">
+    <div className="flex items-center gap-4">
       {label && (
-        <label htmlFor={name} className="text-sm font-medium text-slate-700">
-          {label}
+        <label
+          htmlFor={name}
+          className="w-40 shrink-0 text-sm font-medium text-slate-700"
+        >
+          {label} {required && <span className="text-error">*</span>}
         </label>
       )}
       <input
@@ -26,7 +29,8 @@ export default function InputField({
         placeholder={placeholder}
         autoComplete={autoComplete}
         required={required}
-        className="w-full rounded-xl border border-slate-200 bg-surface px-4 py-3 text-sm outline-none ring-primary-light placeholder:text-slate-400 focus:ring-2"
+        aria-required={required ? "true" : undefined}
+        className="flex-1 rounded-xl border border-slate-200 bg-surface px-4 py-3 text-sm outline-none ring-primary-light placeholder:text-slate-400 focus:ring-2"
       />
     </div>
   );
