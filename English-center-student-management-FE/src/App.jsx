@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./components/layouts/MainLayout.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import CreateAccount from "./pages/CreateAccount.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import CRMpage from "./pages/CRMpage.jsx";
 
@@ -17,6 +18,7 @@ export default function App() {
               <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/accounts/create" element={<CreateAccount />} />
                 <Route path="/crm" element={<CRMpage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
