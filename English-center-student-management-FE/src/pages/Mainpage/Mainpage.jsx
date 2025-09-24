@@ -1,4 +1,4 @@
-    import React from "react";
+import React from "react";
 import { 
   Users, 
   GraduationCap, 
@@ -17,48 +17,55 @@ import {
 import HeroSection from "../../components/Mainpage/HeroSection";
 import CoursesSection from "../../components/Mainpage/CoursesSection";
 import CallToAction from "../../components/Mainpage/CallToAction";
+import ReviewsSection from "../../components/Mainpage/ReviewsSection";
+import Footer from "../../components/Mainpage/Footer";
+import AboutSection from "../../components/Mainpage/AboutSection";
+
 
 export default function Mainpage() {
     return (
         <div className="space-y-6">
             <HeroSection />
+            <AboutSection />
 
             {/* KPI Cards - Top Level Metrics (kept from original) */}
             <div className="container mx-auto px-4">
                 <div className="mb-8">
-                    <h2 className="text-2xl font-bold text-slate-800">Vì sao nên lựa chọn chúng tôi?</h2>
+                    <h2 className="text-2xl font-bold text-slate-800">Why choose us?</h2>
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
                     <KPICard
-                        title="Tổng Học Viên"
+                        title="Total Students"
                         value="1,247"
                         delta="+12%"
                         tone="success"
                         icon={<Users className="h-5 w-5" />}
-                        description="So với tháng trước"
+                        description="Compared to last month"
                     />  
                     <KPICard
-                        title="Khóa Học Đang Mở"
+                        title="Active Courses"
                         value="32"
                         delta="+8%"
                         tone="success"
                         icon={<GraduationCap className="h-5 w-5" />}
-                        description="So với tháng trước"
+                        description="Compared to last month"
                     />
                     <KPICard
-                        title="Tỷ Lệ Hoàn Thành"
+                        title="Completion Rate"
                         value="87%"
                         delta="+5%"
                         tone="success"
                         icon={<TrendingUp className="h-5 w-5" />}
-                        description="Trung bình các khóa"
+                        description="Average across courses"
                     />
                 </div>
             </div>
 
             <CoursesSection />
             <CallToAction />
+            <ReviewsSection />
+            <Footer />
         </div>
     );
 }

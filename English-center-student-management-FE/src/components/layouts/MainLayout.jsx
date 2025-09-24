@@ -2,7 +2,7 @@ import React from "react";
 import Header from "./Header.jsx";
 import Sidebar from "./Sidebar.jsx";
 import MainpageSidebar from "./MainpageSidebar.jsx";
-import { useLocation } from "react-router-dom";
+import { useLocation, Outlet } from "react-router-dom";
 
 export default function MainLayout({ children }) {
   const location = useLocation();
@@ -23,7 +23,9 @@ export default function MainLayout({ children }) {
           <Header />
 
           {/* Nội dung trang */}
-          <main className="space-y-6 py-6">{children}</main>
+          <main className="space-y-6 py-6">
+            <Outlet />
+          </main>
         </div>
       </div>
     </div>
