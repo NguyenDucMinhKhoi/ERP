@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./components/layouts/MainLayout.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import CreateAccount from "./pages/CreateAccount.jsx";
-import LoginPage from "./pages/Login_Register/LoginPage.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
 import CRMpage from "./pages/CRMpage.jsx";
 
 export default function App() {
