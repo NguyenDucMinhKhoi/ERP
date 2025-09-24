@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from app.core.models import BaseModel
-from app.apps.hocviens.models import HocVien
+from app.apps.users.models import User
 from app.apps.khoahocs.models import KhoaHoc
 
 
@@ -10,9 +10,10 @@ class DangKyKhoaHoc(BaseModel):
     Model quản lý đăng ký khóa học
     """
     hocvien = models.ForeignKey(
-        HocVien,
+        User,
         on_delete=models.CASCADE,
-        verbose_name='Học viên'
+        verbose_name='Học viên',
+        limit_choices_to={'role__role_name': 'student'}
     )
     khoahoc = models.ForeignKey(
         KhoaHoc,
