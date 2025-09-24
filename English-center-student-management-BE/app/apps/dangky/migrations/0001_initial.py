@@ -4,15 +4,15 @@ import django.core.validators
 import django.db.models.deletion
 import uuid
 from django.db import migrations, models
-
+from django.conf import settings
 
 class Migration(migrations.Migration):
 
     initial = True
-
+    
     dependencies = [
-        ('hocviens', '0001_initial'),
         ('khoahocs', '0001_initial'),
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
                 ('phan_tram_hoan_thanh', models.IntegerField(default=0, validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(100)], verbose_name='Phần trăm hoàn thành')),
                 ('trang_thai', models.CharField(choices=[('dang_ky', 'Đã đăng ký'), ('dang_hoc', 'Đang học'), ('hoan_thanh', 'Hoàn thành'), ('huy', 'Hủy')], default='dang_ky', max_length=20, verbose_name='Trạng thái')),
                 ('ghi_chu', models.TextField(blank=True, null=True, verbose_name='Ghi chú')),
-                ('hocvien', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='hocviens.hocvien', verbose_name='Học viên')),
+                ('hocvien', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='Học viên', limit_choices_to={'role__role_name': 'student'})),
                 ('khoahoc', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='khoahocs.khoahoc', verbose_name='Khóa học')),
             ],
             options={

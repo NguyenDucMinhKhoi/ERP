@@ -18,7 +18,8 @@ class ChamSocHocVien(BaseModel):
         User,
         on_delete=models.CASCADE,
         verbose_name='Học viên',
-        limit_choices_to={'role__role_name': 'student'}
+        limit_choices_to={'role__role_name': 'student'},
+        related_name='chamsoc_hocvien_set'
     )
     nhanvien = models.ForeignKey(
         User,
@@ -26,7 +27,8 @@ class ChamSocHocVien(BaseModel):
         null=True,
         blank=True,
         verbose_name='Nhân viên chăm sóc',
-        limit_choices_to={'role': 'nhanvien'}
+        limit_choices_to={'role': 'nhanvien'},
+        related_name='chamsoc_nhanvien_set'
     )
     loai_cham_soc = models.CharField(
         max_length=20,
