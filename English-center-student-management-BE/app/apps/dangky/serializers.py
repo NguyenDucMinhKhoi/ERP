@@ -1,14 +1,13 @@
 from rest_framework import serializers
 from .models import DangKyKhoaHoc
-from app.apps.hocviens.serializers import HocVienSerializer
+from app.apps.users.serializers import UserSerializer
 from app.apps.khoahocs.serializers import KhoaHocSerializer
-
 
 class DangKyKhoaHocSerializer(serializers.ModelSerializer):
     """
     Serializer cơ bản cho DangKyKhoaHoc
     """
-    hocvien_info = HocVienSerializer(source='hocvien', read_only=True)
+    hocvien_info = UserSerializer(source='hocvien', read_only=True)
     khoahoc_info = KhoaHocSerializer(source='khoahoc', read_only=True)
     so_buoi_da_hoc = serializers.ReadOnlyField()
     so_buoi_con_lai = serializers.ReadOnlyField()
@@ -57,7 +56,7 @@ class DangKyKhoaHocDetailSerializer(serializers.ModelSerializer):
     """
     Serializer chi tiết cho DangKyKhoaHoc
     """
-    hocvien_info = HocVienSerializer(source='hocvien', read_only=True)
+    hocvien_info = UserSerializer(source='hocvien', read_only=True)
     khoahoc_info = KhoaHocSerializer(source='khoahoc', read_only=True)
     so_buoi_da_hoc = serializers.ReadOnlyField()
     so_buoi_con_lai = serializers.ReadOnlyField()
