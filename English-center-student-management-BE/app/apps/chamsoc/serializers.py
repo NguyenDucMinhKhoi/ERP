@@ -1,14 +1,12 @@
 from rest_framework import serializers
 from .models import ChamSocHocVien
-from app.apps.hocviens.serializers import HocVienSerializer
 from app.apps.users.serializers import UserSerializer
-
 
 class ChamSocHocVienSerializer(serializers.ModelSerializer):
     """
     Serializer cơ bản cho ChamSocHocVien
     """
-    hocvien_info = HocVienSerializer(source='hocvien', read_only=True)
+    hocvien_info = UserSerializer(source='hocvien', read_only=True)
     nhanvien_info = UserSerializer(source='nhanvien', read_only=True)
     nhanvien_ten = serializers.ReadOnlyField()
 
@@ -39,12 +37,11 @@ class ChamSocHocVienUpdateSerializer(serializers.ModelSerializer):
         model = ChamSocHocVien
         fields = ['loai_cham_soc', 'noi_dung', 'trang_thai', 'attachments', 'ghi_chu']
 
-
 class ChamSocHocVienDetailSerializer(serializers.ModelSerializer):
     """
     Serializer chi tiết cho ChamSocHocVien
     """
-    hocvien_info = HocVienSerializer(source='hocvien', read_only=True)
+    hocvien_info = UserSerializer(source='hocvien', read_only=True)
     nhanvien_info = UserSerializer(source='nhanvien', read_only=True)
     nhanvien_ten = serializers.ReadOnlyField()
 

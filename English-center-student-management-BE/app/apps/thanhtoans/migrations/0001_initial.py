@@ -3,14 +3,14 @@
 import django.db.models.deletion
 import uuid
 from django.db import migrations, models
-
+from django.conf import settings
 
 class Migration(migrations.Migration):
 
     initial = True
 
     dependencies = [
-        ('hocviens', '0001_initial'),
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
                 ('hinh_thuc', models.CharField(choices=[('tienmat', 'Tiền mặt'), ('chuyenkhoan', 'Chuyển khoản'), ('the', 'Thẻ')], max_length=20, verbose_name='Hình thức thanh toán')),
                 ('so_bien_lai', models.CharField(max_length=50, unique=True, verbose_name='Số biên lai')),
                 ('ghi_chu', models.TextField(blank=True, null=True, verbose_name='Ghi chú')),
-                ('hocvien', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='hocviens.hocvien', verbose_name='Học viên')),
+                ('hocvien', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='Học viên', limit_choices_to={'role__role_name': 'student'})),
             ],
             options={
                 'verbose_name': 'Thanh toán',

@@ -37,12 +37,14 @@ INSTALLED_APPS = [
     # Local apps
     'app.apps.chamsoc',
     'app.apps.dangky',
-    'app.apps.hocviens',
     'app.apps.khoahocs',
     'app.apps.reports',
     'app.apps.thanhtoans',
     'app.apps.thongbaos',
     'app.apps.users',
+    'app.apps.role',
+    'app.apps.privilege',
+    'app.apps.role_privilege',
 
 ]
 

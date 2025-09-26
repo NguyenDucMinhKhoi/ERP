@@ -7,7 +7,7 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 
 from app.core.permissions import IsAdminUser
-from app.apps.hocviens.models import HocVien
+from app.apps.users.models import User
 from app.apps.khoahocs.models import KhoaHoc
 from app.apps.dangky.models import DangKyKhoaHoc
 from app.apps.thanhtoans.models import ThanhToan
@@ -39,7 +39,7 @@ def overview_report(request):
             to_date = None
     
     # Tổng học viên mới
-    hocvien_query = HocVien.objects.all()
+    hocvien_query = User.objects.filter(role__role_name='student')
     if from_date:
         hocvien_query = hocvien_query.filter(created_at__date__gte=from_date)
     if to_date:
@@ -62,9 +62,10 @@ def overview_report(request):
     ty_le_hoan_thanh = round((hoan_thanh / total_dangky * 100) if total_dangky > 0 else 0, 2)
     
     # Danh sách nợ học phí
-    danh_sach_no = HocVien.objects.filter(trang_thai_hoc_phi__in=['conno', 'chuadong']).values(
-        'id', 'ten', 'email', 'sdt', 'trang_thai_hoc_phi'
-    )[:10]  # Lấy 10 học viên đầu tiên
+    danh_sach_no = User.objects.filter(
+        role__role_name='student',
+        trang_thai_hoc_phi__in=['conno', 'chuadong']
+    ).values('id', 'ten', 'email', 'sdt', 'trang_thai_hoc_phi')[:10]
     
     # Top khóa học
     top_khoahoc = KhoaHoc.objects.annotate(
@@ -87,17 +88,18 @@ def overview_report(request):
         date = timezone.now() - timedelta(days=30*i)
         month_start = date.replace(day=1)
         month_end = (month_start + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-        
-        month_hocvien = HocVien.objects.filter(
+
+        month_hocvien = User.objects.filter(
+            role__role_name='student',
             created_at__date__gte=month_start,
             created_at__date__lte=month_end
         ).count()
-        
+
         month_doanhthu = ThanhToan.objects.filter(
             ngay_dong__date__gte=month_start,
             ngay_dong__date__lte=month_end
         ).aggregate(total=models.Sum('so_tien'))['total'] or 0
-        
+
         thang_stats.append({
             'thang': month_start.strftime('%m/%Y'),
             'hoc_vien_moi': month_hocvien,
@@ -109,7 +111,7 @@ def overview_report(request):
             'total_hocvien_moi': total_hocvien_moi,
             'doanh_thu': doanh_thu,
             'ty_le_hoan_thanh': ty_le_hoan_thanh,
-            'total_hocvien': HocVien.objects.count(),
+            'total_hocvien': User.objects.filter(role__role_name='student').count(),
             'total_khoahoc': KhoaHoc.objects.count(),
             'total_dangky': total_dangky
         },

@@ -1,6 +1,6 @@
 from django.db import models
 from app.core.models import BaseModel
-from app.apps.hocviens.models import HocVien
+from app.apps.users.models import User
 
 
 class ThanhToan(BaseModel):
@@ -14,9 +14,10 @@ class ThanhToan(BaseModel):
     ]
 
     hocvien = models.ForeignKey(
-        HocVien,
+        User,
         on_delete=models.CASCADE,
-        verbose_name='Học viên'
+        verbose_name='Học viên',
+        limit_choices_to={'role__role_name': 'student'}
     )
     so_tien = models.DecimalField(
         max_digits=12,
