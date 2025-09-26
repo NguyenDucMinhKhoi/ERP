@@ -55,8 +55,6 @@ class Migration(migrations.Migration):
                 ('ghi_chu', models.TextField(blank=True, null=True, verbose_name='Ghi chú')),
                 ('username', models.CharField(error_messages={'unique': 'Tên đăng nhập này đã tồn tại.'}, help_text='Bắt buộc. 150 ký tự trở xuống. Chỉ chứa chữ cái, số và @/./+/-/_', max_length=150, unique=True, verbose_name='Tên đăng nhập')),
                 ('role', models.ForeignKey(to='users.Role', on_delete=models.PROTECT, verbose_name='Vai trò', related_name='users')),
-                ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.group', verbose_name='groups')),
-                ('user_permissions', models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.permission', verbose_name='user permissions')),
             ],
             options={
                 'verbose_name': 'Người dùng',
