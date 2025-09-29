@@ -5,6 +5,8 @@ import Dashboard from "./pages/Dashboard.jsx";
 import CreateAccount from "./pages/CreateAccount.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import CRMpage from "./pages/CRMpage.jsx";
+import StudentManagement from "./pages/StudentManagement.jsx";
+import CourseManagement from "./pages/CourseManagement.jsx";
 
 export default function App() {
   return (
@@ -20,6 +22,14 @@ export default function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/accounts/create" element={<CreateAccount />} />
                 <Route path="/crm" element={<CRMpage />} />
+                <Route
+                  path="/student-management"
+                  element={<StudentManagement />}
+                />
+                <Route
+                  path="/course-management"
+                  element={<CourseManagement />}
+                />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </MainLayout>

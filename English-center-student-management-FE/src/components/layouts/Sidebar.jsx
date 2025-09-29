@@ -10,6 +10,8 @@ import {
   Users,
   BarChart3,
   MessageSquare,
+  GraduationCap,
+  BookOpen,
 } from "lucide-react";
 import authService from "../../services/authService";
 import { isAllowed } from "../../utils/permissions";
@@ -35,22 +37,22 @@ export default function Sidebar() {
     }
     loadRole();
     const onStorage = (e) => {
-      if (e.key === 'ecsm_access_token' || e.key === 'ecsm_refresh_token') {
+      if (e.key === "ecsm_access_token" || e.key === "ecsm_refresh_token") {
         loadRole();
       }
     };
-    window.addEventListener('storage', onStorage);
+    window.addEventListener("storage", onStorage);
     return () => {
       mounted = false;
-      window.removeEventListener('storage', onStorage);
+      window.removeEventListener("storage", onStorage);
     };
   }, []);
 
-  const canCRM = isAllowed(role, 'crm');
-  const canTables = isAllowed(role, 'tables');
-  const canBilling = isAllowed(role, 'billing');
-  const canReports = isAllowed(role, 'reports');
-  const canNotifications = isAllowed(role, 'notifications');
+  const canCRM = isAllowed(role, "crm");
+  const canTables = isAllowed(role, "tables");
+  const canBilling = isAllowed(role, "billing");
+  const canReports = isAllowed(role, "reports");
+  const canNotifications = isAllowed(role, "notifications");
 
   const handleNavigation = (path) => {
     navigate(path);
@@ -70,64 +72,78 @@ export default function Sidebar() {
 
       {/* Groups */}
       <NavSection title="Trang Chính">
-        <NavItem 
-          icon={<Home size={18} />} 
-          label="Dashboard" 
-          active={location.pathname === '/' || location.pathname === '/dashboard'}
-          onClick={() => handleNavigation('/dashboard')}
+        <NavItem
+          icon={<Home size={18} />}
+          label="Dashboard"
+          active={
+            location.pathname === "/" || location.pathname === "/dashboard"
+          }
+          onClick={() => handleNavigation("/dashboard")}
         />
         {canCRM && (
-          <NavItem 
-            icon={<Users size={18} />} 
-            label="CRM - Học Viên" 
-            active={location.pathname === '/crm'}
-            onClick={() => handleNavigation('/crm')}
+          <NavItem
+            icon={<Users size={18} />}
+            label="CRM - Học Viên"
+            active={location.pathname === "/crm"}
+            onClick={() => handleNavigation("/crm")}
           />
         )}
+        <NavItem
+          icon={<GraduationCap size={18} />}
+          label="Quản lý học viên"
+          active={location.pathname === "/student-management"}
+          onClick={() => handleNavigation("/student-management")}
+        />
+        <NavItem
+          icon={<BookOpen size={18} />}
+          label="Quản lý khóa học"
+          active={location.pathname === "/course-management"}
+          onClick={() => handleNavigation("/course-management")}
+        />
         {/* Danh Sách: ẩn với nhân viên theo giới hạn chức năng */}
         {canTables && (
-          <NavItem 
-            icon={<Table2 size={18} />} 
-            label="Danh Sách" 
-            active={location.pathname === '/tables'}
-            onClick={() => handleNavigation('/tables')}
+          <NavItem
+            icon={<Table2 size={18} />}
+            label="Danh Sách"
+            active={location.pathname === "/tables"}
+            onClick={() => handleNavigation("/tables")}
           />
         )}
         {canBilling && (
-          <NavItem 
-            icon={<Receipt size={18} />} 
-            label="Thanh Toán" 
-            active={location.pathname === '/billing'}
-            onClick={() => handleNavigation('/billing')}
+          <NavItem
+            icon={<Receipt size={18} />}
+            label="Thanh Toán"
+            active={location.pathname === "/billing"}
+            onClick={() => handleNavigation("/billing")}
           />
         )}
       </NavSection>
 
       <NavSection title="Báo Cáo & Phân Tích">
         {canReports && (
-          <NavItem 
-            icon={<BarChart3 size={18} />} 
-            label="Báo Cáo CRM" 
-            active={location.pathname === '/crm-reports'}
-            onClick={() => handleNavigation('/crm')}
+          <NavItem
+            icon={<BarChart3 size={18} />}
+            label="Báo Cáo CRM"
+            active={location.pathname === "/crm-reports"}
+            onClick={() => handleNavigation("/crm")}
           />
         )}
         {canNotifications && (
-          <NavItem 
-            icon={<MessageSquare size={18} />} 
-            label="Thông Báo" 
-            active={location.pathname === '/notifications'}
-            onClick={() => handleNavigation('/notifications')}
+          <NavItem
+            icon={<MessageSquare size={18} />}
+            label="Thông Báo"
+            active={location.pathname === "/notifications"}
+            onClick={() => handleNavigation("/notifications")}
           />
         )}
       </NavSection>
 
       <NavSection title="Tài Khoản">
-        <NavItem 
-          icon={<UserRound size={18} />} 
-          label="Hồ Sơ" 
-          active={location.pathname === '/profile'}
-          onClick={() => handleNavigation('/profile')}
+        <NavItem
+          icon={<UserRound size={18} />}
+          label="Hồ Sơ"
+          active={location.pathname === "/profile"}
+          onClick={() => handleNavigation("/profile")}
         />
       </NavSection>
     </aside>
