@@ -9,7 +9,7 @@ export default function MainLayout({ children }) {
 
   // Show a slimmer, content-focused sidebar for the public mainpage (/) so dashboard sidebar remains untouched
   const isMainpage = location.pathname === "/";
-  
+
   return (
     <div className="min-h-screen bg-[#F8F9FA] px-4">
       {/* 2 cột: Sidebar + Content */}
