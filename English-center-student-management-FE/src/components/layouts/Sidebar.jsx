@@ -10,6 +10,7 @@ import {
   Users,
   BarChart3,
   MessageSquare,
+  DollarSign,
 } from "lucide-react";
 import authService from "../../services/authService";
 import { isAllowed } from "../../utils/permissions";
@@ -47,7 +48,7 @@ export default function Sidebar() {
   }, []);
 
   const canCRM = isAllowed(role, 'crm');
-  const canTables = isAllowed(role, 'tables');
+  // const canTables = isAllowed(role, 'tables');
   const canBilling = isAllowed(role, 'billing');
   const canReports = isAllowed(role, 'reports');
   const canNotifications = isAllowed(role, 'notifications');
@@ -84,21 +85,12 @@ export default function Sidebar() {
             onClick={() => handleNavigation('/crm')}
           />
         )}
-        {/* Danh Sách: ẩn với nhân viên theo giới hạn chức năng */}
-        {canTables && (
-          <NavItem 
-            icon={<Table2 size={18} />} 
-            label="Danh Sách" 
-            active={location.pathname === '/tables'}
-            onClick={() => handleNavigation('/tables')}
-          />
-        )}
         {canBilling && (
           <NavItem 
             icon={<Receipt size={18} />} 
-            label="Thanh Toán" 
-            active={location.pathname === '/billing'}
-            onClick={() => handleNavigation('/billing')}
+            label="Quản lý Tài chính" 
+            active={location.pathname === '/finance'}
+            onClick={() => handleNavigation('/finance')}
           />
         )}
       </NavSection>
