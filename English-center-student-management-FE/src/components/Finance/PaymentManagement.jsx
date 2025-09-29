@@ -3,12 +3,16 @@ import PaymentForm from './PaymentForm';
 import PaymentHistory from './PaymentHistory';
 import FinanceReports from './FinanceReports';
 import InvoiceModal from './InvoiceModal';
+import TuitionOverview from './TuitionOverview';
+import DebtManagement from './DebtManagement';
+import InvoiceCreation from './InvoiceCreation';
 
 const PaymentManagement = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [showInvoiceCreation, setShowInvoiceCreation] = useState(false);
 
   const tabs = [
     {
@@ -20,6 +24,11 @@ const PaymentManagement = () => {
       id: 'payments',
       name: 'Giao dịch',
       icon: '💳',
+    },
+    {
+      id: 'debt',
+      name: 'Quản lý nợ',
+      icon: '⚠️',
     },
     {
       id: 'reports',
@@ -46,13 +55,22 @@ const PaymentManagement = () => {
                 Quản lý học phí, thanh toán và báo cáo doanh thu
               </p>
             </div>
-            <button
-              onClick={() => setShowPaymentForm(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <span className="mr-2">💰</span>
-              Ghi nhận thanh toán
-            </button>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowInvoiceCreation(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              >
+                <span className="mr-2">📄</span>
+                Tạo hóa đơn
+              </button>
+              <button
+                onClick={() => setShowPaymentForm(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <span className="mr-2">💰</span>
+                Ghi nhận thanh toán
+              </button>
+            </div>
           </div>
       </div>
 
@@ -82,13 +100,21 @@ const PaymentManagement = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            <FinanceReports />
+            <TuitionOverview 
+              onCreateInvoice={() => setShowInvoiceCreation(true)}
+            />
           </div>
         )}
 
         {activeTab === 'payments' && (
           <div className="space-y-6">
             <PaymentHistory onViewInvoice={handleViewInvoice} />
+          </div>
+        )}
+
+        {activeTab === 'debt' && (
+          <div className="space-y-6">
+            <DebtManagement />
           </div>
         )}
 
@@ -130,6 +156,13 @@ const PaymentManagement = () => {
             setShowInvoiceModal(false);
             setSelectedInvoice(null);
           }}
+        />
+      )}
+
+      {/* Invoice Creation Modal */}
+      {showInvoiceCreation && (
+        <InvoiceCreation 
+          onClose={() => setShowInvoiceCreation(false)}
         />
       )}
     </div>
