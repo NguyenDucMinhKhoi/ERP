@@ -7,6 +7,7 @@ import CreateAccount from "./pages/CreateAccount.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import CRMpage from "./pages/CRMpage.jsx";
 import FinancePage from "./pages/FinancePage.jsx";
+import CourseManagement from "./pages/CourseManagement.jsx";
 
 // Utility functions
 const getUserRole = () => {
@@ -30,6 +31,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+
         <Route element={<MainLayout />}>
           <Route path="/" element={<HomeRoute />} />
           
@@ -48,6 +50,25 @@ export default function App() {
           
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
+
+        <Route
+          path="/*"
+          element={
+            <MainLayout>
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/accounts/create" element={<CreateAccount />} />
+                <Route path="/crm" element={<CRMpage />} />
+                <Route
+                  path="/course-management"
+                  element={<CourseManagement />}
+                />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </MainLayout>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
