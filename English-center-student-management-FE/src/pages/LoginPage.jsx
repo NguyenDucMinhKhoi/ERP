@@ -18,7 +18,21 @@ export default function LoginPage() {
     setError("");
     try {
       await authService.login({ email, password });
-      // Optionally fetch profile: await authService.getMe();
+      // Lưu role để App.jsx có thể quyết định điều hướng/hiển thị
+      try {
+        const me = await authService.getMe();
+        const role = (me?.role || me?.user?.role || "").toLowerCase();
+        if (role) {
+          try {
+            localStorage.setItem("userRole", role);
+          } catch {}
+          try {
+            sessionStorage.setItem("userRole", role);
+          } catch {}
+        }
+      } catch {
+        // Không cản trở luồng nếu gọi /auth/me thất bại
+      }
       navigate("/");
     } catch (e) {
       const data = e?.response?.data;
