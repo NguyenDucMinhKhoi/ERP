@@ -10,7 +10,6 @@ import {
   Users,
   BarChart3,
   MessageSquare,
-  DollarSign,
 } from "lucide-react";
 import authService from "../../services/authService";
 import { isAllowed } from "../../utils/permissions";

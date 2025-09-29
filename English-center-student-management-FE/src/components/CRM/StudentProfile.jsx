@@ -12,8 +12,11 @@ import {
   AlertCircle,
   Plus,
   Edit,
-  History
+  History,
+  CreditCard
 } from 'lucide-react';
+import StudentTuitionTab from './StudentTuitionTab';
+import InvoiceCreation from '../Finance/InvoiceCreation';
 
 export default function StudentProfile({ student: providedStudent }) {
   const [student, setStudent] = useState(providedStudent || null);
@@ -21,6 +24,7 @@ export default function StudentProfile({ student: providedStudent }) {
   const [loading, setLoading] = useState(!providedStudent);
   const [activeTab, setActiveTab] = useState('overview');
   const [, setShowAddCareLog] = useState(false);
+  const [showInvoiceCreation, setShowInvoiceCreation] = useState(false);
 
   useEffect(() => {
     if (providedStudent) return;
@@ -233,6 +237,7 @@ export default function StudentProfile({ student: providedStudent }) {
         <nav className="-mb-px flex space-x-8">
           {[
             { id: 'overview', label: 'Tổng Quan', icon: User },
+            { id: 'tuition', label: 'Học Phí', icon: CreditCard },
             { id: 'care', label: 'Chăm Sóc', icon: MessageSquare },
             { id: 'history', label: 'Lịch Sử', icon: History }
           ].map((tab) => (
@@ -292,6 +297,17 @@ export default function StudentProfile({ student: providedStudent }) {
         </div>
       )}
 
+      {activeTab === 'tuition' && (
+        <StudentTuitionTab 
+          student={student}
+          onCreateInvoice={() => setShowInvoiceCreation(true)}
+          onRecordPayment={(student, invoice) => {
+            console.log('Record payment for student:', student, 'invoice:', invoice);
+            // Handle payment recording logic here
+          }}
+        />
+      )}
+
       {activeTab === 'care' && (
         <div className="space-y-6">
           <div className="flex justify-between items-center">
@@ -349,6 +365,19 @@ export default function StudentProfile({ student: providedStudent }) {
             <p className="text-slate-500">Chức năng đang được phát triển</p>
           </div>
         </div>
+      )}
+
+      {/* Invoice Creation Modal */}
+      {showInvoiceCreation && (
+        <InvoiceCreation
+          student={student}
+          onClose={() => setShowInvoiceCreation(false)}
+          onSubmit={(invoices) => {
+            console.log('Created invoices:', invoices);
+            // Handle invoice creation logic here
+            setShowInvoiceCreation(false);
+          }}
+        />
       )}
     </div>
   );
