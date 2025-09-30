@@ -7,6 +7,7 @@ import LoginPage from "./pages/LoginPage.jsx";
 import CRMpage from "./pages/CRMpage.jsx";
 import StudentManagement from "./pages/StudentManagement.jsx";
 import CourseManagement from "./pages/CourseManagement.jsx";
+import CRMLeads from "./pages/CRMLeads.jsx";
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
                   path="/course-management"
                   element={<CourseManagement />}
                 />
+                <Route path="/crm-leads" element={<CRMLeads />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </MainLayout>

@@ -88,12 +88,15 @@ export default function Sidebar() {
             onClick={() => handleNavigation("/crm")}
           />
         )}
-        <NavItem
-          icon={<GraduationCap size={18} />}
-          label="Quản lý học viên"
-          active={location.pathname === "/student-management"}
-          onClick={() => handleNavigation("/student-management")}
-        />
+        {canCRM && (
+          <NavItem
+            icon={<Users size={18} />}
+            label="CRM - Leads"
+            active={location.pathname === "/crm-leads"}
+            onClick={() => handleNavigation("/crm-leads")}
+          />
+        )}
+        {/* Tái sử dụng CRM cho quản lý học viên, ẩn menu riêng */}
         <NavItem
           icon={<BookOpen size={18} />}
           label="Quản lý khóa học"
