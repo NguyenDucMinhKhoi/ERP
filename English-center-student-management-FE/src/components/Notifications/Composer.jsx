@@ -68,7 +68,7 @@ export default function Composer({ isAdmin, recipients, onRecipientsChange }) {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+      <div className="grid grid-cols-1 gap-4 mt-4">
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
             Tiêu đề
@@ -84,10 +84,11 @@ export default function Composer({ isAdmin, recipients, onRecipientsChange }) {
           <label className="block text-sm font-medium text-slate-700 mb-1">
             Nội dung
           </label>
-          <input
+          <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg border-slate-300"
+            rows={4}
+            className="w-full px-3 py-2 border rounded-lg border-slate-300 resize-vertical"
             placeholder="Nội dung thông báo"
           />
         </div>
