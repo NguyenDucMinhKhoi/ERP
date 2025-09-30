@@ -130,7 +130,7 @@ export default function Header() {
                         await authService.logout();
                         setUser(null);
                         setOpen(false);
-                        navigate('/login');
+                        navigate('/');
                       }}
                     >
                       Log out

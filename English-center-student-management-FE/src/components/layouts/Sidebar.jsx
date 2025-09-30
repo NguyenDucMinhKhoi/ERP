@@ -48,11 +48,11 @@ export default function Sidebar() {
     };
   }, []);
 
-  const canCRM = isAllowed(role, "crm");
-  const canTables = isAllowed(role, "tables");
-  const canBilling = isAllowed(role, "billing");
-  const canReports = isAllowed(role, "reports");
-  const canNotifications = isAllowed(role, "notifications");
+  const canCRM = isAllowed(role, 'crm');
+  // const canTables = isAllowed(role, 'tables');
+  const canBilling = isAllowed(role, 'billing');
+  const canReports = isAllowed(role, 'reports');
+  const canNotifications = isAllowed(role, 'notifications');
 
   const handleNavigation = (path) => {
     navigate(path);
@@ -103,21 +103,12 @@ export default function Sidebar() {
           active={location.pathname === "/course-management"}
           onClick={() => handleNavigation("/course-management")}
         />
-        {/* Danh Sách: ẩn với nhân viên theo giới hạn chức năng */}
-        {canTables && (
-          <NavItem
-            icon={<Table2 size={18} />}
-            label="Danh Sách"
-            active={location.pathname === "/tables"}
-            onClick={() => handleNavigation("/tables")}
-          />
-        )}
         {canBilling && (
-          <NavItem
-            icon={<Receipt size={18} />}
-            label="Thanh Toán"
-            active={location.pathname === "/billing"}
-            onClick={() => handleNavigation("/billing")}
+          <NavItem 
+            icon={<Receipt size={18} />} 
+            label="Quản lý Tài chính" 
+            active={location.pathname === '/finance'}
+            onClick={() => handleNavigation('/finance')}
           />
         )}
       </NavSection>
