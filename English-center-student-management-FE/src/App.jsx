@@ -11,7 +11,7 @@ import Reports from "./pages/Reports.jsx";
 import CRMLeads from "./pages/CRMLeads.jsx";
 import FinancePage from "./pages/FinancePage.jsx";
 import NotificationsSupport from "./pages/NotificationsSupport.jsx";
-import { ROLES } from "./utils/permissions"; // Import ROLES
+import { ROLES } from "./utils/permissions";
 
 // Utility functions
 const getUserRole = () => {
@@ -22,10 +22,13 @@ const getUserRole = () => {
   }
 };
 
+const isAuthenticated = () => {
+  return !!getUserRole();
+};
+
 // Protected route components
 const RequireAuth = ({ children }) => {
-  const role = getUserRole();
-  return role ? children : <Navigate to="/login" replace />;
+  return isAuthenticated() ? children : <Navigate to="/login" replace />;
 };
 
 const RequireAdmin = ({ children }) => {
@@ -33,11 +36,15 @@ const RequireAdmin = ({ children }) => {
   return role === ROLES.ADMIN ? children : <Navigate to="/crm" replace />;
 };
 
-const HomeRoute = () => {
-  const role = getUserRole();
-  if (!role) {
-    return <Navigate to="/login" replace />;
+// Component để xử lý route chính
+const MainRoute = () => {
+  if (!isAuthenticated()) {
+    // Chưa login: hiển thị Mainpage
+    return <Mainpage />;
   }
+  
+  // Đã login: redirect theo role
+  const role = getUserRole();
   return role === ROLES.ADMIN ? <Navigate to="/dashboard" replace /> : <Navigate to="/crm" replace />;
 };
 
@@ -47,9 +54,10 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         
-        {/* Routes with MainLayout */}
+        {/* Tất cả routes đều dùng MainLayout */}
         <Route path="/" element={<MainLayout />}>
-          <Route index element={<HomeRoute />} />
+          {/* Route chính - xử lý cả trường hợp chưa login và đã login */}
+          <Route index element={<MainRoute />} />
           
           {/* Admin-only routes */}
           <Route 
