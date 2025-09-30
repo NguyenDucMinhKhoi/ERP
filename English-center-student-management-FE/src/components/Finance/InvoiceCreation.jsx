@@ -220,10 +220,25 @@ const InvoiceCreation = ({ student, onClose, onSubmit }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+    <div 
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+      style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        overflowY: 'auto'
+      }}
+      onScroll={(e) => e.stopPropagation()}
+    >
+      <div 
+        className="relative mx-auto w-full max-w-4xl bg-white rounded-xl shadow-2xl border border-gray-200 max-h-[90vh] overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="overflow-y-auto max-h-[90vh] finance-modal-scrollbar">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white rounded-t-xl">
           <div>
             <h3 className="text-lg font-medium text-gray-900">Tạo hóa đơn mới</h3>
             <p className="text-sm text-gray-500">
@@ -232,7 +247,7 @@ const InvoiceCreation = ({ student, onClose, onSubmit }) => {
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition-colors"
           >
             <span className="sr-only">Đóng</span>
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -241,7 +256,7 @@ const InvoiceCreation = ({ student, onClose, onSubmit }) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Column */}
             <div className="space-y-6">
@@ -505,6 +520,7 @@ const InvoiceCreation = ({ student, onClose, onSubmit }) => {
             </button>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );

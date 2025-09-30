@@ -264,7 +264,7 @@ const FinanceReports = ({ detailed = false }) => {
               ⚠️ Danh sách công nợ quá hạn
             </h3>
           </div>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto finance-table-scrollbar">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -410,7 +410,7 @@ const FinanceReports = ({ detailed = false }) => {
               📚 Báo cáo theo khóa học
             </h3>
           </div>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto finance-table-scrollbar">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
