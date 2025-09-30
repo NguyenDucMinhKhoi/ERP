@@ -2,41 +2,132 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./components/layouts/MainLayout.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import Mainpage from "./pages/Mainpage.jsx";
 import CreateAccount from "./pages/CreateAccount.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import CRMpage from "./pages/CRMpage.jsx";
-import StudentManagement from "./pages/StudentManagement.jsx";
 import CourseManagement from "./pages/CourseManagement.jsx";
+import Reports from "./pages/Reports.jsx";
 import CRMLeads from "./pages/CRMLeads.jsx";
+import FinancePage from "./pages/FinancePage.jsx";
+import NotificationsSupport from "./pages/NotificationsSupport.jsx";
+import { ROLES } from "./utils/permissions"; // Import ROLES
+
+// Utility functions
+const getUserRole = () => {
+  try {
+    return (localStorage.getItem("userRole") || sessionStorage.getItem("userRole") || "").toLowerCase();
+  } catch {
+    return "";
+  }
+};
+
+// Protected route components
+const RequireAuth = ({ children }) => {
+  const role = getUserRole();
+  return role ? children : <Navigate to="/login" replace />;
+};
+
+const RequireAdmin = ({ children }) => {
+  const role = getUserRole();
+  return role === ROLES.ADMIN ? children : <Navigate to="/crm" replace />;
+};
+
+const HomeRoute = () => {
+  const role = getUserRole();
+  if (!role) {
+    return <Navigate to="/login" replace />;
+  }
+  return role === ROLES.ADMIN ? <Navigate to="/dashboard" replace /> : <Navigate to="/crm" replace />;
+};
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route
-          path="/*"
-          element={
-            <MainLayout>
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/accounts/create" element={<CreateAccount />} />
-                <Route path="/crm" element={<CRMpage />} />
-                <Route
-                  path="/student-management"
-                  element={<StudentManagement />}
-                />
-                <Route
-                  path="/course-management"
-                  element={<CourseManagement />}
-                />
-                <Route path="/crm-leads" element={<CRMLeads />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </MainLayout>
-          }
-        />
+        
+        {/* Routes with MainLayout */}
+        <Route path="/" element={<MainLayout />}>
+          <Route index element={<HomeRoute />} />
+          
+          {/* Admin-only routes */}
+          <Route 
+            path="/dashboard" 
+            element={
+              <RequireAuth>
+                <RequireAdmin>
+                  <Dashboard />
+                </RequireAdmin>
+              </RequireAuth>
+            } 
+          />
+          <Route 
+            path="/finance" 
+            element={
+              <RequireAuth>
+                <RequireAdmin>
+                  <FinancePage />
+                </RequireAdmin>
+              </RequireAuth>
+            } 
+          />
+          <Route 
+            path="/accounts/create" 
+            element={
+              <RequireAuth>
+                <RequireAdmin>
+                  <CreateAccount />
+                </RequireAdmin>
+              </RequireAuth>
+            } 
+          />
+          
+          {/* General routes accessible to both admin and staff */}
+          <Route 
+            path="/crm" 
+            element={
+              <RequireAuth>
+                <CRMpage />
+              </RequireAuth>
+            } 
+          />
+          <Route 
+            path="/course-management" 
+            element={
+              <RequireAuth>
+                <CourseManagement />
+              </RequireAuth>
+            } 
+          />
+          <Route 
+            path="/reports" 
+            element={
+              <RequireAuth>
+                <Reports />
+              </RequireAuth>
+            } 
+          />
+          <Route 
+            path="/crm-leads" 
+            element={
+              <RequireAuth>
+                <CRMLeads />
+              </RequireAuth>
+            } 
+          />
+          <Route 
+            path="/notifications" 
+            element={
+              <RequireAuth>
+                <NotificationsSupport />
+              </RequireAuth>
+            } 
+          />
+        </Route>
+
+        {/* Catch all route */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
