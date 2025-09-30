@@ -17,12 +17,15 @@ import {
   RecentActivities,
 } from "../components/dashboard";
 import { APITester } from "../components/CRM";
+import { StudentDashboard } from "../components/student/modules";
+import authService from "../services/authService";
 
 export default function Dashboard() {
   // Event handlers
   const navigate = useNavigate();
   const location = useLocation();
   const [successData, setSuccessData] = useState(null);
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     if (location.state && location.state.accountCreated) {
@@ -31,6 +34,26 @@ export default function Dashboard() {
       navigate(location.pathname, { replace: true });
     }
   }, [location, navigate]);
+
+  useEffect(() => {
+    const loadUserRole = async () => {
+      try {
+        if (authService.isAuthenticated()) {
+          const me = await authService.getMe();
+          const role = me?.role || null;
+          setUserRole(role);
+          if (role === 'hocvien') {
+            navigate('/student', { replace: true });
+          }
+        }
+      } catch (error) {
+        console.error('Error loading user role:', error);
+      }
+    };
+    loadUserRole();
+  }, [navigate]);
+
+  // Nếu là học viên, đã điều hướng sang /student ở trên
   const handleQuickAction = (action, actionData) => {
     if (action === "add-employee") {
       navigate("/accounts/create");
@@ -54,71 +77,71 @@ export default function Dashboard() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-slate-800">
-          Dashboard Quản Lý Trung Tâm Tiếng Anh
+          English Center Management Dashboard
         </h1>
         <p className="text-slate-600 mt-1">
-          Tổng quan hệ thống ERP - Quản lý học viên, khóa học và tài chính
+          ERP overview - Manage students, courses, and finances
         </p>
       </div>
 
       {/* KPI Cards - Top Level Metrics */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
         <KPICard
-          title="Tổng Học Viên"
+          title="Total Students"
           value="1,247"
           delta="+12%"
           tone="success"
           icon={<Users className="h-5 w-5" />}
-          description="So với tháng trước"
+          description="Compared to last month"
         />
         <KPICard
-          title="Khóa Học Đang Mở"
+          title="Active Courses"
           value="24"
           delta="+3"
           tone="info"
           icon={<GraduationCap className="h-5 w-5" />}
-          description="Tổng số lớp học"
+          description="Total classes"
         />
         <KPICard
-          title="Doanh Thu Tháng"
+          title="Monthly Revenue"
           value="₫2.4B"
           delta="+18%"
           tone="success"
           icon={<DollarSign className="h-5 w-5" />}
-          description="Tháng hiện tại"
+          description="Current month"
         />
         <KPICard
-          title="Tỷ Lệ Hoàn Thành"
+          title="Completion Rate"
           value="87%"
           delta="+5%"
           tone="success"
           icon={<TrendingUp className="h-5 w-5" />}
-          description="Trung bình các khóa"
+          description="Average across courses"
         />
       </div>
 
       {/* Secondary Metrics */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard
-          title="Học Viên Mới"
+          title="New Students"
           value="89"
           icon={<UserCheck className="h-4 w-4" />}
           color="text-success"
         />
         <MetricCard
-          title="Buổi Học Hôm Nay"
+          title="Classes Today"
           value="12"
           icon={<Calendar className="h-4 w-4" />}
           color="text-info"
         />
         <MetricCard
-          title="Học Viên Nợ Phí"
+          title="Students In Debt"
           value="23"
           icon={<AlertCircle className="h-4 w-4" />}
           color="text-error"
         />
         <MetricCard
-          title="Điểm Danh Hôm Nay"
+          title="Attendance Today"
           value="94%"
           icon={<CheckCircle className="h-4 w-4" />}
           color="text-success"
@@ -130,9 +153,9 @@ export default function Dashboard() {
         {/* Revenue Chart - 2/3 width */}
         <div className="xl:col-span-2">
           <ChartPlaceholder
-            title="Doanh Thu Theo Tháng"
+            title="Revenue by Month"
             icon={TrendingUp}
-            description="Biểu đồ doanh thu sẽ được hiển thị ở đây"
+            description="Revenue chart placeholder"
             height="h-64"
             showFilters={true}
           />

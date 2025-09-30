@@ -7,32 +7,51 @@ import {
   UserCheck,
   AlertCircle
 } from 'lucide-react';
-import { StudentList, StudentProfile, CRMReports } from '../components/CRM';
+import { StudentList, StudentProfile, CRMReports, StudentModules } from '../components/CRM';
 import CareLogForm from '../components/CRM/CareLogForm';
+import authService from '../services/authService';
+import { useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
 
 export default function CRMpage() {
   const [activeTab, setActiveTab] = useState('students');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showCareLogForm, setShowCareLogForm] = useState(false);
+  const [role, setRole] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        if (authService.isAuthenticated()) {
+          const me = await authService.getMe();
+          if (mounted) setRole(me?.role || null);
+        }
+      } catch {
+        if (mounted) setRole(null);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   const tabs = [
     {
       id: 'students',
-      label: 'Danh Sách Học Viên',
+      label: 'Student List',
       icon: Users,
-      description: 'Quản lý thông tin học viên'
+      description: 'Manage student information'
     },
     {
       id: 'profile',
-      label: 'Hồ Sơ Học Viên',
+      label: 'Student Profile',
       icon: UserCheck,
-      description: 'Chi tiết học viên và timeline'
+      description: 'Student details and timeline'
     },
     {
       id: 'reports',
-      label: 'Báo Cáo CRM',
+      label: 'CRM Reports',
       icon: BarChart3,
-      description: 'Phân tích hiệu suất và chuyển đổi'
+      description: 'Performance and conversion analytics'
     }
   ];
 
@@ -74,18 +93,23 @@ export default function CRMpage() {
     }
   };
 
+  // If user is student: redirect to /student for correct URL
+  if (role === 'hocvien') {
+    return <Navigate to="/student" replace />;
+  }
+
   return (
     <div className="space-y-6">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-800">CRM - Quản Lý Học Viên</h1>
-        <p className="text-slate-600 mt-1">Hệ thống chăm sóc khách hàng và quản lý học viên</p>
+        <h1 className="text-2xl font-bold text-slate-800">CRM - Student Management</h1>
+        <p className="text-slate-600 mt-1">Customer care and student management system</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-600">Tổng Học Viên</p>
+              <p className="text-sm text-slate-600">Total Students</p>
               <p className="text-2xl font-bold text-slate-800">1,247</p>
             </div>
             <Users className="h-8 w-8 text-primary-main" />
@@ -99,7 +123,7 @@ export default function CRMpage() {
         <div className="card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-600">Chăm Sóc Hôm Nay</p>
+              <p className="text-sm text-slate-600">Care Tasks Today</p>
               <p className="text-2xl font-bold text-slate-800">23</p>
             </div>
             <MessageSquare className="h-8 w-8 text-info" />
@@ -113,7 +137,7 @@ export default function CRMpage() {
         <div className="card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-600">Tỷ Lệ Chuyển Đổi</p>
+              <p className="text-sm text-slate-600">Conversion Rate</p>
               <p className="text-2xl font-bold text-slate-800">30%</p>
             </div>
             <BarChart3 className="h-8 w-8 text-success" />

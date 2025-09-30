@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import CreateAccount from "./pages/CreateAccount.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import CRMpage from "./pages/CRMpage.jsx";
+import { StudentModules } from "./components/CRM";
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/accounts/create" element={<CreateAccount />} />
                 <Route path="/crm" element={<CRMpage />} />
+                <Route path="/student" element={<StudentModules />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </MainLayout>

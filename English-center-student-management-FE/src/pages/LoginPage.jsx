@@ -18,8 +18,14 @@ export default function LoginPage() {
     setError("");
     try {
       await authService.login({ email, password });
-      // Optionally fetch profile: await authService.getMe();
-      navigate("/");
+      // Fetch profile to identify role
+      const me = await authService.getMe?.();
+      const role = me?.role;
+      if (role === 'hocvien') {
+        navigate('/student', { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
     } catch (e) {
       const data = e?.response?.data;
       const msg =
@@ -29,7 +35,7 @@ export default function LoginPage() {
         data?.non_field_errors?.[0] ||
         data?.email?.[0] ||
         data?.password?.[0] ||
-        "Đăng nhập thất bại";
+        "Login failed";
       setError(String(msg));
     }
   };
