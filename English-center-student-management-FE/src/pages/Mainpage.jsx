@@ -13,13 +13,13 @@ import {
     KPICard, 
     MetricCard, 
     ChartPlaceholder 
-} from "../../components/shared";
-import HeroSection from "../../components/Mainpage/HeroSection";
-import CoursesSection from "../../components/Mainpage/CoursesSection";
-import CallToAction from "../../components/Mainpage/CallToAction";
-import ReviewsSection from "../../components/Mainpage/ReviewsSection";
-import Footer from "../../components/Mainpage/Footer";
-import AboutSection from "../../components/Mainpage/AboutSection";
+} from "../components/shared";
+import HeroSection from "../components/Mainpage/HeroSection";
+import CoursesSection from "../components/Mainpage/CoursesSection";
+import CallToAction from "../components/Mainpage/CallToAction";
+import ReviewsSection from "../components/Mainpage/ReviewsSection";
+import Footer from "../components/Mainpage/Footer";
+import AboutSection from "../components/Mainpage/AboutSection";
 
 
 export default function Mainpage() {
