@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   DollarSign, 
   CreditCard, 
@@ -52,6 +52,22 @@ const PaymentManagement = () => {
     setSelectedInvoice(invoice);
     setShowInvoiceModal(true);
   };
+
+  // Prevent body scroll when any modal is open
+  useEffect(() => {
+    const isAnyModalOpen = showPaymentForm || showInvoiceModal || showInvoiceCreation;
+    
+    if (isAnyModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showPaymentForm, showInvoiceModal, showInvoiceCreation]);
 
   return (
     <div className="space-y-6">
@@ -202,9 +218,24 @@ const PaymentManagement = () => {
 
       {/* Payment Form Modal */}
       {showPaymentForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-          <div className="relative mx-auto w-full max-w-2xl bg-white rounded-xl shadow-xl">
-            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
+          style={{ 
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            overflowY: 'auto'
+          }}
+          onScroll={(e) => e.stopPropagation()}
+        >
+          <div 
+            className="relative mx-auto w-full max-w-2xl bg-white rounded-xl shadow-2xl border border-gray-200 max-h-[90vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="overflow-y-auto max-h-[90vh] finance-modal-scrollbar">
+            <div className="flex justify-between items-center p-6 border-b border-gray-200 sticky top-0 bg-white rounded-t-xl">
               <div className="flex items-center space-x-3">
                 <div className="flex-shrink-0 w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
                   <CreditCard className="h-5 w-5 text-teal-600" />
@@ -230,6 +261,7 @@ const PaymentManagement = () => {
             </div>
             <div className="p-6">
               <PaymentForm onClose={() => setShowPaymentForm(false)} />
+            </div>
             </div>
           </div>
         </div>
