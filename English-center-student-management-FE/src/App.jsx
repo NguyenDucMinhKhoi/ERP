@@ -9,6 +9,8 @@ import CRMpage from "./pages/CRMpage.jsx";
 import FinancePage from "./pages/FinancePage.jsx";
 import CourseManagement from "./pages/CourseManagement.jsx";
 import CRMLeads from "./pages/CRMLeads.jsx";
+import NotificationsSupport from "./pages/NotificationsSupport.jsx";
+import { ROLES } from "./utils/permissions";
 
 // Utility functions
 const getUserRole = () => {
@@ -19,59 +21,59 @@ const getUserRole = () => {
   }
 };
 
+const isAuthenticated = () => {
+  return !!getUserRole();
+};
+
 // Protected route components
+
+const RequireAuth = ({ children }) => {
+  return isAuthenticated() ? children : <Navigate to="/login" replace />;
+};
+
 const RequireAdmin = ({ children }) => {
   return getUserRole() === "admin" ? children : <Navigate to="/" replace />;
 };
 
-const HomeRoute = () => {
-  return getUserRole() === "admin" ? <Navigate to="/dashboard" replace /> : <Mainpage />;
+// Component để xử lý route chính
+const MainRoute = () => {
+  if (!isAuthenticated()) {
+    // Chưa login: hiển thị Mainpage
+    return <Mainpage />;
+  }
+  
+  // Đã login: redirect theo role
+  const role = getUserRole();
+  return role === ROLES.ADMIN ? <Navigate to="/dashboard" replace /> : <Navigate to="/crm" replace />;
 };
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Route login không dùng layout */}
         <Route path="/login" element={<LoginPage />} />
 
-        <Route element={<MainLayout />}>
-          <Route path="/" element={<HomeRoute />} />
-          
+        {/* Routes dùng MainLayout */}
+        <Route path="/" element={<MainLayout />}>
+          {/* Route chính - xử lý cả trường hợp chưa login và đã login */}
+          <Route index element={<MainRoute />} />
+
           {/* Admin-only routes */}
-          <Route path="/dashboard" element={<RequireAdmin><Dashboard /></RequireAdmin>} />
-          <Route path="/finance" element={<RequireAdmin><FinancePage /></RequireAdmin>} />
-          
+          <Route path="dashboard" element={<RequireAdmin><Dashboard /></RequireAdmin>} />
+          <Route path="finance" element={<RequireAdmin><FinancePage /></RequireAdmin>} />
+
           {/* General routes */}
-          <Route path="/accounts/create" element={<CreateAccount />} />
-          <Route path="/crm" element={<CRMpage />} />
-          
-          {/* Future routes - uncomment when ready */}
-          {/* <Route path="/staff" element={<StaffPage />} /> */}
-          {/* <Route path="/teacher" element={<TeacherPage />} /> */}
-          {/* <Route path="/student" element={<StudentPage />} /> */}
-          
+          <Route path="accounts/create" element={<CreateAccount />} />
+          <Route path="crm" element={<CRMpage />} />
+          <Route path="course-management" element={<CourseManagement />} />
+          <Route path="crm-leads" element={<CRMLeads />} />
+          <Route path="notifications" element={<NotificationsSupport />} />
+
+          {/* fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
-
-        <Route
-          path="/*"
-          element={
-            <MainLayout>
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/accounts/create" element={<CreateAccount />} />
-                <Route path="/crm" element={<CRMpage />} />
-                <Route
-                  path="/course-management"
-                  element={<CourseManagement />}
-                />
-                <Route path="/crm-leads" element={<CRMLeads />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </MainLayout>
-          }
-        />
       </Routes>
     </BrowserRouter>
   );
 }
+
