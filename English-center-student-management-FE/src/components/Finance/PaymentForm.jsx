@@ -34,14 +34,25 @@ const PaymentForm = ({ onClose }) => {
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [successData, setSuccessData] = useState(null);
 
   const selectedCourse = courses.find(course => course.id === parseInt(formData.courseId));
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    
+    // Special handling for amount field - remove dots for number formatting
+    let processedValue = value;
+    if (name === 'amount') {
+      // Remove all dots from the input value
+      processedValue = value.replace(/\./g, '');
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: processedValue
     }));
     
     // Clear error when user starts typing
@@ -58,6 +69,12 @@ const PaymentForm = ({ onClose }) => {
       style: 'currency',
       currency: 'VND'
     }).format(amount);
+  };
+
+  // Format number with dots for display (e.g., 2500000 -> 2.500.000)
+  const formatNumberWithDots = (num) => {
+    if (!num) return '';
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   };
 
   const validateForm = () => {
@@ -103,14 +120,40 @@ const PaymentForm = ({ onClose }) => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       console.log('Payment data:', formData);
-      alert('Ghi nhận thanh toán thành công!');
-      onClose();
+      
+      // Prepare success data
+      const selectedStudent = students.find(s => s.id === parseInt(formData.studentId));
+      const selectedCourse = courses.find(c => c.id === parseInt(formData.courseId));
+      const selectedPaymentMethod = paymentMethods.find(m => m.id === formData.paymentMethod);
+      
+      setSuccessData({
+        studentName: selectedStudent?.name,
+        studentCode: selectedStudent?.code,
+        courseName: selectedCourse?.name,
+        amount: parseFloat(formData.amount),
+        paymentMethod: selectedPaymentMethod?.name,
+        paymentDate: formData.paymentDate,
+        description: formData.description
+      });
+      
+      setShowSuccessDialog(true);
     } catch (error) {
       console.error('Error submitting payment:', error);
-      alert('Có lỗi xảy ra khi ghi nhận thanh toán');
+      setShowErrorDialog(true);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Dialog handlers
+  const handleCloseSuccessDialog = () => {
+    setShowSuccessDialog(false);
+    setSuccessData(null);
+    onClose(); // Close the main modal
+  };
+
+  const handleCloseErrorDialog = () => {
+    setShowErrorDialog(false);
   };
 
   return (
@@ -178,10 +221,10 @@ const PaymentForm = ({ onClose }) => {
           Số tiền thanh toán (VNĐ) <span className="text-red-500">*</span>
         </label>
         <input
-          type="number"
+          type="text"
           id="amount"
           name="amount"
-          value={formData.amount}
+          value={formData.amount ? formatNumberWithDots(formData.amount) : ''}
           onChange={handleInputChange}
           placeholder="0"
           className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
@@ -290,6 +333,106 @@ const PaymentForm = ({ onClose }) => {
           {isSubmitting ? 'Đang xử lý...' : 'Ghi nhận thanh toán'}
         </button>
       </div>
+
+      {/* Success Dialog */}
+      {showSuccessDialog && successData && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
+            {/* Success Icon */}
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Title */}
+            <h3 className="text-xl font-bold text-center text-gray-900 mb-2">
+              🎉 Ghi nhận thanh toán thành công!
+            </h3>
+
+            {/* Content */}
+            <div className="text-center text-gray-600 mb-6">
+              <p className="font-medium mb-3">Thanh toán đã được ghi nhận vào hệ thống</p>
+              <div className="bg-gray-50 rounded-lg p-4 text-sm space-y-2">
+                <div className="flex justify-between">
+                  <span>Học viên:</span>
+                  <span className="font-medium">{successData.studentName} ({successData.studentCode})</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Khóa học:</span>
+                  <span className="font-medium">{successData.courseName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Số tiền:</span>
+                  <span className="font-bold text-teal-600">{formatCurrency(successData.amount)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Phương thức:</span>
+                  <span className="font-medium">{successData.paymentMethod}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Ngày thanh toán:</span>
+                  <span className="font-medium">{new Date(successData.paymentDate).toLocaleDateString('vi-VN')}</span>
+                </div>
+                {successData.description && (
+                  <div className="flex justify-between">
+                    <span>Ghi chú:</span>
+                    <span className="font-medium">{successData.description}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-center">
+              <button
+                onClick={handleCloseSuccessDialog}
+                className="px-6 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-200 shadow-sm"
+              >
+                ✅ Hoàn tất
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error Dialog */}
+      {showErrorDialog && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
+            {/* Error Icon */}
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Title */}
+            <h3 className="text-xl font-bold text-center text-gray-900 mb-2">
+              ❌ Có lỗi xảy ra
+            </h3>
+
+            {/* Content */}
+            <div className="text-center text-gray-600 mb-6">
+              <p className="font-medium">Không thể ghi nhận thanh toán. Vui lòng thử lại sau.</p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-center">
+              <button
+                onClick={handleCloseErrorDialog}
+                className="px-6 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-colors"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 };
