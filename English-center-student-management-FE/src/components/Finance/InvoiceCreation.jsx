@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import InvoiceModal from './InvoiceModal';
 
 // Dummy data
 const courses = [
@@ -33,6 +34,10 @@ const InvoiceCreation = ({ student, onClose, onSubmit }) => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showInstallments, setShowInstallments] = useState(false);
+  const [showInvoicePreview, setShowInvoicePreview] = useState(false);
+  const [previewInvoice, setPreviewInvoice] = useState(null);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [successData, setSuccessData] = useState(null);
 
   const selectedCourse = courses.find(course => course.id === parseInt(formData.courseId));
   const selectedType = invoiceTypes.find(type => type.id === formData.invoiceType);
@@ -93,9 +98,10 @@ const InvoiceCreation = ({ student, onClose, onSubmit }) => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.studentId) {
-      newErrors.studentId = 'Vui lòng chọn học viên';
-    }
+    // Skip student validation for demo - can add later
+    // if (!formData.studentId) {
+    //   newErrors.studentId = 'Vui lòng chọn học viên';
+    // }
 
     if (formData.invoiceType === 'tuition' && !formData.courseId) {
       newErrors.courseId = 'Vui lòng chọn khóa học';
@@ -134,11 +140,14 @@ const InvoiceCreation = ({ student, onClose, onSubmit }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Form submitted!', formData);
     
     if (!validateForm()) {
+      console.log('Form validation failed');
       return;
     }
 
+    console.log('Starting submission...');
     setIsSubmitting(true);
     
     try {
@@ -148,7 +157,8 @@ const InvoiceCreation = ({ student, onClose, onSubmit }) => {
       const invoiceData = {
         ...formData,
         amount: parseFloat(formData.amount),
-        studentName: student?.name,
+        studentName: student?.name || 'Nguyễn Văn A',
+        studentCode: student?.code || 'HV001',
         courseName: selectedCourse?.name,
         typeName: selectedType?.name,
         createdDate: new Date().toISOString(),
@@ -179,13 +189,62 @@ const InvoiceCreation = ({ student, onClose, onSubmit }) => {
         if (onSubmit) {
           onSubmit(installmentInvoices);
         }
+        
+        // Show success dialog for installments
+        const firstInvoice = {
+          id: Date.now(),
+          invoiceNumber: `INV-${Date.now()}-1`,
+          studentName: invoiceData.studentName,
+          studentCode: invoiceData.studentCode,
+          courseName: invoiceData.courseName,
+          amount: installmentInvoices[0].amount,
+          paymentMethod: 'cash',
+          paymentDate: new Date().toISOString().split('T')[0],
+          status: 'pending',
+          description: installmentInvoices[0].description,
+          dueDate: installmentInvoices[0].dueDate
+        };
+
+        setSuccessData({
+          type: 'installments',
+          installments: formData.installments,
+          totalAmount: invoiceData.amount,
+          installmentAmount: installmentAmount,
+          invoice: firstInvoice,
+          studentName: invoiceData.studentName,
+          courseName: invoiceData.courseName
+        });
+        setShowSuccessDialog(true);
       } else {
         if (onSubmit) {
           onSubmit([invoiceData]);
         }
-      }
+        
+        // Show success dialog for single invoice
+        const invoice = {
+          id: Date.now(),
+          invoiceNumber: `INV-${Date.now()}`,
+          studentName: invoiceData.studentName,
+          studentCode: invoiceData.studentCode,
+          courseName: invoiceData.courseName,
+          amount: invoiceData.amount,
+          paymentMethod: 'cash',
+          paymentDate: new Date().toISOString().split('T')[0],
+          status: 'pending',
+          description: formData.description,
+          dueDate: formData.dueDate
+        };
 
-      onClose();
+        setSuccessData({
+          type: 'single',
+          invoice: invoice,
+          studentName: invoiceData.studentName,
+          courseName: invoiceData.courseName,
+          amount: invoiceData.amount,
+          dueDate: formData.dueDate
+        });
+        setShowSuccessDialog(true);
+      }
     } catch (error) {
       console.error('Error creating invoice:', error);
       setErrors({ submit: 'Có lỗi xảy ra khi tạo hóa đơn. Vui lòng thử lại.' });
@@ -219,6 +278,29 @@ const InvoiceCreation = ({ student, onClose, onSubmit }) => {
     return preview;
   };
 
+
+
+  // Function to show invoice using InvoiceModal component
+  const displayInvoiceModal = (invoice) => {
+    setPreviewInvoice(invoice);
+    setShowInvoicePreview(true);
+  };
+
+  // Handle success dialog actions
+  const handleViewInvoice = () => {
+    console.log('Invoice data being passed to modal:', successData.invoice);
+    setShowSuccessDialog(false);
+    displayInvoiceModal(successData.invoice);
+  };
+
+  const handleCloseSuccessDialog = () => {
+    setShowSuccessDialog(false);
+    setSuccessData(null);
+    onClose(); // Close the main modal
+  };
+
+
+
   return (
     <div 
       className="fixed inset-0 bg-black/60 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4"
@@ -242,7 +324,7 @@ const InvoiceCreation = ({ student, onClose, onSubmit }) => {
           <div>
             <h3 className="text-lg font-medium text-gray-900">Tạo hóa đơn mới</h3>
             <p className="text-sm text-gray-500">
-              {student?.name} ({student?.code}) - {student?.email}
+              {student?.name ? `${student.name} (${student.code}) - ${student.email}` : 'Tạo hóa đơn cho học viên'}
             </p>
           </div>
           <button
@@ -504,6 +586,7 @@ const InvoiceCreation = ({ student, onClose, onSubmit }) => {
             <button
               type="submit"
               disabled={isSubmitting}
+              onClick={() => console.log('Button clicked!')}
               className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
@@ -522,6 +605,99 @@ const InvoiceCreation = ({ student, onClose, onSubmit }) => {
         </form>
         </div>
       </div>
+
+      {/* Success Dialog */}
+      {showSuccessDialog && successData && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
+            {/* Success Icon */}
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Title */}
+            <h3 className="text-xl font-bold text-center text-gray-900 mb-2">
+              🎉 Tạo hóa đơn thành công!
+            </h3>
+
+            {/* Content */}
+            <div className="text-center text-gray-600 mb-6">
+              {successData.type === 'installments' ? (
+                <div className="space-y-2">
+                  <p className="font-medium">Đã tạo thành công <span className="text-teal-600 font-bold">{successData.installments} hóa đơn</span> theo đợt!</p>
+                  <div className="bg-gray-50 rounded-lg p-3 text-sm">
+                    <div className="flex justify-between">
+                      <span>Tổng số tiền:</span>
+                      <span className="font-bold text-teal-600">{formatCurrency(successData.totalAmount)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Số đợt:</span>
+                      <span className="font-medium">{successData.installments} đợt</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Mỗi đợt:</span>
+                      <span className="font-medium">{formatCurrency(successData.installmentAmount)}</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="font-medium">Hóa đơn đã được tạo thành công!</p>
+                  <div className="bg-gray-50 rounded-lg p-3 text-sm">
+                    <div className="flex justify-between">
+                      <span>Học viên:</span>
+                      <span className="font-medium">{successData.studentName}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Khóa học:</span>
+                      <span className="font-medium">{successData.courseName || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Số tiền:</span>
+                      <span className="font-bold text-teal-600">{formatCurrency(successData.amount)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Hạn thanh toán:</span>
+                      <span className="font-medium">{new Date(successData.dueDate).toLocaleDateString('vi-VN')}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex space-x-3">
+              <button
+                onClick={handleCloseSuccessDialog}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-colors"
+              >
+                Đóng
+              </button>
+              <button
+                onClick={handleViewInvoice}
+                className="flex-1 px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-200 shadow-sm"
+              >
+                🧾 Xem biên lai
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Invoice Preview Modal */}
+      {showInvoicePreview && previewInvoice && (
+        <InvoiceModal
+          invoice={previewInvoice}
+          onClose={() => {
+            setShowInvoicePreview(false);
+            setPreviewInvoice(null);
+          }}
+        />
+      )}
     </div>
   );
 };
