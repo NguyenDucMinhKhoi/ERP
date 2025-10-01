@@ -43,7 +43,7 @@ export default function LeadList({ role, onSchedule, onLog, onConvert }) {
           <select
             value={stageFilter}
             onChange={(e) => setStageFilter(e.target.value)}
-            className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
+            className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent interactive-button"
           >
             <option value="">Tất cả mức độ</option>
             {leadStages.map((s) => (
@@ -81,13 +81,13 @@ export default function LeadList({ role, onSchedule, onLog, onConvert }) {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">{lead.source}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center gap-2">
-                    <button onClick={() => onSchedule(lead)} className="text-slate-600 hover:text-slate-900 p-1 rounded" title="Đặt lịch chăm sóc">
+                    <button onClick={() => onSchedule(lead)} className="text-slate-600 hover:text-slate-900 p-1 rounded interactive-button" title="Đặt lịch chăm sóc">
                       <Calendar className="h-4 w-4" />
                     </button>
-                    <button onClick={() => onLog(lead)} className="text-slate-600 hover:text-slate-900 p-1 rounded" title="Lưu lịch sử trao đổi">
+                    <button onClick={() => onLog(lead)} className="text-slate-600 hover:text-slate-900 p-1 rounded interactive-button" title="Lưu lịch sử trao đổi">
                       <MessageSquare className="h-4 w-4" />
                     </button>
-                    <button onClick={() => onConvert(lead)} className="text-primary-main hover:text-primary-dark p-1 rounded" title="Chuyển thành học viên">
+                    <button onClick={() => onConvert(lead)} className="text-primary-main hover:text-primary-dark p-1 rounded interactive-button" title="Chuyển thành học viên">
                       <ArrowRight className="h-4 w-4" />
                     </button>
                   </div>

@@ -131,7 +131,7 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] ">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
           <div>
@@ -144,7 +144,7 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 p-1 rounded"
+            className="text-slate-400 hover:text-slate-600 p-1 rounded interactive-element"
           >
             <X className="h-5 w-5" />
           </button>
@@ -206,14 +206,14 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => handleSelectAll("Có mặt")}
-              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-green-700 bg-green-100 border border-green-300 rounded-lg hover:bg-green-200 transition-colors"
+              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-green-700 bg-green-100 border border-green-300 rounded-lg hover:bg-green-200 transition-colors cursor-pointer"
             >
               <CheckSquare className="h-4 w-4" />
               Tất cả có mặt
             </button>
             <button
               onClick={() => handleSelectAll("Vắng mặt")}
-              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-700 bg-red-100 border border-red-300 rounded-lg hover:bg-red-200 transition-colors"
+              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-700 bg-red-100 border border-red-300 rounded-lg hover:bg-red-200 transition-colors cursor-pointer"
             >
               <Users className="h-4 w-4" />
               Tất cả vắng mặt
@@ -357,14 +357,14 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
         <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:ring-2 focus:ring-primary-main focus:border-transparent"
+            className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:ring-2 focus:ring-primary-main focus:border-transparent cursor-pointer"
           >
             Hủy
           </button>
           <button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-main border border-transparent rounded-lg hover:bg-primary-dark focus:ring-2 focus:ring-primary-main focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-main border border-transparent rounded-lg hover:bg-primary-dark focus:ring-2 focus:ring-primary-main focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             <Save className="h-4 w-4" />
             {isSubmitting ? "Đang lưu..." : "Lưu điểm danh"}

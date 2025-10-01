@@ -69,12 +69,12 @@ export default function StudentProfileModal({ student, onClose, onEdit }) {
               onClick={onEdit}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-main bg-primary-light border border-primary-main rounded-lg hover:bg-primary-main hover:text-white transition-colors"
             >
-              <Edit className="h-4 w-4" />
+              <Edit className="h-4 w-4 interactive-button" />
               Chỉnh sửa
             </button>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-600 p-1 rounded"
+              className="text-slate-400 hover:text-slate-600 p-1 rounded interactive-button"
             >
               <X className="h-5 w-5" />
             </button>
@@ -82,7 +82,7 @@ export default function StudentProfileModal({ student, onClose, onEdit }) {
         </div>
 
         {/* Content - Scrollable area */}
-        <div className="flex-1 overflow-y-auto">
+        <div iv className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
           <div className="p-6 space-y-8">
             {/* Status and Overview */}
             <div className="bg-slate-50 rounded-lg p-6">
@@ -245,7 +245,7 @@ export default function StudentProfileModal({ student, onClose, onEdit }) {
         <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:ring-2 focus:ring-primary-main focus:border-transparent"
+            className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:ring-2 focus:ring-primary-main focus:border-transparent interactive-button"
           >
             Đóng
           </button>

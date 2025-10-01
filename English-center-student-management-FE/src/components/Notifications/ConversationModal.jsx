@@ -22,7 +22,7 @@ export default function ConversationModal({ thread, onClose }) {
           </div>
           <button
             onClick={onClose}
-            className="text-slate-500 hover:text-slate-700"
+            className="text-slate-500 hover:text-slate-700 cursor-pointer"
           >
             Đóng
           </button>
@@ -40,7 +40,7 @@ export default function ConversationModal({ thread, onClose }) {
           <button
             onClick={send}
             disabled={sending}
-            className="px-4 py-2 text-sm font-medium text-white bg-primary-main rounded-lg disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium text-white bg-primary-main rounded-lg disabled:opacity-50 cursor-pointer "
           >
             {sending ? "Đang gửi..." : "Gửi"}
           </button>

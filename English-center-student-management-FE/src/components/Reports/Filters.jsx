@@ -17,7 +17,7 @@ export default function Filters({ value, onChange }) {
           <input type="text" placeholder="Ví dụ: IELTS" value={value.course} onChange={(e) => onChange({ ...value, course: e.target.value })} className="w-full px-3 py-2 border border-slate-300 rounded-lg" />
         </div>
         <div className="flex items-end">
-          <button onClick={() => onChange({ from: "", to: "", course: "" })} className="px-4 py-2 border border-slate-300 rounded-lg text-sm">Xóa lọc</button>
+          <button onClick={() => onChange({ from: "", to: "", course: "" })} className="px-4 py-2 border border-slate-300 rounded-lg text-sm cursor-pointer ">Xóa lọc</button>
         </div>
       </div>
     </div>

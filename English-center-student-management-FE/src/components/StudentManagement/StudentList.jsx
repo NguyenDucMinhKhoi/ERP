@@ -95,11 +95,11 @@ export default function StudentList({ onEdit, onViewProfile }) {
           </div>
 
           {/* Filters */}
-          <div className="flex gap-3">
+          <div className="flex gap-3 ">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
+              className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent interactive-card"
             >
               <option value="">Tất cả trạng thái</option>
               {statusOptions.map((option) => (
@@ -112,7 +112,7 @@ export default function StudentList({ onEdit, onViewProfile }) {
             <select
               value={courseFilter}
               onChange={(e) => setCourseFilter(e.target.value)}
-              className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
+              className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent interactive-card"
             >
               <option value="">Tất cả khóa học</option>
               {courseOptions.map((option) => (
@@ -234,14 +234,14 @@ export default function StudentList({ onEdit, onViewProfile }) {
                       className="text-primary-main hover:text-primary-dark p-1 rounded"
                       title="Xem chi tiết"
                     >
-                      <Eye className="h-4 w-4" />
+                      <Eye className="h-4 w-4 interactive-button" />
                     </button>
                     <button
                       onClick={() => onEdit(student)}
                       className="text-slate-600 hover:text-slate-900 p-1 rounded"
                       title="Chỉnh sửa"
                     >
-                      <Edit className="h-4 w-4" />
+                      <Edit className="h-4 w-4 interactive-button" />
                     </button>
                   </div>
                 </td>

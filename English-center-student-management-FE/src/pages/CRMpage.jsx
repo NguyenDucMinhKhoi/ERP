@@ -52,12 +52,7 @@ export default function CRMpage() {
       icon: Users,
       description: "Quản lý thông tin học viên",
     },
-    {
-      id: "profile",
-      label: "Hồ Sơ Học Viên",
-      icon: UserCheck,
-      description: "Chi tiết học viên và timeline",
-    },
+
     {
       id: "reports",
       label: "Báo Cáo CRM",
@@ -216,7 +211,7 @@ export default function CRMpage() {
           <div className="text-slate-600" />
           <button
             onClick={openAddStudent}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary-main px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary-main px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors interactive-button"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

@@ -140,17 +140,17 @@ export default function AssignStudentsModal({ classData, onClose, onSuccess }) {
               />
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2">  
               <button
                 onClick={handleSelectAll}
-                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary-main bg-primary-light border border-primary-main rounded-lg hover:bg-primary-main hover:text-white transition-colors"
+                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary-main bg-primary-light border border-primary-main rounded-lg hover:bg-primary-main hover:text-white transition-colors cursor-pointer"
               >
                 <UserPlus className="h-4 w-4" />
                 Chọn tất cả
               </button>
               <button
                 onClick={handleDeselectAll}
-                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer "
               >
                 <UserMinus className="h-4 w-4" />
                 Bỏ chọn tất cả
@@ -160,7 +160,7 @@ export default function AssignStudentsModal({ classData, onClose, onSuccess }) {
 
           {/* Students List */}
           <div className="border border-slate-200 rounded-lg">
-            <div className="max-h-96 overflow-y-auto">
+            <div className="max-h-96 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
               {filteredStudents.map((student) => {
                 const isSelected = selectedStudents.includes(student.id);
                 const isAlreadyInClass = classData?.students?.includes(
@@ -243,7 +243,7 @@ export default function AssignStudentsModal({ classData, onClose, onSuccess }) {
         <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:ring-2 focus:ring-primary-main focus:border-transparent"
+            className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:ring-2 focus:ring-primary-main focus:border-transparent cursor-pointer"
           >
             Hủy
           </button>
@@ -252,7 +252,7 @@ export default function AssignStudentsModal({ classData, onClose, onSuccess }) {
             disabled={
               isSubmitting || selectedStudents.length > classData?.maxStudents
             }
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-main border border-transparent rounded-lg hover:bg-primary-dark focus:ring-2 focus:ring-primary-main focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-main border border-transparent rounded-lg hover:bg-primary-dark focus:ring-2 focus:ring-primary-main focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             <Save className="h-4 w-4" />
             {isSubmitting ? "Đang lưu..." : "Lưu thay đổi"}
