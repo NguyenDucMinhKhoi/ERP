@@ -95,7 +95,7 @@ export default function ClassList({
             <select
               value={courseFilter}
               onChange={(e) => setCourseFilter(e.target.value)}
-              className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
+              className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent cursor-pointer"
             >
               <option value="">Tất cả khóa học</option>
               {getCourseOptions()}
@@ -104,7 +104,7 @@ export default function ClassList({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
+              className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent cursor-pointer"
             >
               <option value="">Tất cả trạng thái</option>
               {classStatusOptions.map((option) => (
@@ -148,7 +148,7 @@ export default function ClassList({
             </thead>
             <tbody className="bg-white divide-y divide-slate-200">
               {filteredClasses.map((classItem) => (
-                <tr key={classItem.id} className="hover:bg-slate-50">
+                <tr key={classItem.id} className="">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-slate-900">
                       {classItem.name}
@@ -199,21 +199,21 @@ export default function ClassList({
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => onAssignStudents(classItem)}
-                        className="text-primary-main hover:text-primary-dark p-1 rounded"
+                        className="text-primary-main hover:text-primary-dark p-1 rounded cursor-pointer"
                         title="Gán học viên"
                       >
                         <UserPlus className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => onManageSchedule(classItem)}
-                        className="text-slate-600 hover:text-slate-900 p-1 rounded"
+                        className="text-slate-600 hover:text-slate-900 p-1 rounded cursor-pointer"
                         title="Quản lý lịch học"
                       >
                         <Clock className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => onTrackAttendance(classItem)}
-                        className="text-slate-600 hover:text-slate-900 p-1 rounded"
+                        className="text-slate-600 hover:text-slate-900 p-1 rounded cursor-pointer"
                         title="Điểm danh"
                       >
                         <CheckSquare className="h-4 w-4" />

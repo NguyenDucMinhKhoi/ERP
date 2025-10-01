@@ -98,7 +98,7 @@ export default function Composer({ isAdmin, recipients, onRecipientsChange }) {
         <button
           onClick={send}
           disabled={sending}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-main rounded-lg disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-main rounded-lg disabled:opacity-50 cursor-pointer hover:bg-primary-dark"
         >
           {sending ? "Đang gửi..." : "Gửi thông báo"}
         </button>

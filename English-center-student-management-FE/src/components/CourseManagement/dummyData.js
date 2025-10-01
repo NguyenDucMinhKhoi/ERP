@@ -236,7 +236,7 @@ export const dummyAttendance = [
     studentId: 1,
     studentName: "Nguyễn Văn An",
     status: "Có mặt",
-    checkInTime: "17:55",
+    checkInTime: "17:55", 
     notes: ""
   },
   {

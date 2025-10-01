@@ -32,7 +32,7 @@ export default function CRMLeads() {
     };
   }, []);
 
-  const isAdmin = role === ROLES.ADMIN;
+  const canManageLeads = role === ROLES.ADMIN || role === ROLES.STAFF;
 
   const openAdd = () => setShowAdd(true);
   const openSchedule = (lead) => { setSelectedLead(lead); setShowSchedule(true); };
@@ -55,8 +55,8 @@ export default function CRMLeads() {
           <p className="text-slate-600">Quản lý khách hàng tiềm năng</p>
         </div>
         <div className="flex items-center gap-3">
-          {!isAdmin && (
-            <button onClick={openAdd} className="inline-flex items-center gap-2 rounded-lg bg-primary-main px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors">
+          {canManageLeads && (
+            <button onClick={openAdd} className="inline-flex items-center gap-2 rounded-lg bg-primary-main px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors interactive-button">
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
               Thêm lead mới
             </button>

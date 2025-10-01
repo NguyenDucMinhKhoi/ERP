@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from "react";
 import { Search, BookOpen, Users, Clock, DollarSign, Star } from "lucide-react";
+import CourseDetail from "./CourseDetail";
 import { dummyCourses } from "./dummyData";
 
 export default function CourseList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [levelFilter, setLevelFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState(null);
 
   const filteredCourses = useMemo(() => {
     return dummyCourses.filter((course) => {
@@ -78,7 +80,7 @@ export default function CourseList() {
             <select
               value={levelFilter}
               onChange={(e) => setLevelFilter(e.target.value)}
-              className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
+              className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent interactive-button"
             >
               <option value="">Tất cả trình độ</option>
               <option value="Cơ bản">Cơ bản</option>
@@ -89,7 +91,7 @@ export default function CourseList() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
+              className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent interactive-button"
             >
               <option value="">Tất cả trạng thái</option>
               <option value="Đang mở">Đang mở</option>
@@ -105,7 +107,8 @@ export default function CourseList() {
         {filteredCourses.map((course) => (
           <div
             key={course.id}
-            className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow"
+            onClick={() => setSelectedCourse(course)}
+            className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 interactive-card"
           >
             {/* Course Header */}
             <div className="flex items-start justify-between mb-4">
@@ -190,6 +193,14 @@ export default function CourseList() {
           </p>
         </div>
       </div>
+
+      {/* Course Detail Modal */}
+      {selectedCourse && (
+        <CourseDetail
+          course={selectedCourse}
+          onClose={() => setSelectedCourse(null)}
+        />
+      )}
     </div>
   );
 }

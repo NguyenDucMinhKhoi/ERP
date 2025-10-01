@@ -17,7 +17,7 @@ export default function ExportButtons({ activeTab }) {
       <button
         disabled={!canExport}
         onClick={exportPdf}
-        className={`inline-flex items-center gap-2 px-3 py-2 text-sm rounded-lg border ${
+        className={`inline-flex items-center gap-2 px-3 py-2 text-sm rounded-lg border cursor-pointer  ${
           canExport
             ? "bg-white hover:bg-slate-50"
             : "bg-slate-100 cursor-not-allowed"
@@ -28,7 +28,7 @@ export default function ExportButtons({ activeTab }) {
       <button
         disabled={!canExport}
         onClick={exportExcel}
-        className={`inline-flex items-center gap-2 px-3 py-2 text-sm rounded-lg border ${
+        className={`inline-flex items-center gap-2 px-3 py-2 text-sm rounded-lg border cursor-pointer  ${
           canExport
             ? "bg-white hover:bg-slate-50"
             : "bg-slate-100 cursor-not-allowed"

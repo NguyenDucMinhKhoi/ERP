@@ -97,8 +97,8 @@ export default function AddLeadForm({ onClose, onSuccess }) {
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-200">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50">Hủy</button>
-            <button type="submit" disabled={isSubmitting} className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-main border border-transparent rounded-lg hover:bg-primary-dark disabled:opacity-50">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 interactive-button">Hủy</button>
+            <button type="submit" disabled={isSubmitting} className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-main border border-transparent rounded-lg hover:bg-primary-dark disabled:opacity-50 interactive-button">
               <Save className="h-4 w-4" />
               {isSubmitting ? "Đang lưu..." : "Lưu"}
             </button>

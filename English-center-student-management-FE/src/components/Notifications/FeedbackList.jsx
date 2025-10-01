@@ -14,7 +14,7 @@ export default function FeedbackList({ onOpenThread }) {
           >
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm font-semibold text-slate-900">
+                <div className="text-sm font-semibold text-slate-900 cursor-pointer line-clamp-1">
                   {t.studentName}
                 </div>
                 <div className="text-sm text-slate-600 line-clamp-1">

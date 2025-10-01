@@ -263,3 +263,67 @@ body,
 #root {
   height: 100%;
 }
+/* Common interactive elements */
+.interactive-element {
+  cursor: pointer;
+}
+.interactive-element:hover {
+  background-color: rgba(248, 250, 252, 0.5);
+  transition: background-color 0.2s;
+}
+
+/* Cards */
+.interactive-card {
+  cursor: pointer;
+}
+.interactive-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s;
+}
+
+/* Table rows */
+.interactive-row {
+  cursor: pointer;
+}
+.interactive-row:hover {
+  background-color: rgb(248, 250, 252);
+  transition: background-color 0.2s;
+}
+
+/* Buttons and clickable text */
+.interactive-button {
+  cursor: pointer;
+}
+.interactive-button:hover {
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+/* Menu items */
+.interactive-menu-item {
+  cursor: pointer;
+}
+.interactive-menu-item:hover {
+  background-color: rgb(248, 250, 252);
+  transition: background-color 0.2s;
+}
+
+/* Tabs */
+.interactive-tab {
+  cursor: pointer;
+}
+.interactive-tab:hover {
+  background-color: rgb(248, 250, 252);
+  transition: background-color 0.2s;
+}
+
+/* Disabled state */
+.interactive-disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Loading state */
+.interactive-loading {
+  cursor: wait;
+}

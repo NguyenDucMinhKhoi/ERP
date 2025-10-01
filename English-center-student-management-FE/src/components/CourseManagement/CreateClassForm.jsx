@@ -327,7 +327,7 @@ export default function CreateClassForm({ onClose, onSuccess }) {
               <button
                 type="button"
                 onClick={addScheduleItem}
-                className="text-sm text-primary-main hover:text-primary-dark font-medium"
+                className="text-sm text-primary-main hover:text-primary-dark font-medium cursor-pointer"
               >
                 + Thêm buổi học
               </button>
@@ -410,14 +410,14 @@ export default function CreateClassForm({ onClose, onSuccess }) {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:ring-2 focus:ring-primary-main focus:border-transparent"
+              className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:ring-2 focus:ring-primary-main focus:border-transparent cursor-pointer"
             >
               Hủy
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-main border border-transparent rounded-lg hover:bg-primary-dark focus:ring-2 focus:ring-primary-main focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-main border border-transparent rounded-lg hover:bg-primary-dark focus:ring-2 focus:ring-primary-main focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               <Save className="h-4 w-4" />
               {isSubmitting ? "Đang tạo..." : "Tạo lớp học"}

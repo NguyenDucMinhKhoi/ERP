@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import CourseList from "../components/CourseManagement/CourseList";
+import CreateCourseForm from "../components/CourseManagement/CreateCourseForm";
 import ClassList from "../components/CourseManagement/ClassList";
 import CreateClassForm from "../components/CourseManagement/CreateClassForm";
 import AssignStudentsModal from "../components/CourseManagement/AssignStudentsModal";
@@ -9,6 +10,7 @@ import AttendanceTracking from "../components/CourseManagement/AttendanceTrackin
 export default function CourseManagement() {
   const [activeTab, setActiveTab] = useState("courses");
   const [showCreateClassForm, setShowCreateClassForm] = useState(false);
+  const [showCreateCourseForm, setShowCreateCourseForm] = useState(false);
   const [showAssignStudentsModal, setShowAssignStudentsModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
@@ -16,6 +18,10 @@ export default function CourseManagement() {
 
   const handleCreateClass = () => {
     setShowCreateClassForm(true);
+  };
+
+  const handleCreateCourse = () => {
+    setShowCreateCourseForm(true);
   };
 
   const handleAssignStudents = (classData) => {
@@ -35,6 +41,7 @@ export default function CourseManagement() {
 
   const handleCloseModals = () => {
     setShowCreateClassForm(false);
+    setShowCreateCourseForm(false);
     setShowAssignStudentsModal(false);
     setShowScheduleModal(false);
     setShowAttendanceModal(false);
@@ -58,25 +65,46 @@ export default function CourseManagement() {
             Quản lý khóa học, tạo lớp học và theo dõi điểm danh
           </p>
         </div>
-        <button
-          onClick={handleCreateClass}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary-main px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors"
-        >
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        <div className="flex gap-3">
+          <button
+            onClick={handleCreateCourse}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary-main px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors cursor-pointer"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          Tạo lớp học mới
-        </button>
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Tạo khóa học mới
+          </button>
+          <button
+            onClick={handleCreateClass}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary-main px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors cursor-pointer"
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Tạo lớp học mới
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -86,7 +114,7 @@ export default function CourseManagement() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`py-2 px-1 border-b-2 font-medium text-sm interactive-tab cursor-pointer ${
                 activeTab === tab.id
                   ? "border-primary-main text-primary-main"
                   : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
@@ -112,6 +140,13 @@ export default function CourseManagement() {
       </div>
 
       {/* Modals */}
+      {showCreateCourseForm && (
+        <CreateCourseForm
+          onClose={handleCloseModals}
+          onSuccess={handleCloseModals}
+        />
+      )}
+
       {showCreateClassForm && (
         <CreateClassForm
           onClose={handleCloseModals}
