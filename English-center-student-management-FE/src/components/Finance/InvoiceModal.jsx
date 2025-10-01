@@ -376,11 +376,11 @@ const InvoiceModal = ({ invoice, onClose }) => {
         </div>
 
         {/* Invoice Content - Enhanced Design */}
-        <div ref={printRef} className="invoice-container" style={{background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)'}}>
+        <div ref={printRef} className="invoice-container" style={{background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)', padding: '20px'}}>
           {/* Enhanced Header Section */}
           <div className="invoice-header" style={{
             background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)',
-            borderRadius: '16px 16px 0 0',
+            borderRadius: '16px',
             color: 'white',
             position: 'relative',
             overflow: 'hidden'
@@ -404,8 +404,8 @@ const InvoiceModal = ({ invoice, onClose }) => {
               background: 'rgba(255,255,255,0.05)',
               borderRadius: '50%'
             }}></div>
-            
-            <div style={{position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+
+            <div style={{position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 20px', width: '100%'}}>
               <div className="company-info">
                 <h1 style={{fontSize: '24px', fontWeight: 'bold', marginBottom: '12px', textShadow: '0 2px 4px rgba(0,0,0,0.1)'}}>
                   TRUNG TÂM ANH NGỮ ABC
@@ -809,15 +809,191 @@ const InvoiceModal = ({ invoice, onClose }) => {
               </div>
             </div>
 
-            {/* Signature Section */}
-            <div className="signature-section">
-              <div style={{textAlign: 'center'}}>
-                <div className="signature-title">Người nộp tiền</div>
-                <div className="signature-note">(Ký và ghi rõ họ tên)</div>
+            {/* Enhanced Signature Section */}
+            <div className="signature-section" style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '32px',
+              margin: '32px 0'
+            }}>
+              {/* Người nộp tiền */}
+              <div style={{
+                background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                border: '2px solid #e2e8f0',
+                borderRadius: '16px',
+                padding: '24px',
+                textAlign: 'center',
+                position: 'relative',
+                overflow: 'hidden',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                minHeight: '150px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between'
+              }}>
+                {/* Decorative icon */}
+                <div style={{
+                  position: 'absolute',
+                  top: '16px',
+                  right: '16px',
+                  width: '40px',
+                  height: '40px',
+                  background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: '0.1'
+                }}>
+                  <span style={{fontSize: '18px'}}>👤</span>
+                </div>
+                
+                <div>
+                  <div style={{
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    color: '#1e40af',
+                    marginBottom: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}>
+                    <span style={{
+                      background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                      color: 'white',
+                      borderRadius: '50%',
+                      width: '24px',
+                      height: '24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '12px'
+                    }}>💰</span>
+                    Người nộp tiền
+                  </div>
+                  <div style={{
+                    fontSize: '12px',
+                    color: '#6b7280',
+                    fontStyle: 'italic',
+                    background: '#f0f9ff',
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid #bfdbfe',
+                    marginBottom: '20px'
+                  }}>
+                    (Ký và ghi rõ họ tên)
+                  </div>
+                </div>
+                
+                {/* Signature area */}
+                <div style={{
+                  borderTop: '2px dashed #cbd5e1',
+                  paddingTop: '16px',
+                  minHeight: '60px',
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  justifyContent: 'center'
+                }}>
+                  <div style={{
+                    fontSize: '11px',
+                    color: '#9ca3af',
+                    textAlign: 'center',
+                    fontStyle: 'italic'
+                  }}>
+                    ✍️ Khu vực chữ ký
+                  </div>
+                </div>
               </div>
-              <div style={{textAlign: 'center'}}>
-                <div className="signature-title">Người thu tiền</div>
-                <div className="signature-note">(Ký và ghi rõ họ tên)</div>
+
+              {/* Người thu tiền */}
+              <div style={{
+                background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                border: '2px solid #e2e8f0',
+                borderRadius: '16px',
+                padding: '24px',
+                textAlign: 'center',
+                position: 'relative',
+                overflow: 'hidden',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                minHeight: '150px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between'
+              }}>
+                {/* Decorative icon */}
+                <div style={{
+                  position: 'absolute',
+                  top: '16px',
+                  right: '16px',
+                  width: '40px',
+                  height: '40px',
+                  background: 'linear-gradient(135deg, #14b8a6, #0d9488)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: '0.1'
+                }}>
+                  <span style={{fontSize: '18px'}}>🏢</span>
+                </div>
+                
+                <div>
+                  <div style={{
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    color: '#0d9488',
+                    marginBottom: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}>
+                    <span style={{
+                      background: 'linear-gradient(135deg, #14b8a6, #0d9488)',
+                      color: 'white',
+                      borderRadius: '50%',
+                      width: '24px',
+                      height: '24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '12px'
+                    }}>🏢</span>
+                    Người thu tiền
+                  </div>
+                  <div style={{
+                    fontSize: '12px',
+                    color: '#6b7280',
+                    fontStyle: 'italic',
+                    background: '#f0fdfa',
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid #a7f3d0',
+                    marginBottom: '20px'
+                  }}>
+                    (Ký và ghi rõ họ tên)
+                  </div>
+                </div>
+                
+                {/* Signature area */}
+                <div style={{
+                  borderTop: '2px dashed #cbd5e1',
+                  paddingTop: '16px',
+                  minHeight: '60px',
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  justifyContent: 'center'
+                }}>
+                  <div style={{
+                    fontSize: '11px',
+                    color: '#9ca3af',
+                    textAlign: 'center',
+                    fontStyle: 'italic'
+                  }}>
+                    ✍️ Khu vực chữ ký
+                  </div>
+                </div>
               </div>
             </div>
 
