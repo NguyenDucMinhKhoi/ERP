@@ -232,16 +232,15 @@ export default function ProfileForm({
               <button
                 type="button"
                 onClick={onCancel}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="rounded-xl border border-gray-300 px-8 py-3 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                 disabled={loading}
               >
-                <X className="h-4 w-4 mr-2" />
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center"
+                className="rounded-xl border border-transparent bg-primary-main px-8 py-3 text-xs font-medium text-white hover:opacity-90 transition-colors disabled:opacity-50 flex items-center"
               >
                 <Save className="h-4 w-4 mr-2" />
                 {loading ? 'Saving...' : 'Save Changes'}
@@ -348,14 +347,14 @@ export default function ProfileForm({
               <button
                 type="button"
                 onClick={() => setIsChangingPassword(false)}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                className="rounded-xl border border-gray-300 px-8 py-3 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="rounded-xl border border-transparent bg-primary-main px-8 py-3 text-xs font-medium text-white hover:opacity-90 transition-colors disabled:opacity-50"
               >
                 {loading ? 'Processing...' : 'Change Password'}
               </button>

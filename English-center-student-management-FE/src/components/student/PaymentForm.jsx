@@ -88,7 +88,7 @@ export default function PaymentForm({
   return (
     <>
       {/* Backdrop với blur effect */}
-      <div className="fixed inset-0 bg-white bg-opacity-80 backdrop-blur-sm z-40"></div>
+      <div className="fixed inset-0 bg-30 bg-opacity-80 backdrop-blur-sm z-40"></div>
       
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -261,7 +261,7 @@ export default function PaymentForm({
               <button
                 type="button"
                 onClick={onCancel}
-                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                className="rounded-xl border border-transparent bg-primary-main px-8 py-3 text-xs font-medium text-white hover:opacity-90 transition-colors"
                 disabled={loading}
               >
                 Cancel
@@ -270,7 +270,7 @@ export default function PaymentForm({
                 type="submit"
                 onClick={handleSubmit}
                 disabled={loading}
-                className="px-6 py-3 bg-primary-main text-white rounded-lg hover:opacity-90 transition-colors disabled:opacity-50 flex items-center font-medium shadow-sm"
+                className="rounded-xl border border-transparent bg-primary-main px-8 py-3 text-xs font-medium text-white hover:opacity-90 transition-colors disabled:opacity-50 flex items-center"
               >
                 {loading ? (
                   <>

@@ -101,9 +101,9 @@ export default function ScheduleView({
                 newDate.setDate(currentDate.getDate() - 7);
                 onDateChange(newDate);
               }}
-              className="p-2 hover:bg-gray-100 rounded-lg"
+              className="p-2 hover:bg-gray-100 rounded-lg text-gray-600"
             >
-              <Calendar className="h-4 w-4" />
+              &lt;
             </button>
             <button
               onClick={() => onDateChange(new Date())}
@@ -117,9 +117,9 @@ export default function ScheduleView({
                 newDate.setDate(currentDate.getDate() + 7);
                 onDateChange(newDate);
               }}
-              className="p-2 hover:bg-gray-100 rounded-lg"
+              className="p-2 hover:bg-gray-100 rounded-lg text-gray-600"
             >
-              <Calendar className="h-4 w-4 rotate-180" />
+              &gt;
             </button>
           </div>
         </div>

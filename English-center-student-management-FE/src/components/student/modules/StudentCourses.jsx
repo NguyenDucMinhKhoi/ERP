@@ -112,7 +112,7 @@ export default function StudentCourses() {
     return (
       <SectionCard
         title="Course Management"
-        right={<button className="bg-primary-main text-white px-4 py-2 rounded-lg hover:opacity-90 transition-colors">Enroll new course</button>}
+        right={<button className="rounded-xl border border-transparent bg-primary-main px-8 py-3 text-xs font-medium text-white hover:opacity-90 transition-colors">Enroll new course</button>}
       >
         <p className="text-gray-600">View and manage your courses</p>
       </SectionCard>

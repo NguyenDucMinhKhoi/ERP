@@ -163,9 +163,9 @@ export default function StudentSupport() {
         </div>
         <button
           onClick={() => setShowNewTicket(true)}
-          className="bg-primary-main text-white px-4 py-2 rounded-lg hover:opacity-90 transition-colors"
+          className="rounded-xl border border-transparent bg-primary-main px-8 py-3 text-xs font-medium text-white hover:opacity-90 transition-colors"
         >
-          Gửi yêu cầu hỗ trợ
+          Submit a support request
         </button>
       </div>
 
@@ -327,7 +327,7 @@ export default function StudentSupport() {
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                className="rounded-xl border border-transparent bg-primary-main px-8 py-3 text-xs font-medium text-white hover:opacity-90 transition-colors"
               >
                 Submit feedback
               </button>

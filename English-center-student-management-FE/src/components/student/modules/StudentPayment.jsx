@@ -184,7 +184,7 @@ export default function StudentPayment() {
                 <div className="text-right">
                   <p className="text-lg font-semibold text-gray-900">{formatCurrency(payment.amount)}</p>
                 </div>
-                <button className="bg-primary-main text-white px-4 py-2 rounded-lg hover:opacity-90 transition-colors">
+                <button className="rounded-xl border border-transparent bg-primary-main px-8 py-3 text-xs font-medium text-white hover:opacity-90 transition-colors">
                   Pay now
                 </button>
               </div>
@@ -240,7 +240,7 @@ export default function StudentPayment() {
                         <div className="text-xs text-gray-500">{payment.transactionId}</div>
                       </div>
                     ) : (
-                      <button onClick={() => handlePayment(payment)} className="text-blue-600 hover:text-blue-900">
+                      <button onClick={() => handlePayment(payment)} className="rounded-xl border border-transparent bg-primary-main px-8 py-3 text-xs font-medium text-white hover:opacity-90 transition-colors">
                         Pay now
                       </button>
                     )}
