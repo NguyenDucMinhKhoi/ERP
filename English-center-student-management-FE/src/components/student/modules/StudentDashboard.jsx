@@ -11,7 +11,7 @@ function StatsGrid({ stats }) {
       <MetricCard 
         title="Enrolled courses" 
         value={stats.enrolledCourses} 
-        icon={<BookOpen className="h-6 w-6 text-blue-600" />} 
+        icon={<BookOpen className="h-6 w-6 text-primary-main" />} 
         color=""
       />
       <MetricCard 

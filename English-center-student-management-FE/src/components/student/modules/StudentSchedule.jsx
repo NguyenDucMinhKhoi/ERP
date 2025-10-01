@@ -92,7 +92,7 @@ export default function StudentSchedule() {
             onClick={() => setView('week')}
             className={`px-3 py-2 rounded-lg text-sm font-medium ${
               view === 'week' 
-                ? 'bg-blue-600 text-white' 
+                ? 'bg-primary-main text-white' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -102,7 +102,7 @@ export default function StudentSchedule() {
             onClick={() => setView('month')}
             className={`px-3 py-2 rounded-lg text-sm font-medium ${
               view === 'month' 
-                ? 'bg-blue-600 text-white' 
+                ? 'bg-primary-main text-white' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -129,7 +129,7 @@ export default function StudentSchedule() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-main"></div>
       </div>
     );
   }

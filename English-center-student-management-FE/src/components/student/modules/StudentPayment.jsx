@@ -112,17 +112,23 @@ export default function StudentPayment() {
   const handlePayment = (payment) => {
     setSelectedPayment(payment);
     setShowPaymentModal(true);
+    // Ngăn scroll khi modal mở
+    document.body.style.overflow = 'hidden';
   };
 
   const handlePaymentSubmit = (paymentData) => {
     console.log('Payment submitted:', paymentData);
     setShowPaymentModal(false);
-    // Handle payment submission
+    setSelectedPayment(null);
+    // Khôi phục scroll khi modal đóng
+    document.body.style.overflow = 'auto';
   };
 
   const handlePaymentCancel = () => {
     setShowPaymentModal(false);
     setSelectedPayment(null);
+    // Khôi phục scroll khi modal đóng
+    document.body.style.overflow = 'auto';
   };
 
   const totalPaid = payments
@@ -178,7 +184,7 @@ export default function StudentPayment() {
                 <div className="text-right">
                   <p className="text-lg font-semibold text-gray-900">{formatCurrency(payment.amount)}</p>
                 </div>
-                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <button className="bg-primary-main text-white px-4 py-2 rounded-lg hover:opacity-90 transition-colors">
                   Pay now
                 </button>
               </div>
@@ -254,7 +260,7 @@ export default function StudentPayment() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 cursor-pointer">
               <div className="flex items-center">
-                <CreditCard className="h-8 w-8 text-blue-600" />
+                <CreditCard className="h-8 w-8 text-primary-main" />
                 <div className="ml-3">
                   <h3 className="font-medium text-gray-900">Bank transfer</h3>
                   <p className="text-sm text-gray-600">Pay via bank transfer</p>
@@ -287,7 +293,7 @@ export default function StudentPayment() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-main"></div>
       </div>
     );
   }
@@ -300,7 +306,7 @@ export default function StudentPayment() {
           <h1 className="text-2xl font-bold text-gray-900">Billing & Invoices</h1>
           <p className="text-gray-600">Manage tuition and payments</p>
         </div>
-        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+        <button className="rounded-xl border border-transparent bg-primary-main px-8 py-3 text-xs font-medium text-white hover:opacity-90 transition-colors">
           Download invoice
         </button>
       </div>

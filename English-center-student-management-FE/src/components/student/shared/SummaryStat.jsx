@@ -8,8 +8,8 @@ export default function SummaryStat({ icon, label, value, color }) {
           {icon}
         </div>
         <div className="ml-4">
-          <p className="text-sm font-medium text-gray-600">{label}</p>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
+            <p className="text-sm font-medium text-primary-main">{label}</p>
+            <p className="text-2xl font-bold text-primary-main">{value}</p>
         </div>
       </div>
     </div>

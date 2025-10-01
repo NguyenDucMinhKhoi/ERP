@@ -4,7 +4,7 @@ import { BookOpen, Clock, Users, Star, Play, CheckCircle, Calendar, User } from 
 export default function CourseCard({ course, onViewDetails, onContinueLearning }) {
   const getStatusColor = (status) => {
     switch (status) {
-      case 'enrolled': return 'bg-blue-100 text-blue-800';
+      case 'enrolled': return 'bg-primary-100 text-primary-800';
       case 'completed': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -56,6 +56,7 @@ export default function CourseCard({ course, onViewDetails, onContinueLearning }
           </div>
         </div>
 
+        
         {/* Progress Bar */}
         <div className="mb-4">
           <div className="flex justify-between text-sm text-gray-600 mb-1">
@@ -64,7 +65,7 @@ export default function CourseCard({ course, onViewDetails, onContinueLearning }
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              className="bg-primary-main h-2 rounded-full transition-all duration-300"
               style={{ width: `${course.progress}%` }}
             ></div>
           </div>
@@ -99,14 +100,14 @@ export default function CourseCard({ course, onViewDetails, onContinueLearning }
         <div className="flex space-x-2">
           <button 
             onClick={() => onViewDetails(course)}
-            className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+            className="rounded-xl border border-transparent bg-primary-main px-8 py-3 text-xs font-medium text-white hover:opacity-90"
           >
             View details
           </button>
           {course.status === 'enrolled' && (
             <button 
               onClick={() => onContinueLearning(course)}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors text-sm"
             >
               Continue learning
             </button>

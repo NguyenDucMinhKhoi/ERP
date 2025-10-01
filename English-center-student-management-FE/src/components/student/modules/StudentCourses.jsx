@@ -103,7 +103,7 @@ export default function StudentCourses() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-main"></div>
       </div>
     );
   }
@@ -112,7 +112,7 @@ export default function StudentCourses() {
     return (
       <SectionCard
         title="Course Management"
-        right={<button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">Enroll new course</button>}
+        right={<button className="bg-primary-main text-white px-4 py-2 rounded-lg hover:opacity-90 transition-colors">Enroll new course</button>}
       >
         <p className="text-gray-600">View and manage your courses</p>
       </SectionCard>
