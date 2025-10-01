@@ -234,7 +234,7 @@ const PaymentManagement = () => {
             className="relative mx-auto w-full max-w-2xl bg-white rounded-xl shadow-2xl border border-gray-200 max-h-[90vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="overflow-y-auto max-h-[90vh] finance-modal-scrollbar">
+            <div className="overflow-y-auto max-h-[90vh]">
             <div className="flex justify-between items-center p-6 border-b border-gray-200 sticky top-0 bg-white rounded-t-xl">
               <div className="flex items-center space-x-3">
                 <div className="flex-shrink-0 w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
