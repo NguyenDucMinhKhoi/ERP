@@ -18,14 +18,22 @@ export default function LoginPage() {
     setError("");
     try {
       await authService.login({ email, password });
-      // Fetch profile to identify role
-      const me = await authService.getMe?.();
-      const role = me?.role;
-      if (role === 'hocvien') {
-        navigate('/student', { replace: true });
-      } else {
-        navigate('/', { replace: true });
+      // Lưu role để App.jsx có thể quyết định điều hướng/hiển thị
+      try {
+        const me = await authService.getMe();
+        const role = (me?.role || me?.user?.role || "").toLowerCase();
+        if (role) {
+          try {
+            localStorage.setItem("userRole", role);
+          } catch {}
+          try {
+            sessionStorage.setItem("userRole", role);
+          } catch {}
+        }
+      } catch {
+        // Không cản trở luồng nếu gọi /auth/me thất bại
       }
+      navigate("/");
     } catch (e) {
       const data = e?.response?.data;
       const msg =
@@ -35,7 +43,7 @@ export default function LoginPage() {
         data?.non_field_errors?.[0] ||
         data?.email?.[0] ||
         data?.password?.[0] ||
-        "Login failed";
+        "Đăng nhập thất bại";
       setError(String(msg));
     }
   };

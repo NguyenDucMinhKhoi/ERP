@@ -32,3 +32,4 @@ coverage
 out
 build
 *.tsbuildinfo
+.vite

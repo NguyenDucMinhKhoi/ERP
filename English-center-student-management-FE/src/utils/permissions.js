@@ -12,7 +12,7 @@ export const ROLES = {
 // Adjust as features evolve. Actions can later be: view | create | update | delete
 export const POLICY = {
   dashboard: [ROLES.ADMIN, ROLES.STAFF, ROLES.TEACHER, ROLES.STUDENT],
-  crm: [ROLES.ADMIN, ROLES.STAFF, ROLES.TEACHER],
+  crm: [ROLES.ADMIN, ROLES.STAFF, ROLES.TEACHER, ROLES.STUDENT],
   tables: [ROLES.ADMIN],
   billing: [ROLES.ADMIN, ROLES.STAFF, ROLES.STUDENT],
   reports: [ROLES.ADMIN, ROLES.STAFF, ROLES.TEACHER, ROLES.STUDENT],

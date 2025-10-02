@@ -1,22 +1,31 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Users,
   MessageSquare,
   BarChart3,
   TrendingUp,
   UserCheck,
-  AlertCircle
-} from 'lucide-react';
-import { StudentList, StudentProfile, CRMReports, StudentModules } from '../components/CRM';
-import CareLogForm from '../components/CRM/CareLogForm';
-import authService from '../services/authService';
-import { useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+  AlertCircle,
+} from "lucide-react";
+import { StudentProfile, CRMReports } from "../components/CRM";
+import CareLogForm from "../components/CRM/CareLogForm";
+// Reuse StudentManagement components
+import StudentList from "../components/StudentManagement/StudentList";
+import AddStudentForm from "../components/StudentManagement/AddStudentForm";
+import EditStudentForm from "../components/StudentManagement/EditStudentForm";
+import StudentProfileModal from "../components/StudentManagement/StudentProfileModal";
+import authService from "../services/authService";
+import { ROLES } from "../utils/permissions";
 
 export default function CRMpage() {
-  const [activeTab, setActiveTab] = useState('students');
+  const [activeTab, setActiveTab] = useState("students");
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showCareLogForm, setShowCareLogForm] = useState(false);
+  // StudentManagement-style modals
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  // Role
   const [role, setRole] = useState(null);
 
   useEffect(() => {
@@ -26,38 +35,35 @@ export default function CRMpage() {
         if (authService.isAuthenticated()) {
           const me = await authService.getMe();
           if (mounted) setRole(me?.role || null);
-        }
+        } else if (mounted) setRole(null);
       } catch {
         if (mounted) setRole(null);
       }
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const tabs = [
     {
-      id: 'students',
-      label: 'Student List',
+      id: "students",
+      label: "Danh Sách Học Viên",
       icon: Users,
-      description: 'Manage student information'
+      description: "Quản lý thông tin học viên",
     },
+
     {
-      id: 'profile',
-      label: 'Student Profile',
-      icon: UserCheck,
-      description: 'Student details and timeline'
-    },
-    {
-      id: 'reports',
-      label: 'CRM Reports',
+      id: "reports",
+      label: "Báo Cáo CRM",
       icon: BarChart3,
-      description: 'Performance and conversion analytics'
-    }
+      description: "Phân tích hiệu suất và chuyển đổi",
+    },
   ];
 
   const handleStudentSelect = (student) => {
     setSelectedStudent(student);
-    setActiveTab('profile');
+    setActiveTab("profile");
   };
 
   const handleAddCareLog = (student) => {
@@ -70,46 +76,60 @@ export default function CRMpage() {
     setShowCareLogForm(false);
   };
 
+  // StudentManagement handlers
+  const openAddStudent = () => setShowAddForm(true);
+  const openEditStudent = (student) => {
+    setSelectedStudent(student);
+    setShowEditForm(true);
+  };
+  const openProfile = (student) => {
+    setSelectedStudent(student);
+    setShowProfileModal(true);
+  };
+  const closeAll = () => {
+    setShowAddForm(false);
+    setShowEditForm(false);
+    setShowProfileModal(false);
+    setSelectedStudent(null);
+  };
+
+  const isAdmin = role === ROLES.ADMIN;
+  // Fields staff can update per policy image: phone, status, class, notes
+  const staffAllowedFields = ["phone", "status", "class", "notes"];
+
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'students':
+      case "students":
         return (
-          <StudentList
-            onStudentSelect={handleStudentSelect}
-            onAddCareLog={handleAddCareLog}
-          />
+          <StudentList onEdit={openEditStudent} onViewProfile={openProfile} />
         );
-      case 'profile':
+      case "profile":
         return <StudentProfile student={selectedStudent} />;
-      case 'reports':
+      case "reports":
         return <CRMReports />;
       default:
         return (
-          <StudentList
-            onStudentSelect={handleStudentSelect}
-            onAddCareLog={handleAddCareLog}
-          />
+          <StudentList onEdit={openEditStudent} onViewProfile={openProfile} />
         );
     }
   };
 
-  // If user is student: redirect to /student for correct URL
-  if (role === 'hocvien') {
-    return <Navigate to="/student" replace />;
-  }
-
   return (
     <div className="space-y-6">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-800">CRM - Student Management</h1>
-        <p className="text-slate-600 mt-1">Customer care and student management system</p>
+        <h1 className="text-2xl font-bold text-slate-800">
+          CRM - Quản Lý Học Viên
+        </h1>
+        <p className="text-slate-600 mt-1">
+          Hệ thống chăm sóc khách hàng và quản lý học viên
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-600">Total Students</p>
+              <p className="text-sm text-slate-600">Tổng Học Viên</p>
               <p className="text-2xl font-bold text-slate-800">1,247</p>
             </div>
             <Users className="h-8 w-8 text-primary-main" />
@@ -123,7 +143,7 @@ export default function CRMpage() {
         <div className="card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-600">Care Tasks Today</p>
+              <p className="text-sm text-slate-600">Chăm Sóc Hôm Nay</p>
               <p className="text-2xl font-bold text-slate-800">23</p>
             </div>
             <MessageSquare className="h-8 w-8 text-info" />
@@ -137,7 +157,7 @@ export default function CRMpage() {
         <div className="card p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-600">Conversion Rate</p>
+              <p className="text-sm text-slate-600">Tỷ Lệ Chuyển Đổi</p>
               <p className="text-2xl font-bold text-slate-800">30%</p>
             </div>
             <BarChart3 className="h-8 w-8 text-success" />
@@ -173,8 +193,8 @@ export default function CRMpage() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm ${
                   activeTab === tab.id
-                    ? 'border-primary-main text-primary-main'
-                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                    ? "border-primary-main text-primary-main"
+                    : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -185,10 +205,23 @@ export default function CRMpage() {
         </nav>
       </div>
 
-      <div className="min-h-[600px]">
-        {renderTabContent()}
-      </div>
+      {/* Toolbar for Students tab */}
+      {activeTab === "students" && (
+        <div className="flex items-center justify-between mt-4">
+          <div className="text-slate-600" />
+          <button
+            onClick={openAddStudent}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary-main px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors interactive-button"
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Thêm học viên
+          </button>
+        </div>
+      )}
 
+      <div className="min-h-[600px]">{renderTabContent()}</div>
       {showCareLogForm && selectedStudent && (
         <CareLogForm
           isOpen={showCareLogForm}
@@ -198,8 +231,34 @@ export default function CRMpage() {
           onSave={handleSaveCareLog}
         />
       )}
+
+      {/* StudentManagement modals (reused) */}
+      {activeTab === "students" && (
+        <>
+          {showAddForm && (
+            <AddStudentForm onClose={closeAll} onSuccess={closeAll} />
+          )}
+          {showEditForm && selectedStudent && (
+            <EditStudentForm
+              student={selectedStudent}
+              onClose={closeAll}
+              onSuccess={closeAll}
+              allowedFields={isAdmin ? null : staffAllowedFields}
+            />
+          )}
+          {showProfileModal && selectedStudent && (
+            <StudentProfileModal
+              student={selectedStudent}
+              onClose={closeAll}
+              onEdit={() => {
+                setShowProfileModal(false);
+                openEditStudent(selectedStudent);
+              }}
+            />
+          )}
+        </>
+      )}
     </div>
   );
 }
-
 
