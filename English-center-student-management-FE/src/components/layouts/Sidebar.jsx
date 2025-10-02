@@ -2,17 +2,16 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Home,
-  Table2,
   Receipt,
   UserRound,
-  ChevronRight,
   LayoutGrid,
   Users,
   BarChart3,
   MessageSquare,
+  BookOpen,
 } from "lucide-react";
 import authService from "../../services/authService";
-import { isAllowed } from "../../utils/permissions";
+import { isAllowed, ROLES } from "../../utils/permissions"; // Import ROLES
 
 export default function Sidebar() {
   const navigate = useNavigate();
@@ -35,23 +34,23 @@ export default function Sidebar() {
     }
     loadRole();
     const onStorage = (e) => {
-      if (e.key === 'ecsm_access_token' || e.key === 'ecsm_refresh_token') {
+      if (e.key === "ecsm_access_token" || e.key === "ecsm_refresh_token") {
         loadRole();
       }
     };
-    window.addEventListener('storage', onStorage);
+    window.addEventListener("storage", onStorage);
     return () => {
       mounted = false;
-      window.removeEventListener('storage', onStorage);
+      window.removeEventListener("storage", onStorage);
     };
   }, []);
 
   const canCRM = isAllowed(role, 'crm');
-  const canTables = isAllowed(role, 'tables');
   const canBilling = isAllowed(role, 'billing');
   const canReports = isAllowed(role, 'reports');
   const canNotifications = isAllowed(role, 'notifications');
-
+  const isAdmin = role === ROLES.ADMIN; // Sử dụng ROLES.ADMIN
+  const isStudent = role === ROLES.STUDENT; // Sử dụng ROLES.ADMIN
   const handleNavigation = (path) => {
     navigate(path);
   };
@@ -67,70 +66,96 @@ export default function Sidebar() {
           ENGLISH CENTER ERP
         </div>
       </div>
-
+      {isStudent ? (
+        // Student uses UI at /student
+        <>
+          <NavSection title="Student">
+            <NavItem 
+              icon={<Users size={18} />} 
+              label="CRM - Student"
+              active={location.pathname === '/student' || location.pathname.startsWith('/student/')}
+              onClick={() => handleNavigation('/student')}
+            />
+          </NavSection>
+        </>
+      ) : (
+        <>
       {/* Groups */}
       <NavSection title="Trang Chính">
-        <NavItem 
-          icon={<Home size={18} />} 
-          label="Dashboard" 
-          active={location.pathname === '/' || location.pathname === '/dashboard'}
-          onClick={() => handleNavigation('/dashboard')}
-        />
+        {isAdmin && (
+          <NavItem
+            icon={<Home size={18} />}
+            label="Dashboard"
+            active={
+              location.pathname === "/" || location.pathname === "/dashboard"
+            }
+            onClick={() => handleNavigation("/dashboard")}
+          />
+        )}
         {canCRM && (
-          <NavItem 
-            icon={<Users size={18} />} 
-            label="CRM - Học Viên" 
-            active={location.pathname === '/crm'}
-            onClick={() => handleNavigation('/crm')}
+          <NavItem
+            icon={<Users size={18} />}
+            label="CRM - Học Viên"
+            active={location.pathname === "/crm"}
+            onClick={() => handleNavigation("/crm")}
           />
         )}
-        {/* Danh Sách: ẩn với nhân viên theo giới hạn chức năng */}
-        {canTables && (
-          <NavItem 
-            icon={<Table2 size={18} />} 
-            label="Danh Sách" 
-            active={location.pathname === '/tables'}
-            onClick={() => handleNavigation('/tables')}
+        {canCRM && (
+          <NavItem
+            icon={<Users size={18} />}
+            label="CRM - Leads"
+            active={location.pathname === "/crm-leads"}
+            onClick={() => handleNavigation("/crm-leads")}
           />
         )}
-        {canBilling && (
+        {canCRM && (
+          <NavItem
+            icon={<BookOpen size={18} />}
+            label="Quản lý khóa học"
+            active={location.pathname === "/course-management"}
+            onClick={() => handleNavigation("/course-management")}
+          />
+        )}
+        {canBilling && isAdmin && ( // Chỉ admin mới thấy Quản lý Tài chính
           <NavItem 
             icon={<Receipt size={18} />} 
-            label="Thanh Toán" 
-            active={location.pathname === '/billing'}
-            onClick={() => handleNavigation('/billing')}
+            label="Quản lý Tài chính" 
+            active={location.pathname === '/finance'}
+            onClick={() => handleNavigation('/finance')}
           />
         )}
       </NavSection>
 
       <NavSection title="Báo Cáo & Phân Tích">
         {canReports && (
-          <NavItem 
-            icon={<BarChart3 size={18} />} 
-            label="Báo Cáo CRM" 
-            active={location.pathname === '/crm-reports'}
-            onClick={() => handleNavigation('/crm')}
+          <NavItem
+            icon={<BarChart3 size={18} />}
+            label="Báo cáo & Thống kê"
+            active={location.pathname === "/reports"}
+            onClick={() => handleNavigation("/reports")}
           />
         )}
         {canNotifications && (
-          <NavItem 
-            icon={<MessageSquare size={18} />} 
-            label="Thông Báo" 
-            active={location.pathname === '/notifications'}
-            onClick={() => handleNavigation('/notifications')}
+          <NavItem
+            icon={<MessageSquare size={18} />}
+            label="Thông Báo & Hỗ Trợ"
+            active={location.pathname === "/notifications"}
+            onClick={() => handleNavigation("/notifications")}
           />
         )}
       </NavSection>
 
       <NavSection title="Tài Khoản">
-        <NavItem 
-          icon={<UserRound size={18} />} 
-          label="Hồ Sơ" 
-          active={location.pathname === '/profile'}
-          onClick={() => handleNavigation('/profile')}
+        <NavItem
+          icon={<UserRound size={18} />}
+          label="Hồ Sơ"
+          active={location.pathname === "/profile"}
+          onClick={() => handleNavigation("/profile")}
         />
       </NavSection>
-    </aside>
+      </>
+      )}
+      </aside>
   );
 }
 

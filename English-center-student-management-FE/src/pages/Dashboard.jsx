@@ -17,12 +17,14 @@ import {
   RecentActivities,
 } from "../components/dashboard";
 import { APITester } from "../components/CRM";
-
+import { StudentDashboard } from "../components/student/modules";
+import authService from "../services/authService";
 export default function Dashboard() {
   // Event handlers
   const navigate = useNavigate();
   const location = useLocation();
   const [successData, setSuccessData] = useState(null);
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     if (location.state && location.state.accountCreated) {
@@ -77,6 +79,10 @@ export default function Dashboard() {
           delta="+3"
           tone="info"
           icon={<GraduationCap className="h-5 w-5" />}
+          description="Total classes"
+        />
+        <KPICard
+          title="Monthly Revenue"
           description="Tổng số lớp học"
         />
         <KPICard
@@ -85,6 +91,10 @@ export default function Dashboard() {
           delta="+18%"
           tone="success"
           icon={<DollarSign className="h-5 w-5" />}
+          description="Current month"
+        />
+        <KPICard
+          title="Completion Rate"
           description="Tháng hiện tại"
         />
         <KPICard

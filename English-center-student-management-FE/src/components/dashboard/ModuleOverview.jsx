@@ -7,10 +7,13 @@ import {
   Calendar 
 } from "lucide-react";
 import { ModuleCard } from "../shared";
+import { ConvertLeadModal, PendingEnrollmentsModal } from "../CRM";
 
 export default function ModuleOverview({ onModuleAction }) {
   const navigate = useNavigate();
-
+  // const [showConvert, setShowConvert] = React.useState(false);
+  const [showPending, setShowPending] = React.useState(false);
+  const [pendingCount] = React.useState(3); // UI-only mock count
   const modules = [
     {
       title: "CRM - Quản Lý Học Viên",
@@ -23,7 +26,7 @@ export default function ModuleOverview({ onModuleAction }) {
       ],
       actions: [
         "Xem danh sách học viên",
-        "Thêm học viên mới",
+        "Xác nhận học viên chờ",
         "Chăm sóc học viên"
       ],
       navigate: () => navigate('/crm')
@@ -75,30 +78,44 @@ export default function ModuleOverview({ onModuleAction }) {
     }
   ];
 
-  const handleModuleClick = (module) => {
-    if (module.navigate) {
-      module.navigate();
-    } else {
-      onModuleAction?.(module.title, 'view', 0);
+  // Disable whole-card navigation; actions control behavior
+
+  const handleAction = (title, action, idx) => {
+    if (title === 'CRM - Quản Lý Học Viên' && action === 'Xem danh sách học viên') {
+      navigate('/crm');
+      return;
     }
+    if (title === 'CRM - Quản Lý Học Viên' && action === 'Xác nhận học viên chờ') {
+      setShowPending(true);
+      return;
+    }
+    onModuleAction?.(title, action, idx);
   };
 
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
       {modules.map((module, index) => (
-        <div key={index} onClick={() => handleModuleClick(module)} className="cursor-pointer">
+        <div key={index} className="cursor-default">
           <ModuleCard
             title={module.title}
             icon={module.icon}
             color={module.color}
             stats={module.stats}
             actions={module.actions}
-            onActionClick={(action, actionIndex) => 
-              onModuleAction?.(module.title, action, actionIndex)
-            }
+            actionBadges={{ 'Xác nhận học viên chờ': pendingCount }}
+            onActionClick={(action, actionIndex) => handleAction(module.title, action, actionIndex)}
           />
         </div>
       ))}
+      {/* {showConvert && (
+        <ConvertLeadModal isOpen={showConvert} onClose={() => setShowConvert(false)} />
+      )} */}
+      {showPending && (
+        <PendingEnrollmentsModal
+          isOpen={showPending}
+          onClose={() => setShowPending(false)}
+        />
+      )}
     </div>
   );
 }
