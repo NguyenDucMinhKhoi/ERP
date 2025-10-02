@@ -133,6 +133,14 @@ export default function App() {
               </RequireAuth>
             } 
           />
+          <Route 
+            path="/student" 
+            element={
+              <RequireAuth>
+                <StudentModules />
+              </RequireAuth>
+            } 
+          />
         </Route>
 
         {/* Catch all route */}

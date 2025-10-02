@@ -128,7 +128,6 @@ export default function Dashboard() {
           color="text-error"
         />
         <MetricCard
-          title="Attendance Today"
           title="Điểm Danh Hôm Nay"
           value="94%"
           icon={<CheckCircle className="h-4 w-4" />}

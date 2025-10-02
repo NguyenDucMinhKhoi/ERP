@@ -79,6 +79,7 @@ export default function Sidebar() {
           </NavSection>
         </>
       ) : (
+        <>
       {/* Groups */}
       <NavSection title="Trang Chính">
         {isAdmin && (
@@ -152,7 +153,9 @@ export default function Sidebar() {
           onClick={() => handleNavigation("/profile")}
         />
       </NavSection>
-    </aside>
+      </>
+      )}
+      </aside>
   );
 }
 
