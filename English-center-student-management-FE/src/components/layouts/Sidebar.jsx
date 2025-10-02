@@ -2,19 +2,16 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Home,
-  Table2,
   Receipt,
   UserRound,
-  ChevronRight,
   LayoutGrid,
   Users,
   BarChart3,
   MessageSquare,
-  GraduationCap,
   BookOpen,
 } from "lucide-react";
 import authService from "../../services/authService";
-import { isAllowed } from "../../utils/permissions";
+import { isAllowed, ROLES } from "../../utils/permissions"; // Import ROLES
 
 export default function Sidebar() {
   const navigate = useNavigate();
@@ -48,12 +45,11 @@ export default function Sidebar() {
     };
   }, []);
 
-
-  const canCRM = isAllowed(role, "crm");
-  const canTables = isAllowed(role, "tables");
-  const canBilling = isAllowed(role, "billing");
-  const canReports = isAllowed(role, "reports");
-  const canNotifications = isAllowed(role, "notifications");
+  const canCRM = isAllowed(role, 'crm');
+  const canBilling = isAllowed(role, 'billing');
+  const canReports = isAllowed(role, 'reports');
+  const canNotifications = isAllowed(role, 'notifications');
+  const isAdmin = role === ROLES.ADMIN; // Sử dụng ROLES.ADMIN
 
   const handleNavigation = (path) => {
     navigate(path);
@@ -73,29 +69,22 @@ export default function Sidebar() {
 
       {/* Groups */}
       <NavSection title="Trang Chính">
-        <NavItem
-          icon={<Home size={18} />}
-          label="Dashboard"
-          active={
-            location.pathname === "/" || location.pathname === "/dashboard"
-          }
-          onClick={() => handleNavigation("/dashboard")}
-        />
+        {isAdmin && (
+          <NavItem
+            icon={<Home size={18} />}
+            label="Dashboard"
+            active={
+              location.pathname === "/" || location.pathname === "/dashboard"
+            }
+            onClick={() => handleNavigation("/dashboard")}
+          />
+        )}
         {canCRM && (
           <NavItem
             icon={<Users size={18} />}
             label="CRM - Học Viên"
             active={location.pathname === "/crm"}
             onClick={() => handleNavigation("/crm")}
-          />
-        )}
-
-        {canBilling && ( // Chỉ admin mới thấy Quản lý Tài chính
-          <NavItem 
-            icon={<Receipt size={18} />} 
-            label="Quản lý Tài chính" 
-            active={location.pathname === '/finance'}
-            onClick={() => handleNavigation('/finance')}
           />
         )}
         {canCRM && (
@@ -106,28 +95,20 @@ export default function Sidebar() {
             onClick={() => handleNavigation("/crm-leads")}
           />
         )}
-        {/* Tái sử dụng CRM cho quản lý học viên, ẩn menu riêng */}
-        <NavItem
-          icon={<BookOpen size={18} />}
-          label="Quản lý khóa học"
-          active={location.pathname === "/course-management"}
-          onClick={() => handleNavigation("/course-management")}
-        />
-        {/* Danh Sách: ẩn với nhân viên theo giới hạn chức năng */}
-        {canTables && (
+        {canCRM && (
           <NavItem
-            icon={<Table2 size={18} />}
-            label="Danh Sách"
-            active={location.pathname === "/tables"}
-            onClick={() => handleNavigation("/tables")}
+            icon={<BookOpen size={18} />}
+            label="Quản lý khóa học"
+            active={location.pathname === "/course-management"}
+            onClick={() => handleNavigation("/course-management")}
           />
         )}
-        {canBilling && (
-          <NavItem
-            icon={<Receipt size={18} />}
-            label="Thanh Toán"
-            active={location.pathname === "/billing"}
-            onClick={() => handleNavigation("/billing")}
+        {canBilling && isAdmin && ( // Chỉ admin mới thấy Quản lý Tài chính
+          <NavItem 
+            icon={<Receipt size={18} />} 
+            label="Quản lý Tài chính" 
+            active={location.pathname === '/finance'}
+            onClick={() => handleNavigation('/finance')}
           />
         )}
       </NavSection>
@@ -136,15 +117,15 @@ export default function Sidebar() {
         {canReports && (
           <NavItem
             icon={<BarChart3 size={18} />}
-            label="Báo Cáo CRM"
-            active={location.pathname === "/crm-reports"}
-            onClick={() => handleNavigation("/crm")}
+            label="Báo cáo & Thống kê"
+            active={location.pathname === "/reports"}
+            onClick={() => handleNavigation("/reports")}
           />
         )}
         {canNotifications && (
           <NavItem
             icon={<MessageSquare size={18} />}
-            label="Thông Báo"
+            label="Thông Báo & Hỗ Trợ"
             active={location.pathname === "/notifications"}
             onClick={() => handleNavigation("/notifications")}
           />
