@@ -222,7 +222,6 @@ export default function CRMpage() {
       )}
 
       <div className="min-h-[600px]">{renderTabContent()}</div>
-
       {showCareLogForm && selectedStudent && (
         <CareLogForm
           isOpen={showCareLogForm}
@@ -262,3 +261,4 @@ export default function CRMpage() {
     </div>
   );
 }
+

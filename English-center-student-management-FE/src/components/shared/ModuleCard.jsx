@@ -1,5 +1,4 @@
 import React from "react";
-
 export default function ModuleCard({ title, icon, color, stats, actions, onActionClick, actionBadges }) {
   return (
     <div className="card p-6">

@@ -1,4 +1,95 @@
 @import "tailwindcss";
+@layer base {
+  :root {
+    --color-background: #F8F9FA;
+    --color-surface: #FFFFFF;
+    --color-primary-main: #14B8A6;
+    --color-primary-dark: #0F766E;
+    --color-primary-light: #2DD4BF;
+    
+    /* Thêm màu mới */
+    --color-success: #10B981;
+    --color-warning: #F59E0B;
+    --color-error: #EF4444;
+    --color-info: #3B82F6;
+  }
+  
+  body {
+    background-color: var(--color-background);
+    @apply text-slate-800;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-slate-200;
+    box-shadow: 0 8px 24px -12px rgba(15, 23, 42, 0.2);
+  }
+  
+  .bg-background {
+    background-color: var(--color-background);
+  }
+  
+  .bg-surface {
+    background-color: var(--color-surface);
+  }
+  
+  .bg-primary-main {
+    background-color: var(--color-primary-main);
+  }
+  
+  .bg-primary-dark {
+    background-color: var(--color-primary-dark);
+  }
+  
+  .bg-primary-light {
+    background-color: var(--color-primary-light);
+  }
+  
+  /* Màu mới */
+  .bg-success {
+    background-color: var(--color-success);
+  }
+  
+  .bg-warning {
+    background-color: var(--color-warning);
+  }
+  
+  .bg-error {
+    background-color: var(--color-error);
+  }
+  
+  .bg-info {
+    background-color: var(--color-info);
+  }
+  
+  /* Text colors */
+  .text-success {
+    color: var(--color-success);
+  }
+  
+  .text-warning {
+    color: var(--color-warning);
+  }
+  
+  .text-error {
+    color: var(--color-error);
+  }
+  
+  .text-info {
+    color: var(--color-info);
+  }
+}
+
+/* Resets nhỏ */
+:root {
+  color-scheme: light;
+}
+html,
+body,
+#root {
+  height: 100%;
+}
 
 @layer base {
   :root {

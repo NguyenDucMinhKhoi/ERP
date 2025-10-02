@@ -12,6 +12,7 @@ import CRMLeads from "./pages/CRMLeads.jsx";
 import FinancePage from "./pages/FinancePage.jsx";
 import NotificationsSupport from "./pages/NotificationsSupport.jsx";
 import { ROLES } from "./utils/permissions";
+import { StudentModules } from "./components/CRM";
 
 // Utility functions
 const getUserRole = () => {
@@ -43,17 +44,17 @@ const MainRoute = () => {
     return <Mainpage />;
   }
   
-  // Đã login: redirect theo role
   const role = getUserRole();
-  return role === ROLES.ADMIN ? <Navigate to="/dashboard" replace /> : <Navigate to="/crm" replace />;
+  if (role === ROLES.ADMIN) return <Navigate to="/dashboard" replace />;
+  if (role === ROLES.STUDENT) return <Navigate to="/student" replace />; // thêm học viên
+  return <Navigate to="/crm" replace />;
 };
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        
+        <Route path="/login" element={<LoginPage />} />     
         {/* Tất cả routes đều dùng MainLayout */}
         <Route path="/" element={<MainLayout />}>
           {/* Route chính - xử lý cả trường hợp chưa login và đã login */}
@@ -129,6 +130,14 @@ export default function App() {
             element={
               <RequireAuth>
                 <NotificationsSupport />
+              </RequireAuth>
+            } 
+          />
+          <Route 
+            path="/student" 
+            element={
+              <RequireAuth>
+                <StudentModules />
               </RequireAuth>
             } 
           />

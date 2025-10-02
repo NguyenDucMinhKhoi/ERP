@@ -307,7 +307,6 @@ export default function StudentProfile({ student: providedStudent }) {
           }}
         />
       )}
-
       {activeTab === 'care' && (
         <div className="space-y-6">
           <div className="flex justify-between items-center">
@@ -366,7 +365,7 @@ export default function StudentProfile({ student: providedStudent }) {
           </div>
         </div>
       )}
-
+      
       {/* Invoice Creation Modal */}
       {showInvoiceCreation && (
         <InvoiceCreation
@@ -382,5 +381,3 @@ export default function StudentProfile({ student: providedStudent }) {
     </div>
   );
 }
-
-

@@ -50,7 +50,7 @@ export default function Sidebar() {
   const canReports = isAllowed(role, 'reports');
   const canNotifications = isAllowed(role, 'notifications');
   const isAdmin = role === ROLES.ADMIN; // Sử dụng ROLES.ADMIN
-
+  const isStudent = role === ROLES.STUDENT; // Sử dụng ROLES.ADMIN
   const handleNavigation = (path) => {
     navigate(path);
   };
@@ -66,7 +66,20 @@ export default function Sidebar() {
           ENGLISH CENTER ERP
         </div>
       </div>
-
+      {isStudent ? (
+        // Student uses UI at /student
+        <>
+          <NavSection title="Student">
+            <NavItem 
+              icon={<Users size={18} />} 
+              label="CRM - Student"
+              active={location.pathname === '/student' || location.pathname.startsWith('/student/')}
+              onClick={() => handleNavigation('/student')}
+            />
+          </NavSection>
+        </>
+      ) : (
+        <>
       {/* Groups */}
       <NavSection title="Trang Chính">
         {isAdmin && (
@@ -140,7 +153,9 @@ export default function Sidebar() {
           onClick={() => handleNavigation("/profile")}
         />
       </NavSection>
-    </aside>
+      </>
+      )}
+      </aside>
   );
 }
 
