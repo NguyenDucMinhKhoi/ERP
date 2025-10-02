@@ -20,9 +20,6 @@ export default function ConvertLeadModal({ lead, onClose, onSuccess }) {
         
         <div className="p-6 space-y-4">
           <div className="flex items-start gap-3">
-            <div className="mt-1 flex-shrink-0">
-              <CheckCircle2 className="h-6 w-6 text-primary-main" />
-            </div>
             <div className="flex-1">
               <p className="text-slate-700 mb-2">
                 Bạn có chắc muốn chuyển{" "}
