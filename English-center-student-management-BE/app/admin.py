@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from app.apps.users.models import User
-from app.apps.hocviens.models import HocVien
+from app.apps.role.models import Role
 from app.apps.khoahocs.models import KhoaHoc
 from app.apps.dangky.models import DangKyKhoaHoc
 from app.apps.thanhtoans.models import ThanhToan
@@ -15,37 +15,11 @@ class CustomUserAdmin(UserAdmin):
     list_filter = ['role', 'is_active', 'date_joined']
     search_fields = ['username', 'email', 'first_name', 'last_name']
     ordering = ['-date_joined']
-    
     fieldsets = UserAdmin.fieldsets + (
         ('Thông tin bổ sung', {'fields': ('role',)}),
     )
     add_fieldsets = UserAdmin.add_fieldsets + (
         ('Thông tin bổ sung', {'fields': ('role',)}),
-    )
-
-
-@admin.register(HocVien)
-class HocVienAdmin(admin.ModelAdmin):
-    list_display = ['ten', 'email', 'sdt', 'ngay_sinh', 'trang_thai_hoc_phi', 'co_tai_khoan', 'created_at']
-    list_filter = ['trang_thai_hoc_phi', 'created_at', 'ngay_sinh']
-    search_fields = ['ten', 'email', 'sdt']
-    ordering = ['-created_at']
-    readonly_fields = ['created_at', 'updated_at']
-    
-    fieldsets = (
-        ('Thông tin cơ bản', {
-            'fields': ('ten', 'email', 'sdt', 'ngay_sinh')
-        }),
-        ('Học phí', {
-            'fields': ('trang_thai_hoc_phi', 'ghi_chu')
-        }),
-        ('Tài khoản', {
-            'fields': ('user',)
-        }),
-        ('Thời gian', {
-            'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',)
-        }),
     )
 
 
