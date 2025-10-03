@@ -288,6 +288,206 @@
     }
   },
   {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0001-0001-0001-000000000001",
+    "fields": {
+      "privilege_name": "core.create.user",
+      "mo_ta": "Tạo người dùng (CORE)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0001-0002-0002-000000000002",
+    "fields": {
+      "privilege_name": "core.read.user",
+      "mo_ta": "Xem người dùng (CORE)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0001-0003-0003-000000000003",
+    "fields": {
+      "privilege_name": "core.update.user",
+      "mo_ta": "Cập nhật người dùng (CORE)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0001-0004-0004-000000000004",
+    "fields": {
+      "privilege_name": "core.delete.user",
+      "mo_ta": "Xóa người dùng (CORE)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0001-0005-0005-000000000005",
+    "fields": {
+      "privilege_name": "core.approve.role",
+      "mo_ta": "Duyệt vai trò (CORE)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0001-0006-0006-000000000006",
+    "fields": {
+      "privilege_name": "core.report.audit",
+      "mo_ta": "Báo cáo kiểm toán (CORE)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0002-0001-0001-000000000007",
+    "fields": {
+      "privilege_name": "crm.create.hocvien",
+      "mo_ta": "Tạo học viên (CRM)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0002-0002-0002-000000000008",
+    "fields": {
+      "privilege_name": "crm.update.chamsoc",
+      "mo_ta": "Cập nhật chăm sóc (CRM)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0002-0003-0003-000000000009",
+    "fields": {
+      "privilege_name": "crm.read.thongbao",
+      "mo_ta": "Xem thông báo (CRM)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0002-0004-0004-000000000010",
+    "fields": {
+      "privilege_name": "crm.report.conversion",
+      "mo_ta": "Báo cáo chuyển đổi (CRM)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0002-0005-0005-000000000011",
+    "fields": {
+      "privilege_name": "crm.approve.enroll",
+      "mo_ta": "Duyệt ghi danh (CRM)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0003-0001-0001-000000000012",
+    "fields": {
+      "privilege_name": "academic.create.course",
+      "mo_ta": "Tạo khóa học (ACADEMIC)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0003-0002-0002-000000000013",
+    "fields": {
+      "privilege_name": "academic.update.session",
+      "mo_ta": "Cập nhật buổi học (ACADEMIC)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0003-0003-0003-000000000014",
+    "fields": {
+      "privilege_name": "academic.read.attendance",
+      "mo_ta": "Xem điểm danh (ACADEMIC)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0003-0004-0004-000000000015",
+    "fields": {
+      "privilege_name": "academic.report.completion",
+      "mo_ta": "Báo cáo hoàn thành (ACADEMIC)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0003-0005-0005-000000000016",
+    "fields": {
+      "privilege_name": "academic.approve.enroll",
+      "mo_ta": "Duyệt ghi danh (ACADEMIC)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0004-0001-0001-000000000017",
+    "fields": {
+      "privilege_name": "finance.create.payment",
+      "mo_ta": "Tạo thanh toán (FINANCE)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0004-0002-0002-000000000018",
+    "fields": {
+      "privilege_name": "finance.update.invoice",
+      "mo_ta": "Cập nhật hóa đơn (FINANCE)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0004-0003-0003-000000000019",
+    "fields": {
+      "privilege_name": "finance.read.report",
+      "mo_ta": "Xem báo cáo tài chính (FINANCE)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0004-0004-0004-000000000020",
+    "fields": {
+      "privilege_name": "finance.approve.overdue",
+      "mo_ta": "Duyệt công nợ quá hạn (FINANCE)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0004-0005-0005-000000000021",
+    "fields": {
+      "privilege_name": "finance.export.pdf",
+      "mo_ta": "Xuất PDF tài chính (FINANCE)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0005-0001-0001-000000000022",
+    "fields": {
+      "privilege_name": "ops.create.enrollment",
+      "mo_ta": "Tạo ghi danh (OPS)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0005-0002-0002-000000000023",
+    "fields": {
+      "privilege_name": "ops.update.batch_assign",
+      "mo_ta": "Cập nhật phân lớp (OPS)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0005-0003-0003-000000000024",
+    "fields": {
+      "privilege_name": "ops.read.report_kpi",
+      "mo_ta": "Xem báo cáo KPI (OPS)"
+    }
+  },
+  {
+    "model": "privilege.privilege",
+    "pk": "a1b2c3d4-0005-0004-0004-000000000025",
+    "fields": {
+      "privilege_name": "ops.import.csv",
+      "mo_ta": "Nhập dữ liệu CSV (OPS)"
+    }
+  },
+  {
     "model": "role_privilege.roleprivilege",
     "pk": "88888888-8888-8888-8888-888888888888",
     "fields": {
@@ -341,6 +541,206 @@
     "fields": {
       "role": "33333333-3333-3333-3333-333333333333",
       "privilege": "44444444-4444-4444-4444-444444444444"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440301",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0001-0001-0001-000000000001"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440302",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0001-0002-0002-000000000002"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440303",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0001-0003-0003-000000000003"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440304",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0001-0004-0004-000000000004"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440305",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0001-0005-0005-000000000005"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440306",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0001-0006-0006-000000000006"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440307",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0002-0001-0001-000000000007"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440308",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0002-0002-0002-000000000008"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440309",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0002-0003-0003-000000000009"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440310",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0002-0004-0004-000000000010"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440311",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0002-0005-0005-000000000011"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440312",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0003-0001-0001-000000000012"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440313",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0003-0002-0002-000000000013"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440314",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0003-0003-0003-000000000014"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440315",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0003-0004-0004-000000000015"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440316",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0003-0005-0005-000000000016"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440317",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0004-0001-0001-000000000017"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440318",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0004-0002-0002-000000000018"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440319",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0004-0003-0003-000000000019"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440320",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0004-0004-0004-000000000020"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440321",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0004-0005-0005-000000000021"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440322",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0005-0001-0001-000000000022"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440323",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0005-0002-0002-000000000023"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440324",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0005-0003-0003-000000000024"
+    }
+  },
+  {
+    "model": "role_privilege.roleprivilege",
+    "pk": "550e8400-e29b-41d4-a716-446655440325",
+    "fields": {
+      "role": "11111111-1111-1111-1111-111111111111",
+      "privilege": "a1b2c3d4-0005-0004-0004-000000000025"
     }
   }
 ]
