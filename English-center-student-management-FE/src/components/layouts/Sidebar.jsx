@@ -24,7 +24,7 @@ export default function Sidebar() {
       try {
         if (authService.isAuthenticated()) {
           const me = await authService.getMe();
-          if (mounted) setRole(me?.role || null);
+          if (mounted) setRole(me?.role_name || null);
         } else if (mounted) {
           setRole(null);
         }
