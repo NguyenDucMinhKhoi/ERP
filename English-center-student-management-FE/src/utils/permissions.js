@@ -3,9 +3,9 @@
 // Role constants (keep in sync with backend `User.role`)
 export const ROLES = {
   ADMIN: 'admin',
-  STAFF: 'nhanvien',
+  STAFF: 'employee',
   TEACHER: 'giangvien',
-  STUDENT: 'hocvien',
+  STUDENT: 'student',
 };
 
 // Permission policy by module/resource

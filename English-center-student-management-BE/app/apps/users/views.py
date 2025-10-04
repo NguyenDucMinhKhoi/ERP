@@ -13,6 +13,10 @@ from .serializers import (
     UserSerializer, UserCreateSerializer, UserUpdateSerializer,
     LoginSerializer, ChangePasswordSerializer
 )
+from app.apps.users.permissions import HasPrivilege
+from app.apps.users.constants import PRIVILEGE_READ, PRIVILEGE_UPDATE, PRIVILEGE_DELETE
+
+from django.http import JsonResponse, HttpResponseForbidden
 
 
 class RegisterView(generics.CreateAPIView):
@@ -91,7 +95,7 @@ class UserListView(generics.ListCreateAPIView):
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [HasPrivilege.with_privilege(PRIVILEGE_READ)]
     filterset_fields = ['role', 'is_active']
     search_fields = ['username', 'email', 'first_name', 'last_name']
     ordering_fields = ['username', 'date_joined', 'role']
@@ -103,7 +107,15 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
     queryset = User.objects.all()
     serializer_class = UserUpdateSerializer
-    permission_classes = [IsAdminUser]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [HasPrivilege.with_privilege(PRIVILEGE_READ)()]
+        elif self.request.method in ['PUT', 'PATCH']:
+            return [HasPrivilege.with_privilege(PRIVILEGE_UPDATE)()]
+        elif self.request.method == 'DELETE':
+            return [HasPrivilege.with_privilege(PRIVILEGE_DELETE)()]
+        return super().get_permissions()
 
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
@@ -111,7 +123,7 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     Thông tin profile của user hiện tại
     """
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPrivilege.with_privilege(PRIVILEGE_READ)]
 
     def get_object(self):
         return self.request.user
@@ -121,7 +133,7 @@ class ChangePasswordView(generics.GenericAPIView):
     """
     Thay đổi mật khẩu
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [HasPrivilege.with_privilege(PRIVILEGE_UPDATE)]
     serializer_class = ChangePasswordSerializer
 
     def post(self, request):
@@ -139,7 +151,7 @@ class ChangePasswordView(generics.GenericAPIView):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([HasPrivilege.with_privilege(PRIVILEGE_READ)])
 def me(request):
     """
     Lấy thông tin user hiện tại

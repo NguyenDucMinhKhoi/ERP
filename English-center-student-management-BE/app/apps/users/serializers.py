@@ -1,18 +1,18 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
-from .models import User
+from .models import User, Role
 
 
 class UserSerializer(serializers.ModelSerializer):
     """
-    Serializer cho User model
+    Serializer cho UserModel
     """
+    role_name = serializers.CharField(source='role.role_name', read_only=True)
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role', 'date_joined']
-        read_only_fields = ['id', 'date_joined']
-
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role_name']
 
 class UserCreateSerializer(serializers.ModelSerializer):
     """
@@ -20,14 +20,27 @@ class UserCreateSerializer(serializers.ModelSerializer):
     """
     password = serializers.CharField(write_only=True, validators=[validate_password])
     password_confirm = serializers.CharField(write_only=True)
+    role_name = serializers.CharField(write_only=True)  # Accept role_name as input
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'password_confirm', 'first_name', 'last_name', 'role']
+        fields = ['username', 'email', 'password', 'password_confirm', 'first_name', 'last_name', 'role_name']
 
     def validate(self, attrs):
+        # Validate password confirmation
         if attrs['password'] != attrs['password_confirm']:
-            raise serializers.ValidationError("Mật khẩu xác nhận không khớp.")
+            raise serializers.ValidationError({"password_confirm": "Mật khẩu xác nhận không khớp."})
+
+        # Validate role_name exists
+        role_name = attrs.get('role_name')
+        try:
+            role = Role.objects.get(role_name=role_name)
+        except Role.DoesNotExist:
+            raise serializers.ValidationError({"role_name": f"Vai trò '{role_name}' không tồn tại."})
+        
+        # Replace role_name with role UUID in validated data
+        attrs['role'] = role
+        attrs.pop('role_name')
         return attrs
 
     def create(self, validated_data):
@@ -48,33 +61,36 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 class LoginSerializer(serializers.Serializer):
     """
-    Serializer cho đăng nhập bằng email
+    Serializer để đăng nhập bằng email và password
     """
-    email = serializers.EmailField()
-    password = serializers.CharField()
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(required=True, write_only=True, style={'input_type': 'password'})
 
     def validate(self, attrs):
-        email = (attrs.get('email') or '').strip()
+        email = attrs.get('email')
         password = attrs.get('password')
 
-        if email and password:
-            # Tìm user theo email (không phân biệt hoa thường)
-            try:
-                user_obj = User.objects.get(email__iexact=email)
-            except User.DoesNotExist:
-                raise serializers.ValidationError('Thông tin đăng nhập không chính xác.')
-            except User.MultipleObjectsReturned:
-                raise serializers.ValidationError('Email này thuộc về nhiều tài khoản. Vui lòng liên hệ quản trị.')
+        # Tìm user theo email (case-insensitive)
+        try:
+            user = User.objects.get(email__iexact=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError(
+                {'email': 'Email không tồn tại.'}
+            )
 
-            user = authenticate(username=user_obj.username, password=password)
-            if not user:
-                raise serializers.ValidationError('Thông tin đăng nhập không chính xác.')
-            if not user.is_active:
-                raise serializers.ValidationError('Tài khoản này đã bị khóa.')
-            attrs['user'] = user
-        else:
-            raise serializers.ValidationError('Vui lòng nhập đầy đủ thông tin đăng nhập.')
+        # Kiểm tra password
+        if not user.check_password(password):
+            raise serializers.ValidationError(
+                {'password': 'Mật khẩu không đúng.'}
+            )
 
+        # Kiểm tra user active
+        if not user.is_active:
+            raise serializers.ValidationError(
+                {'email': 'Tài khoản này đã bị vô hiệu hóa.'}
+            )
+
+        attrs['user'] = user
         return attrs
 
 

@@ -90,7 +90,7 @@ http.interceptors.response.use(
                 original.headers = original.headers || {};
                 original.headers.Authorization = `Bearer ${newAccess}`;
                 return http(original);
-            // eslint-disable-next-line no-unused-vars
+                // eslint-disable-next-line no-unused-vars
             } catch (_) {
                 // Redirect responsibility left to caller/UI
             }
@@ -110,6 +110,7 @@ async function login({ email, password }) {
 }
 
 async function register(payload) {
+    console.log('Register payload:', payload);
     // Expected payload: { username, email, password, password_confirm, first_name?, last_name?, role? }
     const { data } = await http.post('/auth/register/', payload);
     const access = data?.tokens?.access;

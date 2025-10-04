@@ -93,7 +93,7 @@ docker compose -f docker-compose.dev.yml up -d --build
 docker compose -f docker-compose.dev.yml exec api python manage.py migrate
 
 # Tạo superuser (tùy chọn)
-docker compose -f docker-compose.dev.yml exec api python manage.py createsuperuser
+docker compose -f docker-compose.dev.yml exec api python manage.py create_user_with_role --username='your_username' --password='your_password' --role='your_role'
 
 # Load dữ liệu mẫu
 docker compose -f docker-compose.dev.yml exec api python manage.py loaddata seed.json
@@ -114,60 +114,71 @@ docker compose -f docker-compose.dev.yml exec api python manage.py loaddata seed
 Sau khi load seed data, bạn có thể sử dụng các tài khoản sau:
 
 ### Admin
+
 - **Username**: admin
 - **Password**: Admin@123
 
 ### Nhân viên
+
 - **Username**: nhanvien1 / nhanvien2
 - **Password**: Nhanvien@123
 
 ### Học viên
+
 - **Username**: hocvien1 / hocvien2
 - **Password**: Hocvien@123
 
 ## API Endpoints
 
 ### Authentication
+
 - `POST /api/auth/register/` - Đăng ký tài khoản
 - `POST /api/auth/login/` - Đăng nhập
 - `POST /api/auth/logout/` - Đăng xuất
 - `POST /api/auth/refresh/` - Làm mới token
 
 ### Users (Admin only)
+
 - `GET/POST /api/users/` - Danh sách và tạo user
 - `GET/PUT/DELETE /api/users/{id}/` - Chi tiết, cập nhật, xóa user
 
 ### Học viên
+
 - `GET/POST /api/hocviens/` - Danh sách và tạo học viên (Nhân viên/Admin)
 - `GET/PUT/DELETE /api/hocviens/{id}/` - Chi tiết, cập nhật, xóa học viên
 - `GET /api/hocviens/me/` - Thông tin học viên hiện tại
 - `GET /api/hocviens/stats/` - Thống kê học viên
 
 ### Khóa học
+
 - `GET/POST /api/khoahocs/` - Danh sách và tạo khóa học (Nhân viên/Admin)
 - `GET/PUT/DELETE /api/khoahocs/{id}/` - Chi tiết, cập nhật, xóa khóa học
 - `GET /api/khoahocs/public/` - Danh sách khóa học công khai
 - `GET /api/khoahocs/stats/` - Thống kê khóa học
 
 ### Đăng ký khóa học
+
 - `GET/POST /api/dangky/` - Danh sách và tạo đăng ký (Nhân viên/Admin)
 - `GET/PUT/DELETE /api/dangky/{id}/` - Chi tiết, cập nhật, xóa đăng ký
 - `GET /api/dangky/me/` - Danh sách đăng ký của học viên hiện tại
 - `GET /api/dangky/stats/` - Thống kê đăng ký
 
 ### Thanh toán
+
 - `GET/POST /api/thanhtoans/` - Danh sách và tạo thanh toán (Nhân viên/Admin)
 - `GET/PUT/DELETE /api/thanhtoans/{id}/` - Chi tiết, cập nhật, xóa thanh toán
 - `GET /api/thanhtoans/me/` - Danh sách thanh toán của học viên hiện tại
 - `GET /api/thanhtoans/stats/` - Thống kê thanh toán
 
 ### Chăm sóc học viên
+
 - `GET/POST /api/chamsoc/` - Danh sách và tạo chăm sóc (Nhân viên/Admin)
 - `GET/PUT/DELETE /api/chamsoc/{id}/` - Chi tiết, cập nhật, xóa chăm sóc
 - `GET /api/chamsoc/me/` - Danh sách chăm sóc của học viên hiện tại
 - `GET /api/chamsoc/stats/` - Thống kê chăm sóc
 
 ### Thông báo
+
 - `GET/POST /api/thongbaos/` - Danh sách và tạo thông báo (Admin/Nhân viên)
 - `GET/PUT/DELETE /api/thongbaos/{id}/` - Chi tiết, cập nhật, xóa thông báo
 - `GET /api/thongbaos/public/` - Danh sách thông báo công khai
@@ -175,6 +186,7 @@ Sau khi load seed data, bạn có thể sử dụng các tài khoản sau:
 - `GET /api/thongbaos/stats/` - Thống kê thông báo
 
 ### Báo cáo (Admin only)
+
 - `GET /api/reports/overview/` - Báo cáo tổng quan
 - `GET /api/reports/financial/` - Báo cáo tài chính
 - `GET /api/reports/academic/` - Báo cáo học tập
@@ -182,16 +194,19 @@ Sau khi load seed data, bạn có thể sử dụng các tài khoản sau:
 ## Quyền truy cập (RBAC)
 
 ### Admin
+
 - Toàn quyền truy cập tất cả endpoints
 - Quản lý users, reports
 - Tạo thông báo cho mọi người
 
 ### Nhân viên
+
 - CRUD học viên, khóa học, đăng ký, thanh toán, chăm sóc
 - Xem thống kê của các module
 - Tạo thông báo cho nhóm người dùng
 
 ### Học viên
+
 - Xem thông tin cá nhân
 - Xem tiến độ học tập
 - Xem thông báo công khai và cá nhân
@@ -278,34 +293,42 @@ docker compose -f docker-compose.dev.yml exec api python manage.py migrate
 ### 11) Quy trình Git: Merge Request từ nhánh chức năng vào `develop`
 
 1. Tạo nhánh chức năng từ `develop` (đảm bảo `develop` mới nhất):
+
    ```bash
    git checkout develop
    git pull origin develop
    git checkout -b task/#<id-task><short-desc>
    ```
+
    Gợi ý đặt tên: `feature/#1_users_crud`, `fix/#2_payments_calc`, `chore/#3_devops_docker`.
 
 2. Commit theo đơn vị nhỏ, message rõ ràng:
+
    ```bash
    git add -A
    git commit -m "feat(users): add CRUD for user profile, refs#1"
    ```
 
 3. Đồng bộ nhánh lên remote và mở Merge Request (MR) vào `develop`:
+
    ```bash
    git push -u origin task/#<id-task><short-desc>
    ```
+
    - Trên Git hosting (GitHub/GitLab), tạo MR → target branch: `develop`.
    - Mô tả thay đổi, ảnh hưởng DB (nếu có), cách test, liên kết task.
 
 4. Review & CI:
+
    - Đảm bảo build/migration/tests pass trên CI.
    - Sửa theo review → push thêm commit lên cùng nhánh.
 
 5. Merge chiến lược đề xuất: Squash & Merge vào `develop`.
+
    - Sau khi merge, xóa nhánh chức năng trên remote để dọn dẹp.
 
 6. Cập nhật local sau khi MR được merge:
+
    ```bash
    git checkout develop
    git pull origin develop

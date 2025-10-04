@@ -1,13 +1,12 @@
 from rest_framework import serializers
 from .models import ThanhToan
-from app.apps.hocviens.serializers import HocVienSerializer
-
+from app.apps.users.serializers import UserSerializer
 
 class ThanhToanSerializer(serializers.ModelSerializer):
     """
     Serializer cơ bản cho ThanhToan
     """
-    hocvien_info = HocVienSerializer(source='hocvien', read_only=True)
+    hocvien_info = UserSerializer(source='hocvien', read_only=True)
 
     class Meta:
         model = ThanhToan
@@ -43,12 +42,11 @@ class ThanhToanUpdateSerializer(serializers.ModelSerializer):
         model = ThanhToan
         fields = ['so_tien', 'hinh_thuc', 'ghi_chu']
 
-
 class ThanhToanDetailSerializer(serializers.ModelSerializer):
     """
     Serializer chi tiết cho ThanhToan
     """
-    hocvien_info = HocVienSerializer(source='hocvien', read_only=True)
+    hocvien_info = UserSerializer(source='hocvien', read_only=True)
 
     class Meta:
         model = ThanhToan

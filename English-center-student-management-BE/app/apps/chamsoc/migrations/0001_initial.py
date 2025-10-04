@@ -11,7 +11,6 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('hocviens', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -28,8 +27,8 @@ class Migration(migrations.Migration):
                 ('trang_thai', models.CharField(choices=[('moi', 'Mới'), ('dang_xu_ly', 'Đang xử lý'), ('hoan_thanh', 'Hoàn thành'), ('dong', 'Đóng')], default='moi', max_length=20, verbose_name='Trạng thái')),
                 ('attachments', models.JSONField(blank=True, null=True, verbose_name='Tệp đính kèm')),
                 ('ghi_chu', models.TextField(blank=True, null=True, verbose_name='Ghi chú')),
-                ('hocvien', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='hocviens.hocvien', verbose_name='Học viên')),
-                ('nhanvien', models.ForeignKey(blank=True, limit_choices_to={'role': 'nhanvien'}, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL, verbose_name='Nhân viên chăm sóc')),
+                ('hocvien', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='Học viên', limit_choices_to={'role__role_name': 'student'}, related_name='chamsoc_hocvien_set')),
+                ('nhanvien', models.ForeignKey(blank=True, limit_choices_to={'role': 'nhanvien'}, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL, verbose_name='Nhân viên chăm sóc', related_name='chamsoc_nhanvien_set')),
             ],
             options={
                 'verbose_name': 'Chăm sóc học viên',

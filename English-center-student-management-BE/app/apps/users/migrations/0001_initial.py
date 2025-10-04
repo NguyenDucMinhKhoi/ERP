@@ -16,6 +16,19 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
+            name='Role',
+            fields=[
+                ('id', models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, serialize=False)),
+                ('role_name', models.CharField(max_length=50, unique=True, verbose_name='Tên vai trò', help_text='student, employee, admin, other')),
+                ('mo_ta', models.TextField(blank=True, null=True, verbose_name='Mô tả')),
+            ],
+            options={
+                'verbose_name': 'Vai trò',
+                'verbose_name_plural': 'Vai trò',
+                'db_table': 'erp_roles',
+            },
+        ),
+        migrations.CreateModel(
             name='User',
             fields=[
                 ('password', models.CharField(max_length=128, verbose_name='password')),
@@ -23,20 +36,31 @@ class Migration(migrations.Migration):
                 ('is_superuser', models.BooleanField(default=False, help_text='Designates that this user has all permissions without explicitly assigning them.', verbose_name='superuser status')),
                 ('first_name', models.CharField(blank=True, max_length=150, verbose_name='first name')),
                 ('last_name', models.CharField(blank=True, max_length=150, verbose_name='last name')),
-                ('email', models.EmailField(blank=True, max_length=254, verbose_name='email address')),
                 ('is_staff', models.BooleanField(default=False, help_text='Designates whether the user can log into this admin site.', verbose_name='staff status')),
                 ('is_active', models.BooleanField(default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active')),
                 ('date_joined', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date joined')),
                 ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('role', models.CharField(choices=[('admin', 'Admin'), ('nhanvien', 'Nhân viên'), ('hocvien', 'Học viên')], default='hocvien', max_length=20, verbose_name='Vai trò')),
+                ('ten', models.CharField(max_length=100, verbose_name='Họ và tên')),
+                ('email', models.EmailField(unique=True, max_length=254, verbose_name='Email')),
+                ('sdt', models.CharField(max_length=15, verbose_name='Số điện thoại')),
+                ('ngay_sinh', models.DateField(null=True, blank=True, verbose_name='Ngày sinh')),
+                ('trang_thai_hoc_phi', models.CharField(
+                    max_length=20,
+                    choices=[('dadong', 'Đã đóng'), ('conno', 'Còn nợ'), ('chuadong', 'Chưa đóng')],
+                    default=None,
+                    null=True,
+                    blank=True,
+                    verbose_name='Trạng thái học phí',
+                )),
+                ('ghi_chu', models.TextField(blank=True, null=True, verbose_name='Ghi chú')),
                 ('username', models.CharField(error_messages={'unique': 'Tên đăng nhập này đã tồn tại.'}, help_text='Bắt buộc. 150 ký tự trở xuống. Chỉ chứa chữ cái, số và @/./+/-/_', max_length=150, unique=True, verbose_name='Tên đăng nhập')),
-                ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.group', verbose_name='groups')),
-                ('user_permissions', models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.permission', verbose_name='user permissions')),
+                ('role', models.ForeignKey(to='users.Role', on_delete=models.PROTECT, verbose_name='Vai trò', related_name='users')),
             ],
             options={
                 'verbose_name': 'Người dùng',
                 'verbose_name_plural': 'Người dùng',
                 'ordering': ['-date_joined'],
+                'db_table': 'erp_users',
             },
             managers=[
                 ('objects', django.contrib.auth.models.UserManager()),
