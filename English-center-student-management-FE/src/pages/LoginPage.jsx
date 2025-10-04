@@ -1,39 +1,39 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import LoginForm from "../components/Auth/LoginForm";
-import RegisterForm from "../components/Auth/RegisterForm";
-import ForgotPasswordForm from "../components/Auth/ForgotPasswordForm";
-import authService from "../services/authService";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import LoginForm from '../components/Auth/LoginForm';
+import RegisterForm from '../components/Auth/RegisterForm';
+import ForgotPasswordForm from '../components/Auth/ForgotPasswordForm';
+import authService from '../services/authService';
 
 export default function LoginPage() {
-  const [activeTab, setActiveTab] = useState("login");
-  const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState('login');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleShowRegister = () => setActiveTab("register");
-  const handleShowForgot = () => setActiveTab("forgot");
-  const handleShowLogin = () => setActiveTab("login");
+  const handleShowRegister = () => setActiveTab('register');
+  const handleShowForgot = () => setActiveTab('forgot');
+  const handleShowLogin = () => setActiveTab('login');
 
   const handleLogin = async ({ email, password }) => {
-    setError("");
+    setError('');
     try {
       await authService.login({ email, password });
       // Lưu role để App.jsx có thể quyết định điều hướng/hiển thị
       try {
         const me = await authService.getMe();
-        const role = (me?.role || me?.user?.role || "").toLowerCase();
+        const role = (me?.role_name || me?.user?.role_name || '').toLowerCase();
         if (role) {
           try {
-            localStorage.setItem("userRole", role);
+            localStorage.setItem('userRole', role);
           } catch {}
           try {
-            sessionStorage.setItem("userRole", role);
+            sessionStorage.setItem('userRole', role);
           } catch {}
         }
       } catch {
         // Không cản trở luồng nếu gọi /auth/me thất bại
       }
-      navigate("/");
+      navigate('/');
     } catch (e) {
       const data = e?.response?.data;
       const msg =
@@ -43,7 +43,7 @@ export default function LoginPage() {
         data?.non_field_errors?.[0] ||
         data?.email?.[0] ||
         data?.password?.[0] ||
-        "Đăng nhập thất bại";
+        'Đăng nhập thất bại';
       setError(String(msg));
     }
   };
@@ -58,17 +58,17 @@ export default function LoginPage() {
                 {error}
               </div>
             )}
-            {activeTab === "login" && (
+            {activeTab === 'login' && (
               <LoginForm
                 onSubmit={handleLogin}
                 onForgot={handleShowForgot}
                 onSignUp={handleShowRegister}
               />
             )}
-            {activeTab === "register" && (
+            {activeTab === 'register' && (
               <RegisterForm onBack={handleShowLogin} />
             )}
-            {activeTab === "forgot" && (
+            {activeTab === 'forgot' && (
               <ForgotPasswordForm onBack={handleShowLogin} />
             )}
           </div>
