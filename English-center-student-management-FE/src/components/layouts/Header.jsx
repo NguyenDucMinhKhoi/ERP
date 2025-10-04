@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Bell, Search, ChevronDown } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import authService from "../../services/authService";
-import { ROLES } from "../../utils/permissions";
-import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "../../utils/auth";
+import React, { useEffect, useRef, useState } from 'react';
+import { Bell, Search, ChevronDown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import authService from '../../services/authService';
+import { ROLES } from '../../utils/permissions';
+import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from '../../utils/auth';
 
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -15,8 +15,8 @@ export default function Header() {
     const onClick = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
     };
-    window.addEventListener("click", onClick);
-    return () => window.removeEventListener("click", onClick);
+    window.addEventListener('click', onClick);
+    return () => window.removeEventListener('click', onClick);
   }, []);
 
   useEffect(() => {
@@ -82,7 +82,7 @@ export default function Header() {
           <div ref={ref} className="relative">
             {!user ? (
               <button
-                onClick={() => navigate("/login")}
+                onClick={() => navigate('/login')}
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-surface px-3 py-1.5 hover:bg-slate-100"
               >
                 <img
@@ -108,19 +108,31 @@ export default function Header() {
                   <span className="hidden text-sm font-medium sm:block">
                     {user?.last_name + ' ' + user?.first_name || user?.username}
                   </span>
-                  {user?.role && (
+                  {user?.role_name && (
                     <span className="hidden rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700 sm:block">
-                      {user.role_name === ROLES.ADMIN ? 'admin' : user.role_name === ROLES.STAFF ? 'employee' : user.role_name === ROLES.TEACHER ? 'giangvien' : 'student'}
+                      {user.role_name === ROLES.ADMIN
+                        ? 'admin'
+                        : user.role_name === ROLES.STAFF
+                        ? 'employee'
+                        : user.role_name === ROLES.TEACHER
+                        ? 'giangvien'
+                        : 'student'}
                     </span>
                   )}
                   <ChevronDown size={16} />
                 </button>
                 {open && (
                   <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-surface shadow-lg">
-                    <button className="block w-full px-4 py-2 text-left text-sm hover:bg-slate-100" onClick={() => navigate('/profile')}>
+                    <button
+                      className="block w-full px-4 py-2 text-left text-sm hover:bg-slate-100"
+                      onClick={() => navigate('/profile')}
+                    >
                       Profile
                     </button>
-                    <button className="block w-full px-4 py-2 text-left text-sm hover:bg-slate-100" onClick={() => navigate('/settings')}>
+                    <button
+                      className="block w-full px-4 py-2 text-left text-sm hover:bg-slate-100"
+                      onClick={() => navigate('/settings')}
+                    >
                       Settings
                     </button>
                     <div className="h-px bg-slate-200" />
