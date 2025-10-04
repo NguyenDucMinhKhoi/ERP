@@ -51,6 +51,8 @@ export default function Sidebar() {
   const canNotifications = isAllowed(role, 'notifications');
   const isAdmin = role === ROLES.ADMIN; // Sử dụng ROLES.ADMIN
   const isStudent = role === ROLES.STUDENT; // Sử dụng ROLES.ADMIN
+  const isStaff = role === ROLES.STAFF; // Sử dụng ROLES.ADMIN
+
   const handleNavigation = (path) => {
     navigate(path);
   };
@@ -92,7 +94,7 @@ export default function Sidebar() {
             onClick={() => handleNavigation("/dashboard")}
           />
         )}
-        {canCRM && (
+        {canCRM && (isStaff || isAdmin) && (
           <NavItem
             icon={<Users size={18} />}
             label="CRM - Học Viên"
@@ -100,7 +102,7 @@ export default function Sidebar() {
             onClick={() => handleNavigation("/crm")}
           />
         )}
-        {canCRM && (
+        {canCRM && (isStaff || isAdmin) &&  (
           <NavItem
             icon={<Users size={18} />}
             label="CRM - Leads"
@@ -108,7 +110,7 @@ export default function Sidebar() {
             onClick={() => handleNavigation("/crm-leads")}
           />
         )}
-        {canCRM && (
+        {canCRM && (isStaff || isAdmin) && (
           <NavItem
             icon={<BookOpen size={18} />}
             label="Quản lý khóa học"
@@ -127,7 +129,7 @@ export default function Sidebar() {
       </NavSection>
 
       <NavSection title="Báo Cáo & Phân Tích">
-        {canReports && (
+        {canReports && (isStaff || isAdmin) && (
           <NavItem
             icon={<BarChart3 size={18} />}
             label="Báo cáo & Thống kê"
@@ -135,7 +137,7 @@ export default function Sidebar() {
             onClick={() => handleNavigation("/reports")}
           />
         )}
-        {canNotifications && (
+        {canNotifications && (isStaff || isAdmin) && (
           <NavItem
             icon={<MessageSquare size={18} />}
             label="Thông Báo & Hỗ Trợ"
