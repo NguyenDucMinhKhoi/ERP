@@ -1,8 +1,43 @@
 import React, { useState, useEffect } from "react";
 import { X, Save, Calendar, Plus, Edit, Trash2, Clock } from "lucide-react";
-import { dummySchedules, daysOfWeek, timeSlots } from "./dummyData";
 
-export default function ScheduleManagement({ classData, onClose, onSuccess }) {
+// Constants
+const timeSlots = [
+  "06:00",
+  "06:30",
+  "07:00",
+  "07:30",
+  "08:00",
+  "08:30",
+  "09:00",
+  "09:30",
+  "10:00",
+  "10:30",
+  "11:00",
+  "11:30",
+  "12:00",
+  "12:30",
+  "13:00",
+  "13:30",
+  "14:00",
+  "14:30",
+  "15:00",
+  "15:30",
+  "16:00",
+  "16:30",
+  "17:00",
+  "17:30",
+  "18:00",
+  "18:30",
+  "19:00",
+  "19:30",
+  "20:00",
+  "20:30",
+  "21:00",
+  "21:30",
+];
+
+export default function ScheduleManagement({ classData, onClose }) {
   const [schedules, setSchedules] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState(null);
@@ -16,11 +51,20 @@ export default function ScheduleManagement({ classData, onClose, onSuccess }) {
   });
 
   useEffect(() => {
-    // Load schedules for this class
-    const classSchedules = dummySchedules.filter(
-      (s) => s.classId === classData.id
-    );
-    setSchedules(classSchedules);
+    // Load schedules for this class from API
+    const loadSchedules = async () => {
+      try {
+        // TODO: Replace with actual API call
+        // const response = await courseService.getClassSchedules(classData.id);
+        // setSchedules(response.results || []);
+        setSchedules([]); // Temporary empty array
+      } catch (error) {
+        console.error("Error loading schedules:", error);
+        setSchedules([]);
+      }
+    };
+
+    loadSchedules();
   }, [classData.id]);
 
   const handleChange = (e) => {

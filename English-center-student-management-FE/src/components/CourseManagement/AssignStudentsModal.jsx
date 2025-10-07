@@ -1,25 +1,45 @@
 import React, { useState, useEffect } from "react";
 import { X, Save, Users, Search, UserPlus, UserMinus } from "lucide-react";
-import { dummyStudents } from "../StudentManagement/dummyData";
+import courseService from "../../services/courseService";
 
 export default function AssignStudentsModal({ classData, onClose, onSuccess }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStudents, setSelectedStudents] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Initialize with current class students
-    if (classData && classData.students) {
-      setSelectedStudents(classData.students);
-    }
+    const loadStudents = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await courseService.getStudents();
+        setStudents(response.results || []);
+        
+        // Initialize with current class students
+        if (classData && classData.students) {
+          setSelectedStudents(classData.students);
+        }
+      } catch (err) {
+        console.error('Error loading students:', err);
+        setError('Không thể tải danh sách học viên. Vui lòng thử lại.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadStudents();
   }, [classData]);
 
   // Filter students based on search term
-  const filteredStudents = dummyStudents.filter((student) => {
+  const filteredStudents = students.filter((student) => {
+    const searchLower = searchTerm.toLowerCase();
     const matchesSearch =
-      student.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.phone.includes(searchTerm) ||
-      student.email.toLowerCase().includes(searchTerm.toLowerCase());
+      (student.ten || student.ho_ten || student.fullName || '').toLowerCase().includes(searchLower) ||
+      (student.so_dien_thoai || student.phone || '').includes(searchTerm) ||
+      (student.email || '').toLowerCase().includes(searchLower);
 
     return matchesSearch;
   });
@@ -99,6 +119,21 @@ export default function AssignStudentsModal({ classData, onClose, onSuccess }) {
 
         {/* Content */}
         <div className="p-6 space-y-6">
+          {loading && (
+            <div className="flex items-center justify-center py-8">
+              <div className="text-slate-600">Đang tải danh sách học viên...</div>
+            </div>
+          )}
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
+          {!loading && !error && (
+          <>
+        
           {/* Class Info */}
           <div className="bg-slate-50 rounded-lg p-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -185,15 +220,15 @@ export default function AssignStudentsModal({ classData, onClose, onSuccess }) {
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 bg-slate-200 rounded-full flex items-center justify-center">
                           <span className="text-sm font-medium text-slate-600">
-                            {student.fullName.charAt(0)}
+                            {(student.ten || student.ho_ten || student.fullName || 'N').charAt(0)}
                           </span>
                         </div>
                         <div>
                           <div className="text-sm font-medium text-slate-900">
-                            {student.fullName}
+                            {student.ten || student.ho_ten || student.fullName || 'Chưa có tên'}
                           </div>
                           <div className="text-sm text-slate-500">
-                            {student.phone} • {student.email}
+                            {student.so_dien_thoai || student.phone || 'Chưa có SĐT'} • {student.email || 'Chưa có email'}
                           </div>
                         </div>
                       </div>
@@ -237,20 +272,23 @@ export default function AssignStudentsModal({ classData, onClose, onSuccess }) {
               )}
             </div>
           </div>
+          </>
+          )}
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:ring-2 focus:ring-primary-main focus:border-transparent cursor-pointer"
+            disabled={loading}
+            className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:ring-2 focus:ring-primary-main focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             Hủy
           </button>
           <button
             onClick={handleSubmit}
             disabled={
-              isSubmitting || selectedStudents.length > classData?.maxStudents
+              isSubmitting || loading || selectedStudents.length > classData?.maxStudents
             }
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-main border border-transparent rounded-lg hover:bg-primary-dark focus:ring-2 focus:ring-primary-main focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >

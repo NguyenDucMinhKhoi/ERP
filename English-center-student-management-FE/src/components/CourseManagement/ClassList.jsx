@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Search,
   Users,
@@ -10,7 +10,7 @@ import {
   Clock,
   CheckSquare,
 } from "lucide-react";
-import { dummyClasses, classStatusOptions } from "./dummyData";
+import courseService from "../../services/courseService";
 
 export default function ClassList({
   onAssignStudents,
@@ -20,21 +20,43 @@ export default function ClassList({
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [courseFilter, setCourseFilter] = useState("");
+  const [classes, setClasses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Load classes from API
+  useEffect(() => {
+    const loadClasses = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await courseService.getClasses();
+        setClasses(response.results || []);
+      } catch (err) {
+        console.error('Error loading classes:', err);
+        setError('Không thể tải danh sách lớp học. Vui lòng thử lại.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadClasses();
+  }, []);
 
   const filteredClasses = useMemo(() => {
-    return dummyClasses.filter((classItem) => {
+    return classes.filter((classItem) => {
       const matchesSearch =
-        classItem.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        classItem.courseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        classItem.teacherName.toLowerCase().includes(searchTerm.toLowerCase());
+        classItem.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        classItem.courseName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        classItem.teacherName?.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesStatus = !statusFilter || classItem.status === statusFilter;
       const matchesCourse =
-        !courseFilter || classItem.courseId.toString() === courseFilter;
+        !courseFilter || classItem.courseId?.toString() === courseFilter;
 
       return matchesSearch && matchesStatus && matchesCourse;
     });
-  }, [searchTerm, statusFilter, courseFilter]);
+  }, [classes, searchTerm, statusFilter, courseFilter]);
 
   const getStatusBadge = (status) => {
     const statusColors = {
@@ -56,22 +78,28 @@ export default function ClassList({
     );
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("vi-VN");
-  };
-
   const getCourseOptions = () => {
-    const courses = [
-      ...new Set(
-        dummyClasses.map((c) => ({ id: c.courseId, name: c.courseName }))
-      ),
-    ];
-    return courses.map((course) => (
+    const uniqueCourses = Array.from(
+      new Set(classes.map(c => c.courseId))
+    ).map(courseId => {
+      const classItem = classes.find(c => c.courseId === courseId);
+      return { id: courseId, name: classItem?.courseName || `Khóa học ${courseId}` };
+    });
+
+    return uniqueCourses.map((course) => (
       <option key={course.id} value={course.id}>
         {course.name}
       </option>
     ));
   };
+
+  const classStatusOptions = [
+    { value: "Chờ mở lớp", label: "Chờ mở lớp" },
+    { value: "Đang học", label: "Đang học" },
+    { value: "Tạm dừng", label: "Tạm dừng" },
+    { value: "Đã kết thúc", label: "Đã kết thúc" },
+    { value: "Đã hủy", label: "Đã hủy" },
+  ];
 
   return (
     <div className="space-y-6">
@@ -117,9 +145,23 @@ export default function ClassList({
         </div>
       </div>
 
+      {/* Loading and Error States */}
+      {loading && (
+        <div className="flex items-center justify-center py-8">
+          <div className="text-slate-600">Đang tải danh sách lớp học...</div>  
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-sm text-red-600">{error}</p>
+        </div>
+      )}
+
       {/* Classes Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-slate-200">
-        <div className="overflow-x-auto">
+      {!loading && !error && (
+        <div className="bg-white rounded-lg shadow-sm border border-slate-200">
+          <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-slate-50">
               <tr>
@@ -226,19 +268,20 @@ export default function ClassList({
           </table>
         </div>
 
-        {/* Footer with count */}
-        <div className="px-6 py-3 bg-slate-50 border-t border-slate-200">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-600">
-              Hiển thị {filteredClasses.length} trong tổng số{" "}
-              {dummyClasses.length} lớp học
-            </p>
+          {/* Footer with count */}
+          <div className="px-6 py-3 bg-slate-50 border-t border-slate-200">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-slate-600">
+                Hiển thị {filteredClasses.length} trong tổng số{" "}
+                {classes.length} lớp học
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Empty State */}
-      {filteredClasses.length === 0 && (
+      {!loading && !error && filteredClasses.length === 0 && (
         <div className="text-center py-12">
           <Users className="h-12 w-12 text-slate-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-slate-900 mb-2">

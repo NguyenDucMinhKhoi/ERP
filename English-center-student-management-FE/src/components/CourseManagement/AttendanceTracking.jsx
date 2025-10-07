@@ -8,42 +8,70 @@ import {
   Calendar,
   User,
 } from "lucide-react";
-import { dummyStudents } from "../StudentManagement/dummyData";
-import { dummySchedules, attendanceStatusOptions } from "./dummyData";
+import courseService from "../../services/courseService";
+
+// Attendance status options
+const attendanceStatusOptions = [
+  { value: "Có mặt", label: "Có mặt" },
+  { value: "Vắng mặt", label: "Vắng mặt" },
+  { value: "Đi muộn", label: "Đi muộn" },
+  { value: "Về sớm", label: "Về sớm" },
+];
 
 export default function AttendanceTracking({ classData, onClose, onSuccess }) {
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [attendanceData, setAttendanceData] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [schedules] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load schedules for this class
-    const classSchedules = dummySchedules.filter(
-      (s) => s.classId === classData.id
-    );
-    if (classSchedules.length > 0) {
-      setSelectedSchedule(classSchedules[0]);
-    }
-  }, [classData.id]);
-
-  useEffect(() => {
-    // Load attendance data for selected schedule
-    if (selectedSchedule) {
-      // In real app, this would be an API call
-      const attendance = {};
-      classData.students.forEach((studentId) => {
-        const student = dummyStudents.find((s) => s.id === studentId);
-        if (student) {
-          attendance[studentId] = {
-            status: "Có mặt",
-            checkInTime: "",
-            notes: "",
-          };
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        
+        // Load schedules for this class
+        const classSchedules = await courseService.getClassSchedules(classData.id);
+        
+        if (classSchedules.length > 0) {
+          setSelectedSchedule(classSchedules[0]);
         }
+
+        // Load students for this class
+        const studentsResponse = await courseService.getStudents();
+        const allStudents = studentsResponse.results || [];
+        
+        // Filter students who are enrolled in this class
+        const classStudents = allStudents.filter(student => 
+          classData.students && classData.students.includes(student.id)
+        );
+        setStudents(classStudents);
+
+      } catch (error) {
+        console.error('Error loading attendance data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [classData.id, classData.students]);
+
+  useEffect(() => {
+    // Initialize attendance data when schedule or students change
+    if (selectedSchedule && students.length > 0) {
+      const attendance = {};
+      students.forEach((student) => {
+        attendance[student.id] = {
+          status: "Có mặt",
+          checkInTime: "",
+          notes: "",
+        };
       });
       setAttendanceData(attendance);
     }
-  }, [selectedSchedule, classData.students]);
+  }, [selectedSchedule, students]);
 
   const handleAttendanceChange = (studentId, field, value) => {
     setAttendanceData((prev) => ({
@@ -67,41 +95,23 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // In real app, this would be an API call
-      console.log("Saving attendance:", {
+      // Save attendance via API
+      await courseService.saveAttendance({
         scheduleId: selectedSchedule.id,
+        classId: classData.id,
         attendance: attendanceData,
       });
 
       onSuccess();
     } catch (error) {
       console.error("Error saving attendance:", error);
+      alert("Có lỗi xảy ra khi lưu điểm danh. Vui lòng thử lại.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const getStatusBadge = (status) => {
-    const statusColors = {
-      "Có mặt": "bg-green-100 text-green-800",
-      "Vắng mặt": "bg-red-100 text-red-800",
-      "Đi muộn": "bg-yellow-100 text-yellow-800",
-      "Về sớm": "bg-orange-100 text-orange-800",
-    };
 
-    return (
-      <span
-        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          statusColors[status] || "bg-gray-100 text-gray-800"
-        }`}
-      >
-        {status}
-      </span>
-    );
-  };
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("vi-VN", {
@@ -152,6 +162,21 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
 
         {/* Content */}
         <div className="p-6 space-y-6">
+          {loading && (
+            <div className="flex items-center justify-center py-8">
+              <div className="text-slate-600">Đang tải dữ liệu...</div>
+            </div>
+          )}
+
+          {!loading && students.length === 0 && (
+            <div className="text-center py-8 text-slate-500">
+              Không có học viên nào trong lớp này
+            </div>
+          )}
+
+          {!loading && students.length > 0 && (
+            <>
+        
           {/* Class Info */}
           <div className="bg-slate-50 rounded-lg p-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -269,29 +294,26 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-slate-200">
-                  {classData.students.map((studentId) => {
-                    const student = dummyStudents.find(
-                      (s) => s.id === studentId
-                    );
-                    const attendance = attendanceData[studentId];
+                  {students.map((student) => {
+                    const attendance = attendanceData[student.id];
 
-                    if (!student || !attendance) return null;
+                    if (!attendance) return null;
 
                     return (
-                      <tr key={studentId} className="hover:bg-slate-50">
+                      <tr key={student.id} className="hover:bg-slate-50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-3">
                             <div className="h-10 w-10 bg-slate-200 rounded-full flex items-center justify-center">
                               <span className="text-sm font-medium text-slate-600">
-                                {student.fullName.charAt(0)}
+                                {student.ten?.charAt(0) || student.ho_ten?.charAt(0) || 'N'}
                               </span>
                             </div>
                             <div>
                               <div className="text-sm font-medium text-slate-900">
-                                {student.fullName}
+                                {student.ten || student.ho_ten || 'Chưa có tên'}
                               </div>
                               <div className="text-sm text-slate-500">
-                                {student.phone}
+                                {student.so_dien_thoai || student.phone || 'Chưa có SĐT'}
                               </div>
                             </div>
                           </div>
@@ -301,7 +323,7 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
                             value={attendance.status}
                             onChange={(e) =>
                               handleAttendanceChange(
-                                studentId,
+                                student.id,
                                 "status",
                                 e.target.value
                               )
@@ -321,7 +343,7 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
                             value={attendance.checkInTime}
                             onChange={(e) =>
                               handleAttendanceChange(
-                                studentId,
+                                student.id,
                                 "checkInTime",
                                 e.target.value
                               )
@@ -335,7 +357,7 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
                             value={attendance.notes}
                             onChange={(e) =>
                               handleAttendanceChange(
-                                studentId,
+                                student.id,
                                 "notes",
                                 e.target.value
                               )
@@ -351,6 +373,8 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
               </table>
             </div>
           </div>
+            </>
+          )}
         </div>
 
         {/* Footer */}
@@ -363,7 +387,7 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
           </button>
           <button
             onClick={handleSubmit}
-            disabled={isSubmitting}
+            disabled={isSubmitting || loading}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-main border border-transparent rounded-lg hover:bg-primary-dark focus:ring-2 focus:ring-primary-main focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             <Save className="h-4 w-4" />
