@@ -89,11 +89,20 @@ class User(AbstractUser):
             return 'nhanvien'
         return None
 
-    # Override is_staff để phù hợp với Django admin
-    @property
-    def is_staff(self):
-        """Django admin access - chỉ Admin và một số role cần thiết"""
-        return self.role in ['admin', 'academic_staff']
+    def save(self, *args, **kwargs):
+        """Override save để tự động set is_staff và is_superuser dựa trên role"""
+        # Tự động set is_staff và is_superuser dựa trên role
+        if self.role == 'admin':
+            self.is_staff = True
+            self.is_superuser = True
+        elif self.role in ['academic_staff']:
+            self.is_staff = True
+            self.is_superuser = False
+        else:
+            self.is_staff = False
+            self.is_superuser = False
+        
+        super().save(*args, **kwargs)
 
     # Override is_superuser logic nếu cần
     @property
