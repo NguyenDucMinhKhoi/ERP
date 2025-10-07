@@ -50,7 +50,7 @@ class KhoaHocPublicListView(generics.ListAPIView):
     """
     Danh sách khóa học công khai (cho học viên xem)
     """
-    queryset = KhoaHoc.objects.filter(trang_thai='dang_mo')
+    queryset = KhoaHoc.objects.filter(trang_thai='mo')
     serializer_class = KhoaHocSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -69,9 +69,9 @@ def khoahoc_stats(request):
         return Response({'error': 'Không có quyền truy cập'}, status=status.HTTP_403_FORBIDDEN)
 
     total_khoahoc = KhoaHoc.objects.count()
-    dang_mo = KhoaHoc.objects.filter(trang_thai='dang_mo').count()
-    da_dong = KhoaHoc.objects.filter(trang_thai='da_dong').count()
-    sap_mo = KhoaHoc.objects.filter(trang_thai='sap_mo').count()
+    mo = KhoaHoc.objects.filter(trang_thai='mo').count()
+    dong = KhoaHoc.objects.filter(trang_thai='dong').count()
+    hoan_thanh = KhoaHoc.objects.filter(trang_thai='hoan_thanh').count()
 
     # Top khóa học có nhiều học viên nhất
     top_khoahoc = KhoaHoc.objects.annotate(
@@ -89,8 +89,8 @@ def khoahoc_stats(request):
 
     return Response({
         'total_khoahoc': total_khoahoc,
-        'dang_mo': dang_mo,
-        'da_dong': da_dong,
-        'sap_mo': sap_mo,
+        'mo': mo,
+        'dong': dong,
+        'hoan_thanh': hoan_thanh,
         'top_khoahoc': top_khoahoc_data
     })
