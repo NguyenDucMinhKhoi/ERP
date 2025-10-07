@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
-from app.core.permissions import IsStaffUser, IsOwnerOrStaff
+from app.core.permissions import CanManageStudents, IsOwnerOrStaff
 from .models import HocVien
 from .serializers import (
     HocVienSerializer, HocVienCreateSerializer,
@@ -19,7 +19,7 @@ class HocVienListView(generics.ListCreateAPIView):
     """
     queryset = HocVien.objects.all()
     serializer_class = HocVienSerializer
-    permission_classes = [IsStaffUser]
+    permission_classes = [CanManageStudents]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['trang_thai_hoc_phi']
     search_fields = ['ten', 'email', 'sdt']

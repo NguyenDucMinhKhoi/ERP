@@ -6,7 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db import models
 
-from app.core.permissions import IsStaffUser
+from app.core.permissions import CanManageCourses
 from .models import KhoaHoc
 from .serializers import (
     KhoaHocSerializer, KhoaHocCreateSerializer,
@@ -20,7 +20,7 @@ class KhoaHocListView(generics.ListCreateAPIView):
     """
     queryset = KhoaHoc.objects.all()
     serializer_class = KhoaHocSerializer
-    permission_classes = [IsStaffUser]
+    permission_classes = [CanManageCourses]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['trang_thai', 'giang_vien']
     search_fields = ['ten', 'giang_vien']
@@ -38,7 +38,7 @@ class KhoaHocDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
     queryset = KhoaHoc.objects.all()
     serializer_class = KhoaHocDetailSerializer
-    permission_classes = [IsStaffUser]
+    permission_classes = [CanManageCourses]
 
     def get_serializer_class(self):
         if self.request.method in ['PUT', 'PATCH']:
