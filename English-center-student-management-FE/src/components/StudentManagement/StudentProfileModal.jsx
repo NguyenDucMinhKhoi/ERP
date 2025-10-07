@@ -82,7 +82,10 @@ export default function StudentProfileModal({ student, onClose, onEdit }) {
         </div>
 
         {/* Content - Scrollable area */}
-        <div iv className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+        <div
+          iv
+          className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
+        >
           <div className="p-6 space-y-8">
             {/* Status and Overview */}
             <div className="bg-slate-50 rounded-lg p-6">
