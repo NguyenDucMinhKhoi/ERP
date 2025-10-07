@@ -10,9 +10,15 @@ class UserAdmin(BaseUserAdmin):
     """
 
     # Các field hiển thị trong danh sách
-    list_display = ("username", "email", "role", "is_staff", "is_active", "date_joined")
-    list_filter = ("role", "is_staff", "is_superuser", "is_active", "groups")
+    list_display = ("username", "email", "role", "staff_status", "is_active", "date_joined")
+    list_filter = ("role", "is_superuser", "is_active", "groups")
     search_fields = ("username", "email", "first_name", "last_name")
+
+    def staff_status(self, obj):
+        """Hiển thị trạng thái staff dựa trên role"""
+        return obj.is_staff_member
+    staff_status.boolean = True
+    staff_status.short_description = "Staff"
 
     ordering = ("username",)
 
@@ -20,7 +26,7 @@ class UserAdmin(BaseUserAdmin):
     fieldsets = (
         (None, {"fields": ("username", "password")}),
         ("Thông tin cá nhân", {"fields": ("first_name", "last_name", "email")}),
-        ("Vai trò & Quyền", {"fields": ("role", "is_active", "is_staff", "is_superuser", "groups", "user_permissions")}),
+        ("Vai trò & Quyền", {"fields": ("role", "is_active", "is_superuser", "groups", "user_permissions")}),
         ("Thông tin khác", {"fields": ("last_login", "date_joined")}),
     )
 
@@ -28,6 +34,6 @@ class UserAdmin(BaseUserAdmin):
     add_fieldsets = (
         (None, {
             "classes": ("wide",),
-            "fields": ("username", "email", "password1", "password2", "role", "is_staff", "is_active"),
+            "fields": ("username", "email", "password1", "password2", "role", "is_active"),
         }),
     )
