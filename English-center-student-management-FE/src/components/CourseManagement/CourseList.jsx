@@ -1,50 +1,58 @@
-import React, { useState, useMemo } from "react";
-import { Search, BookOpen, Users, Clock, DollarSign, Star } from "lucide-react";
+import React, { useState, useMemo, useEffect } from "react";
+import { Search, BookOpen, Users, Clock, DollarSign, User } from "lucide-react";
 import CourseDetail from "./CourseDetail";
-import { dummyCourses } from "./dummyData";
+import courseService from "../../services/courseService";
 
 export default function CourseList() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [levelFilter, setLevelFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const filteredCourses = useMemo(() => {
-    return dummyCourses.filter((course) => {
-      const matchesSearch =
-        course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.description.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchesLevel = !levelFilter || course.level === levelFilter;
-      const matchesStatus = !statusFilter || course.status === statusFilter;
-
-      return matchesSearch && matchesLevel && matchesStatus;
-    });
-  }, [searchTerm, levelFilter, statusFilter]);
-
-  const getLevelBadge = (level) => {
-    const levelColors = {
-      "Cơ bản": "bg-green-100 text-green-800",
-      "Trung cấp": "bg-yellow-100 text-yellow-800",
-      "Cao cấp": "bg-red-100 text-red-800",
+  // Load courses from API
+  useEffect(() => {
+    const loadCourses = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await courseService.getCourses();
+        setCourses(response.results || response || []);
+      } catch (err) {
+        console.error('Error loading courses:', err);
+        setError('Không thể tải danh sách khóa học. Vui lòng thử lại.');
+      } finally {
+        setLoading(false);
+      }
     };
 
-    return (
-      <span
-        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          levelColors[level] || "bg-gray-100 text-gray-800"
-        }`}
-      >
-        {level}
-      </span>
-    );
-  };
+    loadCourses();
+  }, []);
+
+  const filteredCourses = useMemo(() => {
+    return courses.filter((course) => {
+      const matchesSearch =
+        course.ten.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (course.mo_ta && course.mo_ta.toLowerCase().includes(searchTerm.toLowerCase()));
+
+      const matchesStatus = !statusFilter || course.trang_thai === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [courses, searchTerm, statusFilter]);
 
   const getStatusBadge = (status) => {
     const statusColors = {
-      "Đang mở": "bg-green-100 text-green-800",
-      "Tạm dừng": "bg-orange-100 text-orange-800",
-      "Đã đóng": "bg-red-100 text-red-800",
+      "mo": "bg-green-100 text-green-800",
+      "dong": "bg-red-100 text-red-800", 
+      "hoan_thanh": "bg-blue-100 text-blue-800",
+    };
+
+    const statusLabels = {
+      "mo": "Đang mở",
+      "dong": "Đã đóng",
+      "hoan_thanh": "Hoàn thành",
     };
 
     return (
@@ -53,7 +61,7 @@ export default function CourseList() {
           statusColors[status] || "bg-gray-100 text-gray-800"
         }`}
       >
-        {status}
+        {statusLabels[status] || status}
       </span>
     );
   };
@@ -77,16 +85,6 @@ export default function CourseList() {
 
           {/* Filters */}
           <div className="flex gap-3">
-            <select
-              value={levelFilter}
-              onChange={(e) => setLevelFilter(e.target.value)}
-              className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent interactive-button"
-            >
-              <option value="">Tất cả trình độ</option>
-              <option value="Cơ bản">Cơ bản</option>
-              <option value="Trung cấp">Trung cấp</option>
-              <option value="Cao cấp">Cao cấp</option>
-            </select>
 
             <select
               value={statusFilter}
@@ -94,9 +92,9 @@ export default function CourseList() {
               className="px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent interactive-button"
             >
               <option value="">Tất cả trạng thái</option>
-              <option value="Đang mở">Đang mở</option>
-              <option value="Tạm dừng">Tạm dừng</option>
-              <option value="Đã đóng">Đã đóng</option>
+              <option value="mo">Đang mở</option>
+              <option value="dong">Đã đóng</option>
+              <option value="hoan_thanh">Hoàn thành</option>
             </select>
           </div>
         </div>
@@ -118,11 +116,10 @@ export default function CourseList() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-slate-900">
-                    {course.name}
+                    {course.ten}
                   </h3>
                   <div className="flex items-center gap-2 mt-1">
-                    {getLevelBadge(course.level)}
-                    {getStatusBadge(course.status)}
+                    {getStatusBadge(course.trang_thai)}
                   </div>
                 </div>
               </div>
@@ -130,39 +127,46 @@ export default function CourseList() {
 
             {/* Course Description */}
             <p className="text-sm text-slate-600 mb-4 line-clamp-2">
-              {course.description}
+              {course.mo_ta || 'Chưa có mô tả'}
             </p>
 
             {/* Course Details */}
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm text-slate-600">
                 <Clock className="h-4 w-4" />
-                <span>Thời gian: {course.duration}</span>
+                <span>Lịch học: {course.lich_hoc}</span>
               </div>
 
               <div className="flex items-center gap-2 text-sm text-slate-600">
                 <Users className="h-4 w-4" />
-                <span>Tối đa: {course.maxStudents} học viên</span>
+                <span>Số buổi: {course.so_buoi} buổi</span>
               </div>
 
               <div className="flex items-center gap-2 text-sm text-slate-600">
                 <DollarSign className="h-4 w-4" />
                 <span className="font-medium text-slate-900">
-                  {course.price}
+                  {Number(course.hoc_phi || 0).toLocaleString('vi-VN')} VNĐ
                 </span>
               </div>
+
+              {course.so_hoc_vien !== undefined && (
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <Users className="h-4 w-4" />
+                  <span>Đã đăng ký: {course.so_hoc_vien} học viên</span>
+                </div>
+              )}
             </div>
 
-            {/* Requirements */}
+            {/* Teacher */}
             <div className="mt-4 pt-4 border-t border-slate-200">
               <div className="flex items-start gap-2">
-                <Star className="h-4 w-4 text-slate-400 mt-0.5" />
+                <User className="h-4 w-4 text-slate-400 mt-0.5" />
                 <div>
                   <p className="text-xs font-medium text-slate-500 mb-1">
-                    Yêu cầu đầu vào:
+                    Giảng viên:
                   </p>
                   <p className="text-sm text-slate-600">
-                    {course.requirements}
+                    {course.giang_vien}
                   </p>
                 </div>
               </div>
@@ -189,7 +193,7 @@ export default function CourseList() {
         <div className="flex items-center justify-between">
           <p className="text-sm text-slate-600">
             Hiển thị {filteredCourses.length} trong tổng số{" "}
-            {dummyCourses.length} khóa học
+            {courses.length} khóa học
           </p>
         </div>
       </div>

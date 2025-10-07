@@ -1,9 +1,31 @@
-import React, {useEffect} from "react";
-import { X, Book, Users, Clock, DollarSign, Calendar } from "lucide-react";
-import { dummyClasses } from "./dummyData";
+import React, { useEffect, useState } from "react";
+import { X, Book, Users, Clock, DollarSign, Calendar, User } from "lucide-react";
+import courseService from "../../services/courseService";
 
 export default function CourseDetail({ course, onClose }) {
-  const courseClasses = dummyClasses.filter((cls) => cls.courseId === course.id);
+  const [courseClasses, setCourseClasses] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadCourseClasses = async () => {
+      try {
+        setLoading(true);
+        const response = await courseService.getClasses();
+        const allClasses = response.results || [];
+        
+        // Filter classes for this course
+        const filteredClasses = allClasses.filter(cls => cls.courseId === course.id);
+        setCourseClasses(filteredClasses);
+      } catch (error) {
+        console.error('Error loading course classes:', error);
+        setCourseClasses([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCourseClasses();
+  }, [course.id]);
 
   const getStatusBadge = (status) => {
     const statusColors = {
@@ -36,10 +58,10 @@ export default function CourseDetail({ course, onClose }) {
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
           <div>
             <h2 className="text-xl font-semibold text-slate-900">
-              {course.name}
+              {course.ten || course.name}
             </h2>
             <p className="text-sm text-slate-600 mt-1">
-              {course.description}
+              {course.mo_ta || course.description || 'Chưa có mô tả'}
             </p>
           </div>
           <button
@@ -60,12 +82,12 @@ export default function CourseDetail({ course, onClose }) {
               </h3>
               <div className="bg-slate-50 rounded-lg p-4 space-y-4">
                 <div className="flex items-center gap-3">
-                  <Clock className="h-5 w-5 text-slate-400" />
+                  <Calendar className="h-5 w-5 text-slate-400" />
                   <div>
                     <p className="text-sm font-medium text-slate-700">
-                      Thời lượng học
+                      Lịch học
                     </p>
-                    <p className="text-sm text-slate-600">{course.duration}</p>
+                    <p className="text-sm text-slate-600">{course.lich_hoc || 'Chưa có lịch'}</p>
                   </div>
                 </div>
                 
@@ -73,29 +95,57 @@ export default function CourseDetail({ course, onClose }) {
                   <DollarSign className="h-5 w-5 text-slate-400" />
                   <div>
                     <p className="text-sm font-medium text-slate-700">Học phí</p>
-                    <p className="text-sm text-slate-600">{course.price}</p>
+                    <p className="text-sm text-slate-600">
+                      {course.hoc_phi ? `${Number(course.hoc_phi).toLocaleString('vi-VN')} VNĐ` : course.price || 'Chưa có giá'}
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <Book className="h-5 w-5 text-slate-400" />
+                  <Clock className="h-5 w-5 text-slate-400" />
                   <div>
                     <p className="text-sm font-medium text-slate-700">
-                      Giáo trình
+                      Số buổi học
                     </p>
-                    <p className="text-sm text-slate-600">
-                      Oxford English File Intermediate
-                    </p>
+                    <p className="text-sm text-slate-600">{course.so_buoi || 'Chưa xác định'} buổi</p>
                   </div>
                 </div>
+
+                <div className="flex items-center gap-3">
+                  <User className="h-5 w-5 text-slate-400" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-700">
+                      Giảng viên
+                    </p>
+                    <p className="text-sm text-slate-600">{course.giang_vien || 'Chưa phân công'}</p>
+                  </div>
+                </div>
+
+                {course.so_hoc_vien !== undefined && (
+                  <div className="flex items-center gap-3">
+                    <Users className="h-5 w-5 text-slate-400" />
+                    <div>
+                      <p className="text-sm font-medium text-slate-700">
+                        Số học viên đã đăng ký
+                      </p>
+                      <p className="text-sm text-slate-600">{course.so_hoc_vien} học viên</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Danh sách lớp */}
             <div>
               <h3 className="text-lg font-medium text-slate-900 mb-4">
-                Danh sách lớp
+                Danh sách lớp ({courseClasses.length} lớp)
               </h3>
+
+              {loading && (
+                <div className="text-center py-8">
+                  <div className="text-slate-600">Đang tải danh sách lớp...</div>
+                </div>
+              )}
               <div className="border border-slate-200 rounded-lg overflow-hidden">
                 <table className="min-w-full divide-y divide-slate-200">
                   <thead className="bg-slate-50">

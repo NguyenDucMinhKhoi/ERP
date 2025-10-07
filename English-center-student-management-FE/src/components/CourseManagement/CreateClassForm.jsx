@@ -1,12 +1,38 @@
 import React, { useState } from "react";
 import { X, Save, BookOpen, User, Calendar, MapPin, Users } from "lucide-react";
-import {
-  dummyCourses,
-  dummyTeachers,
-  daysOfWeek,
-  timeSlots,
-  classStatusOptions,
-} from "./dummyData";
+
+// Constants
+const daysOfWeek = [
+  { value: "monday", label: "Thứ 2" },
+  { value: "tuesday", label: "Thứ 3" },
+  { value: "wednesday", label: "Thứ 4" },
+  { value: "thursday", label: "Thứ 5" },
+  { value: "friday", label: "Thứ 6" },
+  { value: "saturday", label: "Thứ 7" },
+  { value: "sunday", label: "Chủ nhật" }
+];
+
+const timeSlots = [
+  "06:00", "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30",
+  "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30",
+  "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30",
+  "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"
+];
+
+// Temporary data - replace with API calls
+const dummyCourses = [
+  { id: 1, ten: "Tiếng Anh Cơ Bản" },
+  { id: 2, ten: "Tiếng Anh Nâng Cao" },
+  { id: 3, ten: "IELTS Preparation" },
+  { id: 4, ten: "TOEIC Intensive" }
+];
+
+const dummyTeachers = [
+  { id: 1, ten: "Nguyễn Văn A" },
+  { id: 2, ten: "Trần Thị B" },
+  { id: 3, ten: "Lê Văn C" },
+  { id: 4, ten: "Phạm Thị D" }
+];
 
 export default function CreateClassForm({ onClose, onSuccess }) {
   const [formData, setFormData] = useState({
