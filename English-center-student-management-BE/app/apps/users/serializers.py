@@ -32,7 +32,16 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop('password_confirm')
-        user = User.objects.create_user(**validated_data)
+        password = validated_data.pop('password')
+        
+        # Loại bỏ các field không thể set trực tiếp
+        validated_data.pop('is_staff', None)
+        validated_data.pop('is_superuser', None)
+        
+        # Tạo user
+        user = User(**validated_data)
+        user.set_password(password)
+        user.save()  # save() method sẽ tự động set is_staff và is_superuser
         return user
 
 
