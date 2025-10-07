@@ -32,7 +32,7 @@ export default function CRMLeads() {
     };
   }, []);
 
-  const canManageLeads = role === ROLES.ADMIN || role === ROLES.STAFF;
+  const canManageLeads = role === ROLES.ADMIN || role === ROLES.SALES_STAFF || role === ROLES.ACADEMIC_STAFF;
 
   const openAdd = () => setShowAdd(true);
   const openSchedule = (lead) => { setSelectedLead(lead); setShowSchedule(true); };

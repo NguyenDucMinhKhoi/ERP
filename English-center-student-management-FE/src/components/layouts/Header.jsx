@@ -110,7 +110,11 @@ export default function Header() {
                   </span>
                   {user?.role && (
                     <span className="hidden rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700 sm:block">
-                      {user.role === ROLES.ADMIN ? 'Admin' : user.role === ROLES.STAFF ? 'Staff' : user.role === ROLES.TEACHER ? 'Teacher' : 'Student'}
+                      {user.role === ROLES.ADMIN ? 'Admin' : 
+                       user.role === ROLES.GIANGVIEN ? 'Giảng viên' :
+                       user.role === ROLES.ACADEMIC_STAFF ? 'Học vụ' :
+                       user.role === ROLES.SALES_STAFF ? 'Tư vấn' :
+                       user.role === ROLES.FINANCE_STAFF ? 'Tài chính' : 'Unknown'}
                     </span>
                   )}
                   <ChevronDown size={16} />

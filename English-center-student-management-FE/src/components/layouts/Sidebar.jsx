@@ -11,7 +11,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import authService from "../../services/authService";
-import { isAllowed, ROLES } from "../../utils/permissions"; // Import ROLES
+import { isAllowed, ROLES } from "../../utils/permissions";
 
 export default function Sidebar() {
   const navigate = useNavigate();
@@ -45,12 +45,23 @@ export default function Sidebar() {
     };
   }, []);
 
-  const canCRM = isAllowed(role, 'crm');
-  const canBilling = isAllowed(role, 'billing');
+  // Role checks
+  const isAdmin = role === ROLES.ADMIN;
+  const isGiangVien = role === ROLES.GIANGVIEN;
+  const isAcademicStaff = role === ROLES.ACADEMIC_STAFF;
+  const isSalesStaff = role === ROLES.SALES_STAFF;
+  const isFinanceStaff = role === ROLES.FINANCE_STAFF;
+  
+  // Permission checks using POLICY
+  const canDashboard = isAdmin; // Only Admin
+  const canCRM = isAllowed(role, 'crm'); // Admin, Sales, Academic
+  const canCourses = isAllowed(role, 'courses'); // Admin, Academic, GiangVien
+  const canFinance = isAllowed(role, 'billing'); // Admin, Finance
   const canReports = isAllowed(role, 'reports');
   const canNotifications = isAllowed(role, 'notifications');
-  const isAdmin = role === ROLES.ADMIN; // Sử dụng ROLES.ADMIN
-  const isStudent = role === ROLES.STUDENT; // Sử dụng ROLES.ADMIN
+  
+  // No student accounts by default
+  const isStudent = false;
   const handleNavigation = (path) => {
     navigate(path);
   };
@@ -80,9 +91,10 @@ export default function Sidebar() {
         </>
       ) : (
         <>
-      {/* Groups */}
+      {/* Main Navigation */}
       <NavSection title="Trang Chính">
-        {isAdmin && (
+        {/* Dashboard - Only Admin */}
+        {canDashboard && (
           <NavItem
             icon={<Home size={18} />}
             label="Dashboard"
@@ -92,6 +104,8 @@ export default function Sidebar() {
             onClick={() => handleNavigation("/dashboard")}
           />
         )}
+
+        {/* CRM & Student Management - Admin, Sales Staff, Academic Staff */}
         {canCRM && (
           <NavItem
             icon={<Users size={18} />}
@@ -100,6 +114,7 @@ export default function Sidebar() {
             onClick={() => handleNavigation("/crm")}
           />
         )}
+        
         {canCRM && (
           <NavItem
             icon={<Users size={18} />}
@@ -108,7 +123,9 @@ export default function Sidebar() {
             onClick={() => handleNavigation("/crm-leads")}
           />
         )}
-        {canCRM && (
+
+        {/* Course Management - Admin, Academic Staff, Giảng viên */}
+        {canCourses && (
           <NavItem
             icon={<BookOpen size={18} />}
             label="Quản lý khóa học"
@@ -116,7 +133,9 @@ export default function Sidebar() {
             onClick={() => handleNavigation("/course-management")}
           />
         )}
-        {canBilling && isAdmin && ( // Chỉ admin mới thấy Quản lý Tài chính
+
+        {/* Finance Management - Admin, Finance Staff */}
+        {canFinance && (
           <NavItem 
             icon={<Receipt size={18} />} 
             label="Quản lý Tài chính" 
@@ -145,6 +164,7 @@ export default function Sidebar() {
         )}
       </NavSection>
 
+      {/* Account Section - All authenticated users */}
       <NavSection title="Tài Khoản">
         <NavItem
           icon={<UserRound size={18} />}
@@ -153,6 +173,20 @@ export default function Sidebar() {
           onClick={() => handleNavigation("/profile")}
         />
       </NavSection>
+
+      {/* Role-specific Development Info (Remove in production) */}
+      {import.meta.env.DEV && role && (
+        <NavSection title="Debug Info">
+          <div className="px-3 py-2 text-xs text-slate-500">
+            <div>Role: {role}</div>
+            <div>Can Dashboard: {canDashboard ? '✅' : '❌'}</div>
+            <div>Can CRM: {canCRM ? '✅' : '❌'}</div>
+            <div>Can Courses: {canCourses ? '✅' : '❌'}</div>
+            <div>Can Finance: {canFinance ? '✅' : '❌'}</div>
+            <div>Can Reports: {canReports ? '✅' : '❌'}</div>
+          </div>
+        </NavSection>
+      )}
       </>
       )}
       </aside>
