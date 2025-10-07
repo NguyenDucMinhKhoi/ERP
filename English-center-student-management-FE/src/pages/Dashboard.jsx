@@ -81,10 +81,10 @@ export default function Dashboard() {
           icon={<GraduationCap className="h-5 w-5" />}
           description="Total classes"
         />
-        <KPICard
+        {/* <KPICard
           title="Monthly Revenue"
           description="Tổng số lớp học"
-        />
+        /> */}
         <KPICard
           title="Doanh Thu Tháng"
           value="₫2.4B"
@@ -93,10 +93,10 @@ export default function Dashboard() {
           icon={<DollarSign className="h-5 w-5" />}
           description="Current month"
         />
-        <KPICard
+        {/* <KPICard
           title="Completion Rate"
           description="Tháng hiện tại"
-        />
+        /> */}
         <KPICard
           title="Tỷ Lệ Hoàn Thành"
           value="87%"
