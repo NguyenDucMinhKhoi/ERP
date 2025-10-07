@@ -6,7 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db import models
 
-from app.core.permissions import IsStaffUser
+from app.core.permissions import CanManageCourses
 from .models import KhoaHoc
 from .serializers import (
     KhoaHocSerializer, KhoaHocCreateSerializer,
@@ -20,7 +20,7 @@ class KhoaHocListView(generics.ListCreateAPIView):
     """
     queryset = KhoaHoc.objects.all()
     serializer_class = KhoaHocSerializer
-    permission_classes = [IsStaffUser]
+    permission_classes = [CanManageCourses]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['trang_thai', 'giang_vien']
     search_fields = ['ten', 'giang_vien']
@@ -38,7 +38,7 @@ class KhoaHocDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
     queryset = KhoaHoc.objects.all()
     serializer_class = KhoaHocDetailSerializer
-    permission_classes = [IsStaffUser]
+    permission_classes = [CanManageCourses]
 
     def get_serializer_class(self):
         if self.request.method in ['PUT', 'PATCH']:
@@ -50,7 +50,7 @@ class KhoaHocPublicListView(generics.ListAPIView):
     """
     Danh sách khóa học công khai (cho học viên xem)
     """
-    queryset = KhoaHoc.objects.filter(trang_thai='dang_mo')
+    queryset = KhoaHoc.objects.filter(trang_thai='mo')
     serializer_class = KhoaHocSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -69,9 +69,9 @@ def khoahoc_stats(request):
         return Response({'error': 'Không có quyền truy cập'}, status=status.HTTP_403_FORBIDDEN)
 
     total_khoahoc = KhoaHoc.objects.count()
-    dang_mo = KhoaHoc.objects.filter(trang_thai='dang_mo').count()
-    da_dong = KhoaHoc.objects.filter(trang_thai='da_dong').count()
-    sap_mo = KhoaHoc.objects.filter(trang_thai='sap_mo').count()
+    mo = KhoaHoc.objects.filter(trang_thai='mo').count()
+    dong = KhoaHoc.objects.filter(trang_thai='dong').count()
+    hoan_thanh = KhoaHoc.objects.filter(trang_thai='hoan_thanh').count()
 
     # Top khóa học có nhiều học viên nhất
     top_khoahoc = KhoaHoc.objects.annotate(
@@ -89,8 +89,8 @@ def khoahoc_stats(request):
 
     return Response({
         'total_khoahoc': total_khoahoc,
-        'dang_mo': dang_mo,
-        'da_dong': da_dong,
-        'sap_mo': sap_mo,
+        'mo': mo,
+        'dong': dong,
+        'hoan_thanh': hoan_thanh,
         'top_khoahoc': top_khoahoc_data
     })

@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { X, Save } from "lucide-react";
+import courseService from "../../services/courseService";
 
 export default function CreateCourseForm({ onClose, onSuccess }) {
   const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    duration: "",
-    price: "",
-    level: "Cơ bản",
-    maxStudents: "",
-    requirements: "",
-    curriculum: "",
+    ten: "",
+    mo_ta: "",
+    lich_hoc: "",
+    hoc_phi: "",
+    so_buoi: "",
+    giang_vien: "",
+    trang_thai: "mo",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   // Prevent scroll on background
   useEffect(() => {
@@ -21,11 +23,30 @@ export default function CreateCourseForm({ onClose, onSuccess }) {
     };
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Handle form submission
-    console.log("Form submitted:", formData);
-    onSuccess();
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      const courseData = {
+        ten: formData.ten,
+        mo_ta: formData.mo_ta,
+        lich_hoc: formData.lich_hoc,
+        hoc_phi: parseFloat(formData.hoc_phi) || 0,
+        so_buoi: parseInt(formData.so_buoi) || 1,
+        giang_vien: formData.giang_vien,
+        trang_thai: formData.trang_thai,
+      };
+
+      await courseService.createCourse(courseData);
+      onSuccess();
+    } catch (err) {
+      console.error("Error creating course:", err);
+      setError("Có lỗi xảy ra khi tạo khóa học. Vui lòng thử lại.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -52,6 +73,12 @@ export default function CreateCourseForm({ onClose, onSuccess }) {
         {/* Form Content */}
         <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
+            
             <div className="grid grid-cols-1 gap-6">
               {/* Tên khóa học */}
               <div>
@@ -61,12 +88,12 @@ export default function CreateCourseForm({ onClose, onSuccess }) {
                 <input
                   type="text"
                   required
-                  value={formData.name}
+                  value={formData.ten}
                   onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
+                    setFormData({ ...formData, ten: e.target.value })
                   }
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
-                  placeholder="VD: TOEIC 450-650"
+                  placeholder="VD: IELTS 5.0-6.0"
                 />
               </div>
 
@@ -76,10 +103,9 @@ export default function CreateCourseForm({ onClose, onSuccess }) {
                   Mô tả
                 </label>
                 <textarea
-                  required
-                  value={formData.description}
+                  value={formData.mo_ta}
                   onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
+                    setFormData({ ...formData, mo_ta: e.target.value })
                   }
                   rows={3}
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
@@ -87,107 +113,94 @@ export default function CreateCourseForm({ onClose, onSuccess }) {
                 />
               </div>
 
-              {/* Thời lượng và Học phí */}
+              {/* Lịch học và Học phí */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Thời lượng
+                    Lịch học
                   </label>
                   <input
                     type="text"
                     required
-                    value={formData.duration}
+                    value={formData.lich_hoc}
                     onChange={(e) =>
-                      setFormData({ ...formData, duration: e.target.value })
+                      setFormData({ ...formData, lich_hoc: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
-                    placeholder="VD: 3 tháng"
+                    placeholder="VD: Thứ 2,4,6 - 19:00-21:00"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Học phí
+                    Học phí (VNĐ)
                   </label>
                   <input
-                    type="text"
+                    type="number"
                     required
-                    value={formData.price}
+                    min="0"
+                    value={formData.hoc_phi}
                     onChange={(e) =>
-                      setFormData({ ...formData, price: e.target.value })
+                      setFormData({ ...formData, hoc_phi: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
-                    placeholder="VD: 2,500,000 VNĐ"
+                    placeholder="VD: 2500000"
                   />
                 </div>
               </div>
 
-              {/* Trình độ và Số lượng tối đa */}
+              {/* Giảng viên và Số buổi */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Trình độ
+                    Giảng viên
                   </label>
-                  <select
-                    value={formData.level}
+                  <input
+                    type="text"
+                    required
+                    value={formData.giang_vien}
                     onChange={(e) =>
-                      setFormData({ ...formData, level: e.target.value })
+                      setFormData({ ...formData, giang_vien: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
-                  >
-                    <option value="Cơ bản">Cơ bản</option>
-                    <option value="Trung cấp">Trung cấp</option>
-                    <option value="Cao cấp">Cao cấp</option>
-                  </select>
+                    placeholder="VD: Cô Mai"
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Số học viên tối đa
+                    Số buổi học
                   </label>
                   <input
                     type="number"
                     required
                     min="1"
-                    value={formData.maxStudents}
+                    value={formData.so_buoi}
                     onChange={(e) =>
-                      setFormData({ ...formData, maxStudents: e.target.value })
+                      setFormData({ ...formData, so_buoi: e.target.value })
                     }
                     className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
-                    placeholder="VD: 20"
+                    placeholder="VD: 48"
                   />
                 </div>
               </div>
 
-              {/* Yêu cầu đầu vào */}
+              {/* Trạng thái */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Yêu cầu đầu vào
+                  Trạng thái
                 </label>
-                <textarea
-                  value={formData.requirements}
+                <select
+                  value={formData.trang_thai}
                   onChange={(e) =>
-                    setFormData({ ...formData, requirements: e.target.value })
+                    setFormData({ ...formData, trang_thai: e.target.value })
                   }
-                  rows={2}
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
-                  placeholder="VD: Trình độ tiếng Anh cơ bản"
-                />
+                >
+                  <option value="mo">Đang mở</option>
+                  <option value="dong">Đã đóng</option>
+                  <option value="hoan_thanh">Hoàn thành</option>
+                </select>
               </div>
 
-              {/* Giáo trình */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Giáo trình
-                </label>
-                <input
-                  type="text"
-                  value={formData.curriculum}
-                  onChange={(e) =>
-                    setFormData({ ...formData, curriculum: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
-                  placeholder="VD: Oxford English File Intermediate"
-                />
-              </div>
             </div>
           </form>
         </div>
@@ -197,17 +210,19 @@ export default function CreateCourseForm({ onClose, onSuccess }) {
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer"
+            disabled={isSubmitting}
+            className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             Hủy
           </button>
           <button
             type="submit"
             onClick={handleSubmit}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-main border border-transparent rounded-lg hover:bg-primary-dark cursor-pointer"
+            disabled={isSubmitting}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-main border border-transparent rounded-lg hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             <Save className="h-4 w-4" />
-            Tạo khóa học
+            {isSubmitting ? "Đang tạo..." : "Tạo khóa học"}
           </button>
         </div>
       </div>

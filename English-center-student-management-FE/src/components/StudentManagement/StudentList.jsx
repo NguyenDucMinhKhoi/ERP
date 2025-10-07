@@ -1,25 +1,62 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Search, Eye, Edit, Filter } from "lucide-react";
-import { dummyStudents, statusOptions, courseOptions } from "./dummyData";
+import crmService from "../../services/crmService";
+
+// Options constants
+const statusOptions = [
+  { value: "dang_hoc", label: "Đang Học" },
+  { value: "nghi_hoc", label: "Nghỉ Học" },
+  { value: "hoan_thanh", label: "Hoàn Thành" },
+];
+
+const courseOptions = [
+  { value: "1", label: "Tiếng Anh Cơ Bản" },
+  { value: "2", label: "Tiếng Anh Nâng Cao" },
+  { value: "3", label: "IELTS Preparation" },
+  { value: "4", label: "TOEIC Intensive" },
+];
 
 export default function StudentList({ onEdit, onViewProfile }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [courseFilter, setCourseFilter] = useState("");
-  const [sortBy, setSortBy] = useState("fullName");
+  const [sortBy, setSortBy] = useState("ten");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Load students from API
+  useEffect(() => {
+    const loadStudents = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await crmService.getStudents();
+        setStudents(response.results || response || []);
+      } catch (err) {
+        console.error("Error loading students:", err);
+        setError("Không thể tải danh sách học viên. Vui lòng thử lại.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadStudents();
+  }, []);
 
   // Filter and search students
   const filteredStudents = useMemo(() => {
-    let filtered = dummyStudents.filter((student) => {
+    let filtered = students.filter((student) => {
       const matchesSearch =
-        student.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.phone.includes(searchTerm) ||
+        student.ten.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.sdt.includes(searchTerm) ||
         student.email.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesStatus = !statusFilter || student.status === statusFilter;
+      const matchesStatus =
+        !statusFilter || student.trang_thai_hoc_phi === statusFilter;
       const matchesCourse =
-        !courseFilter || student.courseInterest === courseFilter;
+        !courseFilter || student.courseInterest === courseFilter; // TODO: Update based on backend field
 
       return matchesSearch && matchesStatus && matchesCourse;
     });
@@ -46,7 +83,7 @@ export default function StudentList({ onEdit, onViewProfile }) {
     });
 
     return filtered;
-  }, [searchTerm, statusFilter, courseFilter, sortBy, sortOrder]);
+  }, [students, searchTerm, statusFilter, courseFilter, sortBy, sortOrder]);
 
   const handleSort = (field) => {
     if (sortBy === field) {
@@ -58,24 +95,52 @@ export default function StudentList({ onEdit, onViewProfile }) {
   };
 
   const getStatusBadge = (status) => {
-    const statusColors = {
-      "Chờ lớp": "bg-yellow-100 text-yellow-800",
-      "Đang học": "bg-green-100 text-green-800",
-      "Tạm dừng": "bg-orange-100 text-orange-800",
-      "Đã hoàn thành": "bg-blue-100 text-blue-800",
-      "Đã hủy": "bg-red-100 text-red-800",
+    const statusConfig = {
+      dadong: { color: "bg-green-100 text-green-800", label: "Đã đóng" },
+      conno: { color: "bg-yellow-100 text-yellow-800", label: "Còn nợ" },
+      chuadong: { color: "bg-red-100 text-red-800", label: "Chưa đóng" },
+    };
+
+    const config = statusConfig[status] || {
+      color: "bg-gray-100 text-gray-800",
+      label: status,
     };
 
     return (
       <span
-        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          statusColors[status] || "bg-gray-100 text-gray-800"
-        }`}
+        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}
       >
-        {status}
+        {config.label}
       </span>
     );
   };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-main mx-auto"></div>
+          <p className="mt-2 text-slate-600">Đang tải danh sách học viên...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
+        <div className="text-center">
+          <p className="text-red-600">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-2 px-4 py-2 bg-primary-main text-white rounded-lg hover:bg-primary-main/90"
+          >
+            Thử lại
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-slate-200">
@@ -132,10 +197,10 @@ export default function StudentList({ onEdit, onViewProfile }) {
             <tr>
               <th
                 className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100"
-                onClick={() => handleSort("fullName")}
+                onClick={() => handleSort("ten")}
               >
                 Tên học viên
-                {sortBy === "fullName" && (
+                {sortBy === "ten" && (
                   <span className="ml-1">
                     {sortOrder === "asc" ? "↑" : "↓"}
                   </span>
@@ -143,10 +208,10 @@ export default function StudentList({ onEdit, onViewProfile }) {
               </th>
               <th
                 className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100"
-                onClick={() => handleSort("phone")}
+                onClick={() => handleSort("sdt")}
               >
                 Số điện thoại
-                {sortBy === "phone" && (
+                {sortBy === "sdt" && (
                   <span className="ml-1">
                     {sortOrder === "asc" ? "↑" : "↓"}
                   </span>
@@ -165,10 +230,10 @@ export default function StudentList({ onEdit, onViewProfile }) {
               </th>
               <th
                 className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100"
-                onClick={() => handleSort("courseInterest")}
+                onClick={() => handleSort("ghi_chu")}
               >
-                Khóa học
-                {sortBy === "courseInterest" && (
+                Ghi chú
+                {sortBy === "ghi_chu" && (
                   <span className="ml-1">
                     {sortOrder === "asc" ? "↑" : "↓"}
                   </span>
@@ -176,25 +241,17 @@ export default function StudentList({ onEdit, onViewProfile }) {
               </th>
               <th
                 className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100"
-                onClick={() => handleSort("status")}
+                onClick={() => handleSort("trang_thai_hoc_phi")}
               >
-                Trạng thái
-                {sortBy === "status" && (
+                Trạng thái học phí
+                {sortBy === "trang_thai_hoc_phi" && (
                   <span className="ml-1">
                     {sortOrder === "asc" ? "↑" : "↓"}
                   </span>
                 )}
               </th>
-              <th
-                className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100"
-                onClick={() => handleSort("class")}
-              >
-                Lớp
-                {sortBy === "class" && (
-                  <span className="ml-1">
-                    {sortOrder === "asc" ? "↑" : "↓"}
-                  </span>
-                )}
+              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                Tài khoản
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                 Thao tác
@@ -206,26 +263,26 @@ export default function StudentList({ onEdit, onViewProfile }) {
               <tr key={student.id} className="hover:bg-slate-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-slate-900">
-                    {student.fullName}
+                    {student.ten}
                   </div>
                   <div className="text-sm text-slate-500">
-                    {student.dateOfBirth}
+                    {new Date(student.ngay_sinh).toLocaleDateString("vi-VN")}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                  {student.phone}
+                  {student.sdt}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
                   {student.email}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                  {student.courseInterest}
+                  {student.ghi_chu || "-"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {getStatusBadge(student.status)}
+                  {getStatusBadge(student.trang_thai_hoc_phi)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                  {student.class}
+                  {student.co_tai_khoan ? "Có tài khoản" : "Chưa có"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div className="flex items-center gap-2">
@@ -255,8 +312,8 @@ export default function StudentList({ onEdit, onViewProfile }) {
       <div className="px-6 py-3 bg-slate-50 border-t border-slate-200">
         <div className="flex items-center justify-between">
           <p className="text-sm text-slate-600">
-            Hiển thị {filteredStudents.length} trong tổng số{" "}
-            {dummyStudents.length} học viên
+            Hiển thị {filteredStudents.length} trong tổng số {students.length}{" "}
+            học viên
           </p>
         </div>
       </div>

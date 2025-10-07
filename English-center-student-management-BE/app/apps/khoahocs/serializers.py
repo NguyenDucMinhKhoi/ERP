@@ -6,16 +6,15 @@ class KhoaHocSerializer(serializers.ModelSerializer):
     """
     Serializer cơ bản cho KhoaHoc
     """
-    so_hoc_vien_dang_ky = serializers.ReadOnlyField()
-    so_hoc_vien_hoan_thanh = serializers.ReadOnlyField()
+    so_hoc_vien = serializers.ReadOnlyField()
     ty_le_hoan_thanh = serializers.ReadOnlyField()
 
     class Meta:
         model = KhoaHoc
         fields = [
             'id', 'ten', 'lich_hoc', 'giang_vien', 'so_buoi', 'hoc_phi',
-            'mo_ta', 'trang_thai', 'so_hoc_vien_dang_ky', 'so_hoc_vien_hoan_thanh',
-            'ty_le_hoan_thanh', 'created_at', 'updated_at'
+            'mo_ta', 'trang_thai', 'so_hoc_vien', 'ty_le_hoan_thanh', 
+            'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
@@ -42,15 +41,14 @@ class KhoaHocDetailSerializer(serializers.ModelSerializer):
     """
     Serializer chi tiết cho KhoaHoc
     """
-    so_hoc_vien_dang_ky = serializers.ReadOnlyField()
-    so_hoc_vien_hoan_thanh = serializers.ReadOnlyField()
+    so_hoc_vien = serializers.ReadOnlyField()
     ty_le_hoan_thanh = serializers.ReadOnlyField()
 
     class Meta:
         model = KhoaHoc
         fields = [
             'id', 'ten', 'lich_hoc', 'giang_vien', 'so_buoi', 'hoc_phi',
-            'mo_ta', 'trang_thai', 'so_hoc_vien_dang_ky', 'so_hoc_vien_hoan_thanh',
-            'ty_le_hoan_thanh', 'created_at', 'updated_at'
+            'mo_ta', 'trang_thai', 'so_hoc_vien', 'ty_le_hoan_thanh', 
+            'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']

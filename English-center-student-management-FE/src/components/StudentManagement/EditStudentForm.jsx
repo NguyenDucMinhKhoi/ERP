@@ -9,7 +9,33 @@ import {
   BookOpen,
   Calendar,
 } from "lucide-react";
-import { courseOptions, statusOptions, classOptions } from "./dummyData";
+
+// Options for dropdowns
+const statusOptions = [
+  { value: "Chờ lớp", label: "Chờ lớp" },
+  { value: "Đang học", label: "Đang học" },
+  { value: "Tạm dừng", label: "Tạm dừng" },
+  { value: "Hoàn thành", label: "Hoàn thành" },
+  { value: "Đã nghỉ", label: "Đã nghỉ" },
+];
+
+const courseOptions = [
+  { value: "IELTS 5.0-6.0", label: "IELTS 5.0-6.0" },
+  { value: "IELTS 6.5-7.0", label: "IELTS 6.5-7.0" },
+  { value: "TOEIC 450-650", label: "TOEIC 450-650" },
+  { value: "TOEIC 750-850", label: "TOEIC 750-850" },
+  { value: "General English", label: "General English" },
+  { value: "Business English", label: "Business English" },
+];
+
+const classOptions = [
+  { value: "Lớp IELTS 5.0-6.0 - Sáng", label: "Lớp IELTS 5.0-6.0 - Sáng" },
+  { value: "Lớp IELTS 5.0-6.0 - Tối", label: "Lớp IELTS 5.0-6.0 - Tối" },
+  { value: "Lớp TOEIC 450-650 - Sáng", label: "Lớp TOEIC 450-650 - Sáng" },
+  { value: "Lớp TOEIC 450-650 - Tối", label: "Lớp TOEIC 450-650 - Tối" },
+  { value: "Lớp General English - Sáng", label: "Lớp General English - Sáng" },
+  { value: "Lớp Business English - Tối", label: "Lớp Business English - Tối" },
+];
 
 export default function EditStudentForm({ student, onClose, onSuccess }) {
   const [formData, setFormData] = useState({
@@ -166,7 +192,9 @@ export default function EditStudentForm({ student, onClose, onSuccess }) {
                     placeholder="Nhập họ và tên"
                   />
                   {errors.fullName && (
-                    <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.fullName}
+                    </p>
                   )}
                 </div>
 

@@ -11,7 +11,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import authService from "../../services/authService";
-import { isAllowed, ROLES } from "../../utils/permissions"; // Import ROLES
+import { isAllowed, ROLES } from "../../utils/permissions";
 
 export default function Sidebar() {
   const navigate = useNavigate();
@@ -45,12 +45,23 @@ export default function Sidebar() {
     };
   }, []);
 
-  const canCRM = isAllowed(role, 'crm');
-  const canBilling = isAllowed(role, 'billing');
-  const canReports = isAllowed(role, 'reports');
-  const canNotifications = isAllowed(role, 'notifications');
-  const isAdmin = role === ROLES.ADMIN; // Sử dụng ROLES.ADMIN
-  const isStudent = role === ROLES.STUDENT; // Sử dụng ROLES.ADMIN
+  // Role checks
+  const isAdmin = role === ROLES.ADMIN;
+  const isGiangVien = role === ROLES.GIANGVIEN;
+  const isAcademicStaff = role === ROLES.ACADEMIC_STAFF;
+  const isSalesStaff = role === ROLES.SALES_STAFF;
+  const isFinanceStaff = role === ROLES.FINANCE_STAFF;
+
+  // Permission checks using POLICY
+  const canDashboard = isAdmin; // Only Admin
+  const canCRM = isAllowed(role, "crm"); // Admin, Sales, Academic
+  const canCourses = isAllowed(role, "courses"); // Admin, Academic, GiangVien
+  const canFinance = isAllowed(role, "billing"); // Admin, Finance
+  const canReports = isAllowed(role, "reports");
+  const canNotifications = isAllowed(role, "notifications");
+
+  // No student accounts by default
+  const isStudent = false;
   const handleNavigation = (path) => {
     navigate(path);
   };
@@ -70,92 +81,105 @@ export default function Sidebar() {
         // Student uses UI at /student
         <>
           <NavSection title="Student">
-            <NavItem 
-              icon={<Users size={18} />} 
+            <NavItem
+              icon={<Users size={18} />}
               label="CRM - Student"
-              active={location.pathname === '/student' || location.pathname.startsWith('/student/')}
-              onClick={() => handleNavigation('/student')}
+              active={
+                location.pathname === "/student" ||
+                location.pathname.startsWith("/student/")
+              }
+              onClick={() => handleNavigation("/student")}
             />
           </NavSection>
         </>
       ) : (
         <>
-      {/* Groups */}
-      <NavSection title="Trang Chính">
-        {isAdmin && (
-          <NavItem
-            icon={<Home size={18} />}
-            label="Dashboard"
-            active={
-              location.pathname === "/" || location.pathname === "/dashboard"
-            }
-            onClick={() => handleNavigation("/dashboard")}
-          />
-        )}
-        {canCRM && (
-          <NavItem
-            icon={<Users size={18} />}
-            label="CRM - Học Viên"
-            active={location.pathname === "/crm"}
-            onClick={() => handleNavigation("/crm")}
-          />
-        )}
-        {canCRM && (
-          <NavItem
-            icon={<Users size={18} />}
-            label="CRM - Leads"
-            active={location.pathname === "/crm-leads"}
-            onClick={() => handleNavigation("/crm-leads")}
-          />
-        )}
-        {canCRM && (
-          <NavItem
-            icon={<BookOpen size={18} />}
-            label="Quản lý khóa học"
-            active={location.pathname === "/course-management"}
-            onClick={() => handleNavigation("/course-management")}
-          />
-        )}
-        {canBilling && isAdmin && ( // Chỉ admin mới thấy Quản lý Tài chính
-          <NavItem 
-            icon={<Receipt size={18} />} 
-            label="Quản lý Tài chính" 
-            active={location.pathname === '/finance'}
-            onClick={() => handleNavigation('/finance')}
-          />
-        )}
-      </NavSection>
+          {/* Main Navigation */}
+          <NavSection title="Trang Chính">
+            {/* Dashboard - Only Admin */}
+            {canDashboard && (
+              <NavItem
+                icon={<Home size={18} />}
+                label="Dashboard"
+                active={
+                  location.pathname === "/" ||
+                  location.pathname === "/dashboard"
+                }
+                onClick={() => handleNavigation("/dashboard")}
+              />
+            )}
 
-      <NavSection title="Báo Cáo & Phân Tích">
-        {canReports && (
-          <NavItem
-            icon={<BarChart3 size={18} />}
-            label="Báo cáo & Thống kê"
-            active={location.pathname === "/reports"}
-            onClick={() => handleNavigation("/reports")}
-          />
-        )}
-        {canNotifications && (
-          <NavItem
-            icon={<MessageSquare size={18} />}
-            label="Thông Báo & Hỗ Trợ"
-            active={location.pathname === "/notifications"}
-            onClick={() => handleNavigation("/notifications")}
-          />
-        )}
-      </NavSection>
+            {/* CRM & Student Management - Admin, Sales Staff, Academic Staff */}
+            {canCRM && (
+              <NavItem
+                icon={<Users size={18} />}
+                label="CRM - Học Viên"
+                active={location.pathname === "/crm"}
+                onClick={() => handleNavigation("/crm")}
+              />
+            )}
 
-      <NavSection title="Tài Khoản">
-        <NavItem
-          icon={<UserRound size={18} />}
-          label="Hồ Sơ"
-          active={location.pathname === "/profile"}
-          onClick={() => handleNavigation("/profile")}
-        />
-      </NavSection>
-      </>
+            {canCRM && (
+              <NavItem
+                icon={<Users size={18} />}
+                label="CRM - Leads"
+                active={location.pathname === "/crm-leads"}
+                onClick={() => handleNavigation("/crm-leads")}
+              />
+            )}
+
+            {/* Course Management - Admin, Academic Staff, Giảng viên */}
+            {canCourses && (
+              <NavItem
+                icon={<BookOpen size={18} />}
+                label="Quản lý khóa học"
+                active={location.pathname === "/course-management"}
+                onClick={() => handleNavigation("/course-management")}
+              />
+            )}
+
+            {/* Finance Management - Admin, Finance Staff */}
+            {canFinance && (
+              <NavItem
+                icon={<Receipt size={18} />}
+                label="Quản lý Tài chính"
+                active={location.pathname === "/finance"}
+                onClick={() => handleNavigation("/finance")}
+              />
+            )}
+          </NavSection>
+
+          <NavSection title="Báo Cáo & Phân Tích">
+            {canReports && (
+              <NavItem
+                icon={<BarChart3 size={18} />}
+                label="Báo cáo & Thống kê"
+                active={location.pathname === "/reports"}
+                onClick={() => handleNavigation("/reports")}
+              />
+            )}
+            {canNotifications && (
+              <NavItem
+                icon={<MessageSquare size={18} />}
+                label="Thông Báo & Hỗ Trợ"
+                active={location.pathname === "/notifications"}
+                onClick={() => handleNavigation("/notifications")}
+              />
+            )}
+          </NavSection>
+
+          {/* Account Section - All authenticated users */}
+          <NavSection title="Tài Khoản">
+            <NavItem
+              icon={<UserRound size={18} />}
+              label="Hồ Sơ"
+              active={location.pathname === "/profile"}
+              onClick={() => handleNavigation("/profile")}
+            />
+          </NavSection>
+        </>
       )}
-      </aside>
+    </aside>
   );
 }
 

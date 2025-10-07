@@ -11,6 +11,7 @@ import Reports from "./pages/Reports.jsx";
 import CRMLeads from "./pages/CRMLeads.jsx";
 import FinancePage from "./pages/FinancePage.jsx";
 import NotificationsSupport from "./pages/NotificationsSupport.jsx";
+import ProfilePage from "./pages/ProfilePage.jsx";
 import { ROLES } from "./utils/permissions";
 import { StudentModules } from "./components/CRM";
 
@@ -32,12 +33,51 @@ const RequireAuth = ({ children }) => {
   return isAuthenticated() ? children : <Navigate to="/login" replace />;
 };
 
-const RequireAdmin = ({ children }) => {
-  const role = getUserRole();
-  return role === ROLES.ADMIN ? children : <Navigate to="/crm" replace />;
+// Helper function to get default page for role
+const getDefaultPageForRole = (role) => {
+  switch (role) {
+    case ROLES.ADMIN:
+      return "/dashboard";
+    case ROLES.GIANGVIEN:
+    case ROLES.ACADEMIC_STAFF:
+      return "/course-management";
+    case ROLES.SALES_STAFF:
+      return "/crm-leads";
+    case ROLES.FINANCE_STAFF:
+      return "/finance";
+    default:
+      return "/crm";
+  }
 };
 
-// Component để xử lý route chính
+// Role-based route protection components
+const RequireAdmin = ({ children }) => {
+  const role = getUserRole();
+  return role === ROLES.ADMIN ? children : <Navigate to={getDefaultPageForRole(role)} replace />;
+};
+
+const RequireFinanceAccess = ({ children }) => {
+  const role = getUserRole();
+  return (role === ROLES.ADMIN || role === ROLES.FINANCE_STAFF) 
+    ? children 
+    : <Navigate to={getDefaultPageForRole(role)} replace />;
+};
+
+const RequireCourseAccess = ({ children }) => {
+  const role = getUserRole();
+  return (role === ROLES.ADMIN || role === ROLES.ACADEMIC_STAFF || role === ROLES.GIANGVIEN) 
+    ? children 
+    : <Navigate to={getDefaultPageForRole(role)} replace />;
+};
+
+const RequireCRMAccess = ({ children }) => {
+  const role = getUserRole();
+  return (role === ROLES.ADMIN || role === ROLES.SALES_STAFF || role === ROLES.ACADEMIC_STAFF) 
+    ? children 
+    : <Navigate to={getDefaultPageForRole(role)} replace />;
+};
+
+// Component để xử lý route chính - Redirect đến trang chính của từng bộ phận
 const MainRoute = () => {
   if (!isAuthenticated()) {
     // Chưa login: hiển thị Mainpage
@@ -45,9 +85,33 @@ const MainRoute = () => {
   }
   
   const role = getUserRole();
-  if (role === ROLES.ADMIN) return <Navigate to="/dashboard" replace />;
-  if (role === ROLES.STUDENT) return <Navigate to="/student" replace />; // thêm học viên
-  return <Navigate to="/crm" replace />;
+  
+  // Redirect theo role và trang chính của từng bộ phận
+  switch (role) {
+    case ROLES.ADMIN:
+      // Admin: Dashboard tổng quan toàn hệ thống
+      return <Navigate to="/dashboard" replace />;
+      
+    case ROLES.GIANGVIEN:
+      // Giảng viên: Quản lý khóa học và lớp học
+      return <Navigate to="/course-management" replace />;
+      
+    case ROLES.ACADEMIC_STAFF:
+      // Học vụ: Quản lý khóa học và học viên
+      return <Navigate to="/course-management" replace />;
+      
+    case ROLES.SALES_STAFF:
+      // Tư vấn: CRM và quản lý leads
+      return <Navigate to="/crm-leads" replace />;
+      
+    case ROLES.FINANCE_STAFF:
+      // Tài chính: Quản lý thanh toán và học phí
+      return <Navigate to="/finance" replace />;
+      
+    default:
+      // Fallback: CRM page
+      return <Navigate to="/crm" replace />;
+  }
 };
 
 export default function App() {
@@ -72,16 +136,6 @@ export default function App() {
             } 
           />
           <Route 
-            path="/finance" 
-            element={
-              <RequireAuth>
-                <RequireAdmin>
-                  <FinancePage />
-                </RequireAdmin>
-              </RequireAuth>
-            } 
-          />
-          <Route 
             path="/accounts/create" 
             element={
               <RequireAuth>
@@ -92,23 +146,53 @@ export default function App() {
             } 
           />
           
-          {/* General routes accessible to both admin and staff */}
+          {/* Finance routes - Admin + Finance Staff */}
           <Route 
-            path="/crm" 
+            path="/finance" 
             element={
               <RequireAuth>
-                <CRMpage />
+                <RequireFinanceAccess>
+                  <FinancePage />
+                </RequireFinanceAccess>
               </RequireAuth>
             } 
           />
+          
+          {/* Course Management routes - Admin + Academic Staff + Giảng viên */}
           <Route 
             path="/course-management" 
             element={
               <RequireAuth>
-                <CourseManagement />
+                <RequireCourseAccess>
+                  <CourseManagement />
+                </RequireCourseAccess>
               </RequireAuth>
             } 
           />
+          
+          {/* CRM routes - Admin + Sales Staff + Academic Staff */}
+          <Route 
+            path="/crm" 
+            element={
+              <RequireAuth>
+                <RequireCRMAccess>
+                  <CRMpage />
+                </RequireCRMAccess>
+              </RequireAuth>
+            } 
+          />
+          <Route 
+            path="/crm-leads" 
+            element={
+              <RequireAuth>
+                <RequireCRMAccess>
+                  <CRMLeads />
+                </RequireCRMAccess>
+              </RequireAuth>
+            } 
+          />
+          
+          {/* Reports routes - All staff can access */}
           <Route 
             path="/reports" 
             element={
@@ -117,14 +201,8 @@ export default function App() {
               </RequireAuth>
             } 
           />
-          <Route 
-            path="/crm-leads" 
-            element={
-              <RequireAuth>
-                <CRMLeads />
-              </RequireAuth>
-            } 
-          />
+          
+          {/* Notifications routes - All staff can access */}
           <Route 
             path="/notifications" 
             element={
@@ -133,11 +211,23 @@ export default function App() {
               </RequireAuth>
             } 
           />
+          
+          {/* Student routes - Deprecated (students don't have accounts by default) */}
           <Route 
             path="/student" 
             element={
               <RequireAuth>
                 <StudentModules />
+              </RequireAuth>
+            } 
+          />
+          
+          {/* Profile route - All authenticated users */}
+          <Route 
+            path="/profile" 
+            element={
+              <RequireAuth>
+                <ProfilePage />
               </RequireAuth>
             } 
           />
