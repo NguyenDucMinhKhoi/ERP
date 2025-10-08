@@ -276,37 +276,146 @@ class CourseService {
     }
   }
 
-  // ===== ATTENDANCE MANAGEMENT =====
+  // ===== LỊCH HỌC (Schedule) APIs =====
 
   /**
-   * Lấy lịch học của lớp (mock data)
+   * Lấy danh sách tất cả lịch học
+   * @param {Object} params - Query parameters
+   */
+  async getSchedules(params = {}) {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const response = await fetch(`${API_BASE_URL}/lichhocs/?${queryString}`, {
+        headers: this.getHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching schedules:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Tạo lịch học mới
+   * @param {Object} scheduleData - Dữ liệu lịch học
+   */
+  async createSchedule(scheduleData) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/lichhocs/`, {
+        method: "POST",
+        headers: this.getHeaders(),
+        body: JSON.stringify(scheduleData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error creating schedule:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Cập nhật lịch học
+   * @param {string} scheduleId - ID của lịch học
+   * @param {Object} scheduleData - Dữ liệu cập nhật
+   */
+  async updateSchedule(scheduleId, scheduleData) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/lichhocs/${scheduleId}/`, {
+        method: "PATCH",
+        headers: this.getHeaders(),
+        body: JSON.stringify(scheduleData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error updating schedule:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Xóa lịch học
+   * @param {string} scheduleId - ID của lịch học
+   */
+  async deleteSchedule(scheduleId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/lichhocs/${scheduleId}/`, {
+        method: "DELETE",
+        headers: this.getHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // DELETE thường trả về 204 No Content
+      return response.status === 204 ? true : await response.json();
+    } catch (error) {
+      console.error("Error deleting schedule:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Lấy lịch học của lớp
+   * @param {string} classId - ID của lớp học
    */
   async getClassSchedules(classId) {
     try {
-      // Mock schedules based on course data
-      const schedules = [];
-      const startDate = new Date();
-      
-      for (let i = 0; i < 10; i++) {
-        const date = new Date(startDate);
-        date.setDate(date.getDate() + (i * 3)); // Mỗi 3 ngày 1 buổi
-        
-        schedules.push({
-          id: `schedule_${classId}_${i}`,
-          classId: classId,
-          date: date.toISOString(),
-          time: "19:00-21:00",
-          topic: `Bài ${i + 1}: Chủ đề học tập`,
-          status: i < 3 ? 'completed' : 'scheduled'
-        });
+      const response = await fetch(`${API_BASE_URL}/lichhocs/class/${classId}/`, {
+        headers: this.getHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return schedules;
+      return await response.json();
     } catch (error) {
-      console.error("Error fetching schedules:", error);
-      return [];
+      console.error("Error fetching class schedules:", error);
+      // Fallback to mock data if API not available
+      try {
+        const schedules = [];
+        const startDate = new Date();
+        
+        for (let i = 0; i < 10; i++) {
+          const date = new Date(startDate);
+          date.setDate(date.getDate() + (i * 3)); // Mỗi 3 ngày 1 buổi
+          
+          schedules.push({
+            id: `schedule_${classId}_${i}`,
+            classId: classId,
+            date: date.toISOString().split('T')[0], // Format YYYY-MM-DD
+            time: "19:00",
+            topic: `Bài ${i + 1}: Chủ đề học tập`,
+            notes: "",
+            status: i < 3 ? 'Đã hoàn thành' : 'Sắp diễn ra'
+          });
+        }
+
+        return schedules;
+      } catch (fallbackError) {
+        console.error("Error in fallback:", fallbackError);
+        return [];
+      }
     }
   }
+
+  // ===== ATTENDANCE MANAGEMENT =====
 
   /**
    * Lưu điểm danh
