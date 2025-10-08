@@ -12,9 +12,5 @@ class LopHocSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LopHoc
-        fields = [
-            'id', 'ten', 'khoa_hoc', 'giang_vien', 'phong_hoc', 
-            'ngay_bat_dau', 'ngay_ket_thuc', 'trang_thai', 'mo_ta',
-            'created_at', 'updated_at', 'so_hoc_vien'
-        ]
+        fields = '__all__'
         read_only_fields = ['id', 'created_at', 'updated_at', 'so_hoc_vien']

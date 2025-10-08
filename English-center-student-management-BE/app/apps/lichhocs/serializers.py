@@ -12,8 +12,4 @@ class LichHocSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LichHoc
-        fields = [
-            'id', 'lop_hoc', 'ngay_hoc', 'gio_bat_dau', 'gio_ket_thuc',
-            'phong_hoc', 'noi_dung', 'created_at', 'updated_at'
-        ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        fields = '__all__'

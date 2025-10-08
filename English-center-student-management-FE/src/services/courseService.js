@@ -179,10 +179,8 @@ class CourseService {
   async getClasses(params = {}) {
     try {
       // Lấy danh sách khóa học và students đăng ký
-      const courses = await this.getCourses(params);
-      const enrollments = await this.getEnrollments();
-      
-      // Tạo mock classes từ data thật
+      const courses = await this.fetchClass(params);
+
       const classes = courses.results?.map(course => ({
         id: `class_${course.id}`,
         courseId: course.id,
@@ -190,12 +188,12 @@ class CourseService {
         name: `Lớp ${course.ten}`,
         teacherName: course.giang_vien,
         room: `P${Math.floor(Math.random() * 20) + 1}`,
-        schedule: course.lich_hoc,
+        schedule: course.schedule,
         maxStudents: 20,
         currentStudents: course.so_hoc_vien || 0,
         status: course.trang_thai === 'mo' ? 'Đang học' : 'Đã kết thúc',
         startDate: course.created_at,
-        students: enrollments.filter(e => e.khoahoc === course.id).map(e => e.hocvien),
+        students: course.students,
         price: course.hoc_phi,
         description: course.mo_ta
       })) || [];
@@ -227,6 +225,28 @@ class CourseService {
       return await this.createCourse(courseData);
     } catch (error) {
       console.error("Error creating class:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fetch classes (LopHoc) from backend.
+   * This returns the raw LopHoc list (used by getClasses).
+   */
+  async fetchClass(params = {}) {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const response = await fetch(`${API_BASE_URL}/lophocs/?${queryString}`, {
+        headers: this.getHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching classes (lophocs):", error);
       throw error;
     }
   }
@@ -286,11 +306,11 @@ class CourseService {
       // Mock schedules based on course data
       const schedules = [];
       const startDate = new Date();
-      
+
       for (let i = 0; i < 10; i++) {
         const date = new Date(startDate);
         date.setDate(date.getDate() + (i * 3)); // Mỗi 3 ngày 1 buổi
-        
+
         schedules.push({
           id: `schedule_${classId}_${i}`,
           classId: classId,
@@ -315,10 +335,10 @@ class CourseService {
     try {
       // Mock save attendance - in real app this would be a separate API
       console.log("Saving attendance:", attendanceData);
-      
+
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       return {
         success: true,
         message: "Điểm danh đã được lưu thành công"
