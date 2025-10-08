@@ -285,5 +285,89 @@
       "created_at": "2024-01-01T00:00:00Z",
       "updated_at": "2024-01-01T00:00:00Z"
     }
+  },
+  {
+    "model": "lophocs.lophoc",
+    "pk": "550e8400-e29b-41d4-a716-446655440070",
+    "fields": {
+      "ten": "Lớp Giao Tiếp Cơ Bản A1",
+      "khoa_hoc": "550e8400-e29b-41d4-a716-446655440020",
+      "giang_vien": "Cô Sarah Johnson",
+      "phong_hoc": "Phòng A101",
+      "ngay_bat_dau": "2024-02-01",
+      "ngay_ket_thuc": "2024-05-01",
+      "trang_thai": "dang_hoc",
+      "mo_ta": "Lớp học tiếng Anh giao tiếp cơ bản, nhóm nhỏ",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "lophocs.lophoc",
+    "pk": "550e8400-e29b-41d4-a716-446655440071",
+    "fields": {
+      "ten": "Lớp Thương Mại B1",
+      "khoa_hoc": "550e8400-e29b-41d4-a716-446655440021",
+      "giang_vien": "Thầy Michael Brown",
+      "phong_hoc": "Phòng B202",
+      "ngay_bat_dau": "2024-03-01",
+      "ngay_ket_thuc": "2024-06-01",
+      "trang_thai": "dang_hoc",
+      "mo_ta": "Lớp học tiếng Anh thương mại, tập trung kỹ năng đàm phán",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "lichhocs.lichhoc",
+    "pk": "550e8400-e29b-41d4-a716-446655440080",
+    "fields": {
+      "lop_hoc": "550e8400-e29b-41d4-a716-446655440070",
+      "ngay_hoc": "2024-02-03",
+      "gio_bat_dau": "18:00:00",
+      "gio_ket_thuc": "20:00:00",
+      "phong_hoc": "Phòng A101",
+      "noi_dung": "Giới thiệu và luyện tập từ vựng giao tiếp cơ bản",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "lichhocs.lichhoc",
+    "pk": "550e8400-e29b-41d4-a716-446655440081",
+    "fields": {
+      "lop_hoc": "550e8400-e29b-41d4-a716-446655440071",
+      "ngay_hoc": "2024-03-02",
+      "gio_bat_dau": "19:00:00",
+      "gio_ket_thuc": "21:00:00",
+      "phong_hoc": "Phòng B202",
+      "noi_dung": "Luyện tập viết email thương mại",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "diemdanhs.diemdanh",
+    "pk": "550e8400-e29b-41d4-a716-446655440090",
+    "fields": {
+      "lich_hoc": "550e8400-e29b-41d4-a716-446655440080",
+      "hoc_vien": "550e8400-e29b-41d4-a716-446655440010",
+      "trang_thai": "co_mat",
+      "ghi_chu": "Học viên tham gia đầy đủ",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "diemdanhs.diemdanh",
+    "pk": "550e8400-e29b-41d4-a716-446655440091",
+    "fields": {
+      "lich_hoc": "550e8400-e29b-41d4-a716-446655440081",
+      "hoc_vien": "550e8400-e29b-41d4-a716-446655440011",
+      "trang_thai": "vang_co_phep",
+      "ghi_chu": "Học viên xin nghỉ vì lý do cá nhân",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
   }
 ]
