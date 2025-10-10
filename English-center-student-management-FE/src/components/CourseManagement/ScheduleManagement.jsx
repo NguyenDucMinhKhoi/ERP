@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, Save, Calendar, Plus, Edit, Trash2, Clock } from "lucide-react";
+import courseService from "../../services/courseService";
 
 // Constants
 const timeSlots = [
@@ -54,10 +55,9 @@ export default function ScheduleManagement({ classData, onClose }) {
     // Load schedules for this class from API
     const loadSchedules = async () => {
       try {
-        // TODO: Replace with actual API call
-        // const response = await courseService.getClassSchedules(classData.id);
-        // setSchedules(response.results || []);
-        setSchedules([]); // Temporary empty array
+        
+        const response = await courseService.getClassSchedules(classData.id);
+        setSchedules(response.results || []);
       } catch (error) {
         console.error("Error loading schedules:", error);
         setSchedules([]);
