@@ -170,15 +170,15 @@ class CourseService {
     }
   }
 
-  // ===== LỚP HỌC (Class) APIs =====
-  // Sử dụng data từ đăng ký khóa học để mô phỏng lớp học
+  // ===== LỚP HỌC (Class) APIs - Updated =====
 
   /**
-   * Lấy danh sách "lớp học" (theo khóa học và trạng thái đăng ký)
+   * Lấy danh sách lớp học từ API
+   * @param {Object} params - Query parameters
    */
   async getClasses(params = {}) {
+    // Fallback to mock data if API not available
     try {
-      // Lấy danh sách khóa học và students đăng ký
       const courses = await this.fetchClass(params);
 
       const classes = courses.results?.map(course => ({
@@ -190,7 +190,7 @@ class CourseService {
         room: `P${Math.floor(Math.random() * 20) + 1}`,
         schedule: course.schedule,
         maxStudents: 20,
-        currentStudents: course.so_hoc_vien || 0,
+        currentStudents: course.currentStudents || 0,
         status: course.trang_thai === 'mo' ? 'Đang học' : 'Đã kết thúc',
         startDate: course.created_at,
         students: course.students,
@@ -199,40 +199,17 @@ class CourseService {
       })) || [];
 
       return { results: classes };
-    } catch (error) {
-      console.error("Error fetching classes:", error);
-      // Fallback to mock data if needed
+    } catch (fallbackError) {
+      console.error("Error in fallback:", fallbackError);
       return { results: [] };
     }
   }
 
-  /**
-   * Tạo lớp học mới (thực chất là tạo khóa học)
-   */
-  async createClass(classData) {
-    try {
-      // Convert class data to course data format
-      const courseData = {
-        ten: classData.courseName || classData.name,
-        lich_hoc: classData.schedule,
-        giang_vien: classData.teacherName,
-        so_buoi: classData.sessions || 20,
-        hoc_phi: classData.price || 2000000,
-        mo_ta: classData.description,
-        trang_thai: 'mo'
-      };
-
-      return await this.createCourse(courseData);
-    } catch (error) {
-      console.error("Error creating class:", error);
-      throw error;
-    }
-  }
 
   /**
-   * Fetch classes (LopHoc) from backend.
-   * This returns the raw LopHoc list (used by getClasses).
-   */
+     * Fetch classes (LopHoc) from backend.
+     * This returns the raw LopHoc list (used by getClasses).
+     */
   async fetchClass(params = {}) {
     try {
       const queryString = new URLSearchParams(params).toString();
@@ -250,6 +227,182 @@ class CourseService {
       throw error;
     }
   }
+
+  /**
+   * Tạo lớp học mới
+   * @param {Object} classData - Dữ liệu lớp học
+   */
+  async createClass(classData) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/lophocs/`, {
+        method: "POST",
+        headers: this.getHeaders(),
+        body: JSON.stringify(classData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error creating class:", error);
+      // Fallback to creating course if class API not available
+      try {
+        const courseData = {
+          ten: classData.courseName || classData.name,
+          lich_hoc: classData.schedule,
+          giang_vien: classData.teacherName,
+          so_buoi: classData.sessions || 20,
+          hoc_phi: classData.price || 2000000,
+          mo_ta: classData.description,
+          trang_thai: 'mo'
+        };
+
+        return await this.createCourse(courseData);
+      } catch (fallbackError) {
+        console.error("Error in fallback create:", fallbackError);
+        throw error;
+      }
+    }
+  }
+
+  /**
+   * Cập nhật lớp học
+   * @param {string} classId - ID của lớp học
+   * @param {Object} classData - Dữ liệu cập nhật
+   */
+  async updateClass(classId, classData) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/lophocs/${classId}/`, {
+        method: "PATCH",
+        headers: this.getHeaders(),
+        body: JSON.stringify(classData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error updating class:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Xóa lớp học
+   * @param {string} classId - ID của lớp học
+   */
+  async deleteClass(classId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/lophocs/${classId}/`, {
+        method: "DELETE",
+        headers: this.getHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // DELETE thường trả về 204 No Content
+      return response.status === 204 ? true : await response.json();
+    } catch (error) {
+      console.error("Error deleting class:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Lấy danh sách học viên trong lớp
+   * @param {string} classId - ID của lớp học
+   */
+  async getClassStudents(classId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/lophocs/${classId}/students/`, {
+        headers: this.getHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching class students:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Thêm học viên vào lớp
+   * @param {string} classId - ID của lớp học
+   * @param {string} studentId - ID của học viên
+   */
+  async addStudentToClass(classId, studentId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/lophocs/${classId}/add-student/`, {
+        method: "POST",
+        headers: this.getHeaders(),
+        body: JSON.stringify({ student_id: studentId }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error adding student to class:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Xóa học viên khỏi lớp
+   * @param {string} classId - ID của lớp học
+   * @param {string} studentId - ID của học viên
+   */
+  async removeStudentFromClass(classId, studentId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/lophocs/${classId}/remove-student/${studentId}/`, {
+        method: "DELETE",
+        headers: this.getHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // DELETE thường trả về 204 No Content
+      return response.status === 204 ? true : await response.json();
+    } catch (error) {
+      console.error("Error removing student from class:", error);
+      throw error;
+    }
+  }
+
+  // /**
+  //  * Lấy chi tiết lớp học
+  //  * @param {string} classId - ID của lớp học
+  //  */
+  // async getClassDetail(classId) {
+  //   try {
+  //     const response = await fetch(`${API_BASE_URL}/lophocs/${classId}/`, {
+  //       headers: this.getHeaders(),
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! status: ${response.status}`);
+  //     }
+
+  //     return await response.json();
+  //   } catch (error) {
+  //     console.error("Error fetching class detail:", error);
+  //     throw error;
+  //   }
+  // }
 
   // ===== ĐĂNG KÝ KHÓA HỌC APIs =====
 
