@@ -2,6 +2,7 @@ from django.db import models
 from app.core.models import BaseModel
 from app.apps.hocviens.models import HocVien
 from app.apps.khoahocs.models import KhoaHoc
+from app.apps.users.models import User
 
 
 class LopHoc(BaseModel):
@@ -14,7 +15,13 @@ class LopHoc(BaseModel):
         on_delete=models.CASCADE,
         verbose_name='Khóa học'
     )
-    giang_vien = models.CharField(max_length=100, verbose_name='Giảng viên')
+    giang_vien_id = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='lophocs_giang_vien'
+    )
     phong_hoc = models.CharField(max_length=50, verbose_name='Phòng học', blank=True, null=True)
     ngay_bat_dau = models.DateField(verbose_name='Ngày bắt đầu')
     ngay_ket_thuc = models.DateField(verbose_name='Ngày kết thúc', null=True, blank=True)

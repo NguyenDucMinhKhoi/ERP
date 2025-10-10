@@ -5,6 +5,10 @@ from rest_framework.response import Response
 from .models import LopHoc
 from .serializers import LopHocSerializer
 from app.core.permissions import CanManageCourses
+from rest_framework.views import APIView
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from app.apps.users.models import User
 
 
 class LopHocViewSet(viewsets.ModelViewSet):
@@ -121,7 +125,6 @@ class LopHocListView(generics.ListCreateAPIView):
         items = []
         for lop in lops:
             lid = str(getattr(lop, 'id'))
-            # determine linked course id string for lookup
             linked_course_id = getattr(lop, 'khoa_hoc_id', None)
             if not linked_course_id:
                 kh = getattr(lop, 'khoa_hoc', None)
@@ -131,11 +134,22 @@ class LopHocListView(generics.ListCreateAPIView):
             students = enroll_students_map.get(linked_course_key, [])
             current_students_count = len(students) if isinstance(students, list) else 0
 
+            # Join to user table for teacher info
+            teacher_obj = None
+            teacher = getattr(lop, 'giang_vien_id', None)
+            if teacher and isinstance(teacher, User):
+                teacher_obj = {
+                    "id": str(teacher.id),
+                    "name": f"{teacher.first_name} {teacher.last_name}".strip() or teacher.username,
+                    "email": teacher.email,
+                    "username": teacher.username,
+                }
+
             dto = {
                 "id": getattr(lop, 'id'),
                 "ten": getattr(lop, 'ten', None),
                 "khoa_hoc": linked_course_id,
-                "giang_vien": getattr(lop, 'giang_vien', None),
+                "giang_vien": teacher_obj,  # now an object
                 "phong_hoc": getattr(lop, 'phong_hoc', None),
                 "ngay_bat_dau": getattr(lop, 'ngay_bat_dau', None),
                 "ngay_ket_thuc": getattr(lop, 'ngay_ket_thuc', None),
@@ -143,9 +157,7 @@ class LopHocListView(generics.ListCreateAPIView):
                 "mo_ta": getattr(lop, 'mo_ta', None),
                 "created_at": getattr(lop, 'created_at', None),
                 "updated_at": getattr(lop, 'updated_at', None),
-                # schedule as array of {day, time}
                 "schedule": schedule_map.get(lid, []),
-                # students array and currentStudents count
                 "students": students,
                 "currentStudents": current_students_count,
             }
@@ -162,3 +174,57 @@ class LopHocDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = LopHoc.objects.all()
     serializer_class = LopHocSerializer
     permission_classes = [CanManageCourses]
+
+
+class AddStudentToClassView(APIView):
+    """
+    API to add one or multiple students to a class (LopHoc).
+    POST body: { "student_id": <hocvien_id> } or { "student_id": [<hocvien_id>, ...] }
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, class_id):
+        student_ids = request.data.get("student_id")
+        if not student_ids:
+            return Response({"error": "student_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Accept both single string and list of strings
+        if isinstance(student_ids, str):
+            student_ids = [student_ids]
+        elif not isinstance(student_ids, list):
+            return Response({"error": "student_id must be a string or list of strings"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            LopHoc = apps.get_model('lophocs', 'LopHoc')
+            DangKy = apps.get_model('dangky', 'dangkykhoahoc')
+            Hocvien = apps.get_model('hocviens', 'Hocvien')
+            lop = LopHoc.objects.get(id=class_id)
+            added = []
+            already = []
+            not_found = []
+            for sid in student_ids:
+                try:
+                    hocvien = Hocvien.objects.get(id=sid)
+                except Hocvien.DoesNotExist:
+                    not_found.append(sid)
+                    continue
+                obj, created = DangKy.objects.get_or_create(
+                    khoahoc=lop.khoa_hoc,
+                    hocvien=hocvien,
+                    defaults={"trang_thai": "dang_hoc"}
+                )
+                if created:
+                    added.append(sid)
+                else:
+                    already.append(sid)
+            return Response({
+                "success": True,
+                "added": added,
+                "already_in_class": already,
+                "not_found": not_found,
+                "message": f"{len(added)} học viên đã được thêm, {len(already)} đã có trong lớp, {len(not_found)} không tìm thấy."
+            }, status=status.HTTP_200_OK)
+        except LopHoc.DoesNotExist:
+            return Response({"error": "Class not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

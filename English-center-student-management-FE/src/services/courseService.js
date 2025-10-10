@@ -186,7 +186,7 @@ class CourseService {
         courseId: course.id,
         courseName: course.ten,
         name: `Lớp ${course.ten}`,
-        teacherName: course.giang_vien,
+        giang_vien: course.giang_vien,
         room: `P${Math.floor(Math.random() * 20) + 1}`,
         schedule: course.schedule,
         maxStudents: 20,
@@ -337,26 +337,26 @@ class CourseService {
 
   /**
    * Thêm học viên vào lớp
-   * @param {string} classId - ID của lớp học
+   * @param {string} classId - ID của lớp học (may be prefixed with "class_")
    * @param {string} studentId - ID của học viên
    */
   async addStudentToClass(classId, studentId) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/lophocs/${classId}/add-student/`, {
-        method: "POST",
-        headers: this.getHeaders(),
-        body: JSON.stringify({ student_id: studentId }),
-      });
+    // Remove "class_" prefix if present
+    const realClassId = typeof classId === "string" && classId.startsWith("class_")
+      ? classId.replace("class_", "")
+      : classId;
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+    const response = await fetch(`${API_BASE_URL}/lophocs/${realClassId}/add-student/`, {
+      method: "POST",
+      headers: this.getHeaders(),
+      body: JSON.stringify({ student_id: studentId }),
+    });
 
-      return await response.json();
-    } catch (error) {
-      console.error("Error adding student to class:", error);
-      throw error;
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    return await response.json();
   }
 
   /**
@@ -522,6 +522,27 @@ class CourseService {
     } catch (error) {
       console.error("Error fetching students:", error);
       return { results: [] };
+    }
+  }
+
+  /**
+   * Lấy danh sách giáo viên
+   */
+  async getTeachers(params = {}) {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const response = await fetch(`${API_BASE_URL}/teachers/?${queryString}`, {
+        headers: this.getHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching teachers:", error);
+      return [];
     }
   }
 
