@@ -25,13 +25,32 @@ export default function ClassList({
   const [error, setError] = useState(null);
 
   // Load classes from API
-  useEffect(() => {
+   useEffect(() => {
     const loadClasses = async () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await courseService.getClasses();
-        setClasses(response.results || []);
+        const response = await courseService.fetchClass(); // Use fetchClass instead of getClasses
+        console.log('Classes response:', response);
+        
+        // Transform API response to match frontend format
+        const transformedClasses = (response.results || []).map(item => ({
+          id: item.id,
+          name: item.ten,
+          courseId: item.khoa_hoc,
+          courseName: item.courseName || 'N/A',
+          giang_vien: item.giang_vien || { name: 'N/A' },
+          room: item.phong_hoc,
+          schedule: item.schedule || [],
+          maxStudents: item.so_hoc_vien_toi_da || 20,
+          currentStudents: item.currentStudents || 0,
+          status: item.trang_thai,
+          startDate: item.ngay_bat_dau,
+          endDate: item.ngay_ket_thuc,
+          students: item.students || []
+        }));
+        
+        setClasses(transformedClasses);
       } catch (err) {
         console.error('Error loading classes:', err);
         setError('Không thể tải danh sách lớp học. Vui lòng thử lại.');

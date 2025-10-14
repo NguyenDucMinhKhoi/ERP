@@ -127,15 +127,7 @@ export default function CreateClassForm({ onClose, onSuccess }) {
   const addScheduleItem = () => {
     setFormData((prev) => ({
       ...prev,
-      schedule: [...prev.schedule, { day: '', time: '' }],
-    }));
-  };
-
-  const removeScheduleItem = (index) => {
-    const newSchedule = formData.schedule.filter((_, i) => i !== index);
-    setFormData((prev) => ({
-      ...prev,
-      schedule: newSchedule,
+      schedule: [...prev.schedule, { day: '', startTime: '', endTime: '' }],
     }));
   };
 
@@ -179,8 +171,14 @@ export default function CreateClassForm({ onClose, onSuccess }) {
       if (!item.day) {
         newErrors[`schedule_${index}_day`] = 'Ngày học là bắt buộc';
       }
-      if (!item.time) {
-        newErrors[`schedule_${index}_time`] = 'Giờ học là bắt buộc';
+      if (!item.startTime) {
+        newErrors[`schedule_${index}_startTime`] = 'Giờ bắt đầu là bắt buộc';
+      }
+      if (!item.endTime) {
+        newErrors[`schedule_${index}_endTime`] = 'Giờ kết thúc là bắt buộc';
+      }
+      if (item.startTime && item.endTime && item.startTime >= item.endTime) {
+        newErrors[`schedule_${index}_endTime`] = 'Giờ kết thúc phải sau giờ bắt đầu';
       }
     });
 
@@ -198,15 +196,38 @@ export default function CreateClassForm({ onClose, onSuccess }) {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Prepare data for API - map field names to backend format
+      const apiData = {
+        ten: formData.name,
+        khoa_hoc: formData.courseId,
+        giang_vien: formData.teacherId,
+        ngay_bat_dau: formData.startDate,
+        ngay_ket_thuc: formData.endDate,
+        phong_hoc: formData.room,
+        so_hoc_vien_toi_da: parseInt(formData.maxStudents),
+        trang_thai: formData.status,
+        mo_ta: '',
+        // Send schedule with start and end time
+        schedule: formData.schedule.map(s => ({
+          day: s.day,
+          time: `${s.startTime}-${s.endTime}`
+        }))
+      };
 
-      // In real app, this would be an API call
-      console.log('Creating class:', formData);
+      console.log('Creating class with data:', apiData);
 
+      const response = await courseService.createClass(apiData);
+      
+      console.log('Class created successfully:', response);
+      
       onSuccess();
     } catch (error) {
       console.error('Error creating class:', error);
+      
+      // Show error message to user
+      setErrors({
+        submit: error.message || 'Có lỗi xảy ra khi tạo lớp học. Vui lòng thử lại.'
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -395,7 +416,7 @@ export default function CreateClassForm({ onClose, onSuccess }) {
           </div>
 
           {/* Schedule */}
-          <div className="space-y-4">
+                 <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium text-slate-900 flex items-center gap-2">
                 <Calendar className="h-5 w-5" />
@@ -429,8 +450,8 @@ export default function CreateClassForm({ onClose, onSuccess }) {
                   >
                     <option value="">Chọn ngày</option>
                     {daysOfWeek.map((day) => (
-                      <option key={day} value={day}>
-                        {day}
+                      <option key={day.value} value={day.value}>
+                        {day.label}
                       </option>
                     ))}
                   </select>
@@ -443,26 +464,52 @@ export default function CreateClassForm({ onClose, onSuccess }) {
 
                 <div className="flex-1">
                   <select
-                    value={item.time}
+                    value={item.startTime || ''}
                     onChange={(e) =>
-                      handleScheduleChange(index, 'time', e.target.value)
+                      handleScheduleChange(index, 'startTime', e.target.value)
                     }
                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
-                      errors[`schedule_${index}_time`]
+                      errors[`schedule_${index}_startTime`]
                         ? 'border-red-300'
                         : 'border-slate-300'
                     }`}
                   >
-                    <option value="">Chọn giờ</option>
+                    <option value="">Giờ bắt đầu</option>
                     {timeSlots.map((time) => (
                       <option key={time} value={time}>
                         {time}
                       </option>
                     ))}
                   </select>
-                  {errors[`schedule_${index}_time`] && (
+                  {errors[`schedule_${index}_startTime`] && (
                     <p className="mt-1 text-sm text-red-600">
-                      {errors[`schedule_${index}_time`]}
+                      {errors[`schedule_${index}_startTime`]}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex-1">
+                  <select
+                    value={item.endTime || ''}
+                    onChange={(e) =>
+                      handleScheduleChange(index, 'endTime', e.target.value)
+                    }
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
+                      errors[`schedule_${index}_endTime`]
+                        ? 'border-red-300'
+                        : 'border-slate-300'
+                    }`}
+                  >
+                    <option value="">Giờ kết thúc</option>
+                    {timeSlots.map((time) => (
+                      <option key={time} value={time}>
+                        {time}
+                      </option>
+                    ))}
+                  </select>
+                  {errors[`schedule_${index}_endTime`] && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors[`schedule_${index}_endTime`]}
                     </p>
                   )}
                 </div>
@@ -481,9 +528,13 @@ export default function CreateClassForm({ onClose, onSuccess }) {
               <p className="text-sm text-red-600">{errors.schedule}</p>
             )}
           </div>
-
-          {/* Actions */}
+         {/* Actions */}
           <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-200">
+            {/* Show submit error if exists */}
+            {errors.submit && (
+              <p className="flex-1 text-sm text-red-600">{errors.submit}</p>
+            )}
+            
             <button
               type="button"
               onClick={onClose}

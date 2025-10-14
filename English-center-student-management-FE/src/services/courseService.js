@@ -233,39 +233,24 @@ class CourseService {
    * @param {Object} classData - Dữ liệu lớp học
    */
   async createClass(classData) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/lophocs/`, {
-        method: "POST",
-        headers: this.getHeaders(),
-        body: JSON.stringify(classData),
-      });
+  try {
+    const response = await fetch(`${API_BASE_URL}/lophocs/`, {
+      method: "POST",
+      headers: this.getHeaders(),
+      body: JSON.stringify(classData),
+    });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("Error creating class:", error);
-      // Fallback to creating course if class API not available
-      try {
-        const courseData = {
-          ten: classData.courseName || classData.name,
-          lich_hoc: classData.schedule,
-          giang_vien: classData.teacherName,
-          so_buoi: classData.sessions || 20,
-          hoc_phi: classData.price || 2000000,
-          mo_ta: classData.description,
-          trang_thai: 'mo'
-        };
-
-        return await this.createCourse(courseData);
-      } catch (fallbackError) {
-        console.error("Error in fallback create:", fallbackError);
-        throw error;
-      }
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error creating class:", error);
+    throw error;
   }
+}
 
   /**
    * Cập nhật lớp học
