@@ -6,7 +6,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db import models
 
-from app.core.permissions import IsStaffUser, IsOwnerOrStaff
+from app.core.permissions import (
+    IsStaffUser, IsOwnerOrStaff, 
+    FinancePermission, CanViewFinance, CanManageFinance
+)
 from .models import ThanhToan
 from .serializers import (
     ThanhToanSerializer, ThanhToanCreateSerializer,
@@ -16,11 +19,14 @@ from .serializers import (
 
 class ThanhToanListView(generics.ListCreateAPIView):
     """
-    Danh sách và tạo thanh toán (Nhân viên/Admin)
+    Danh sách và tạo thanh toán với phân quyền theo role
+    - Admin, Finance Staff: Full CRUD
+    - Academic Staff: Read + Create
+    - Sales Staff: Read only
     """
     queryset = ThanhToan.objects.all()
     serializer_class = ThanhToanSerializer
-    permission_classes = [IsStaffUser]
+    permission_classes = [FinancePermission]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['hinh_thuc', 'hocvien', 'ngay_dong']
     search_fields = ['hocvien__ten', 'so_bien_lai']
@@ -34,16 +40,37 @@ class ThanhToanListView(generics.ListCreateAPIView):
 
 class ThanhToanDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
-    Chi tiết, cập nhật và xóa thanh toán (Nhân viên/Admin)
+    Chi tiết, cập nhật và xóa thanh toán với phân quyền
+    - Admin, Finance Staff: Full CRUD
+    - Academic Staff: Read only (không được sửa/xóa)
+    - Sales Staff: Read only
     """
     queryset = ThanhToan.objects.all()
     serializer_class = ThanhToanDetailSerializer
-    permission_classes = [IsOwnerOrStaff]
+    permission_classes = [FinancePermission]
 
     def get_serializer_class(self):
         if self.request.method in ['PUT', 'PATCH']:
             return ThanhToanUpdateSerializer
         return ThanhToanDetailSerializer
+    
+    def update(self, request, *args, **kwargs):
+        # Chỉ Admin và Finance Staff mới được cập nhật
+        if request.user.role not in ['admin', 'finance_staff']:
+            return Response(
+                {'error': 'Bạn không có quyền cập nhật thanh toán'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().update(request, *args, **kwargs)
+    
+    def destroy(self, request, *args, **kwargs):
+        # Chỉ Admin và Finance Staff mới được xóa
+        if request.user.role not in ['admin', 'finance_staff']:
+            return Response(
+                {'error': 'Bạn không có quyền xóa thanh toán'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().destroy(request, *args, **kwargs)
 
 
 class ThanhToanMyListView(generics.ListAPIView):
@@ -65,13 +92,12 @@ class ThanhToanMyListView(generics.ListAPIView):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([CanViewFinance])
 def thanhtoan_stats(request):
     """
-    Thống kê thanh toán (Nhân viên/Admin)
+    Thống kê thanh toán - Có phân quyền theo role
+    - Admin, Finance Staff, Academic Staff, Sales Staff: Được xem thống kê
     """
-    if request.user.role not in ['admin', 'nhanvien']:
-        return Response({'error': 'Không có quyền truy cập'}, status=status.HTTP_403_FORBIDDEN)
 
     total_thanhtoan = ThanhToan.objects.count()
     total_tien = ThanhToan.objects.aggregate(total=models.Sum('so_tien'))['total'] or 0
