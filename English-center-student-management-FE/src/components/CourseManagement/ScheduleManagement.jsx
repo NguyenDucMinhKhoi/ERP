@@ -197,6 +197,61 @@ export default function ScheduleManagement({ classData, onClose }) {
         ? classData.id.replace("class_", "")
         : classData.id;
 
+      // Create new schedule - POST as array
+      const schedule = {
+        id: realClassId, // lớp học id
+        date: formData.date,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        topic: formData.topic,
+        note: formData.notes,
+      };
+
+      const response = await courseService.createSchedule(schedule);
+      
+      // Add to local state
+      const newSchedule = {
+        id: response[0]?.id || Date.now(),
+        classId: classData.id,
+        date: formData.date,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        topic: formData.topic,
+        notes: formData.notes,
+        status: "Sắp diễn ra",
+        attendance: null,
+      };
+      
+      setSchedules((prev) => [...prev, newSchedule]);
+
+      setShowAddForm(false);
+      setEditingSchedule(null);
+      setFormData({
+        date: "",
+        startTime: "",
+        endTime: "",
+        topic: "",
+        notes: "",
+      });
+    } catch (error) {
+      console.error("Error saving schedule:", error);
+      alert("Có lỗi xảy ra khi lưu lịch học. Vui lòng thử lại.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  const handleUpdateSubmit = async (e) => {
+    e.preventDefault();
+
+    setIsSubmitting(true);
+
+    try {
+      // Remove "class_" prefix if present
+      const realClassId = typeof classData.id === "string" && classData.id.startsWith("class_")
+        ? classData.id.replace("class_", "")
+        : classData.id;
+
       if (editingSchedule) {
         // Update existing schedule
         await courseService.updateSchedule(editingSchedule.id, {
@@ -495,7 +550,7 @@ export default function ScheduleManagement({ classData, onClose }) {
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <form onSubmit={editingSchedule ? handleUpdateSubmit : handleSubmit} className="p-6 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
                     Ngày học *
