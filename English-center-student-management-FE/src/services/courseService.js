@@ -328,12 +328,9 @@ class CourseService {
       throw error;
     }
   }
-
-  // ===== STUDENTS FOR COURSE MANAGEMENT =====
-
-  /**
-   * Lấy danh sách học viên (từ hocviens API)
-   */
+  
+   //Lấy danh sách học viên 
+   
   async getStudents(params = {}) {
     try {
       const queryString = new URLSearchParams(params).toString();
@@ -349,6 +346,44 @@ class CourseService {
     } catch (error) {
       console.error("Error fetching students:", error);
       return { results: [] };
+    }
+  }
+
+   //Lấy danh sách thanh toán 
+  async getPayments(params = {}) {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const response = await fetch(`${API_BASE_URL}/thanhtoans/?${queryString}`, {
+        headers: this.getHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching payments:", error);
+      return { results: [] };
+    }
+  }
+
+   //Lấy thống kê doanh thu
+  async getRevenueStats(params = {}) {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const response = await fetch(`${API_BASE_URL}/thanhtoans/stats/?${queryString}`, {
+        headers: this.getHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching revenue stats:", error);
+      throw error;
     }
   }
 
