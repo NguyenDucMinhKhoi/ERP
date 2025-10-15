@@ -39,11 +39,13 @@ INSTALLED_APPS = [
     'app.apps.dangky',
     'app.apps.hocviens',
     'app.apps.khoahocs',
+    'app.apps.lophocs',
+    'app.apps.lichhocs',
+    'app.apps.diemdanhs',
     'app.apps.reports',
     'app.apps.thanhtoans',
     'app.apps.thongbaos',
     'app.apps.users',
-
 ]
 
 # ==============================
