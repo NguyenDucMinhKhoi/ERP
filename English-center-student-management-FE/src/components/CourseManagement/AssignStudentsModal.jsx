@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Save, Users, Search, UserPlus, UserMinus } from 'lucide-react';
 import courseService from '../../services/courseService';
 
@@ -10,6 +11,29 @@ export default function AssignStudentsModal({ classData, onClose, onSuccess }) {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Lock body scroll when modal opens
+  useEffect(() => {
+    // Save current overflow and position
+    const originalOverflow = document.body.style.overflow;
+    const originalPosition = document.body.style.position;
+    const scrollY = window.scrollY;
+    
+    // Lock scroll
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    
+    // Cleanup: restore scroll
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.position = originalPosition;
+      document.body.style.top = '';
+      document.body.style.width = '';
+      window.scrollTo(0, scrollY);
+    };
+  }, []);
 
   // Get teacher name from classData
   const getTeacherName = () => {
@@ -52,7 +76,6 @@ export default function AssignStudentsModal({ classData, onClose, onSuccess }) {
       (student.email || '').toLowerCase().includes(searchLower);
     return matchesSearch;
   });
-  console.log('filteredStudents ', filteredStudents);
 
   const handleStudentToggle = (studentId) => {
     setSelectedStudents((prev) => {
@@ -109,11 +132,28 @@ export default function AssignStudentsModal({ classData, onClose, onSuccess }) {
     }
   };
 
-  return (
-    <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+  const modalContent = (
+    <div 
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        overflow: 'hidden'
+      }}
+    >
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      
+      {/* Modal */}
+      <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 flex-shrink-0">
           <div>
             <h2 className="text-xl font-semibold text-slate-900">
               Gán học viên vào lớp
@@ -124,179 +164,181 @@ export default function AssignStudentsModal({ classData, onClose, onSuccess }) {
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 p-1 rounded"
+            className="text-slate-400 hover:text-slate-600 p-1 rounded cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-6">
-          {loading && (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-slate-600">
-                Đang tải danh sách học viên...
+        {/* Content - scrollable area with hidden scrollbar */}
+        <div className="flex-1 overflow-y-auto scrollbar-hide">
+          <div className="p-6 space-y-6">
+            {loading && (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-slate-600">
+                  Đang tải danh sách học viên...
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-sm text-red-600">{error}</p>
-            </div>
-          )}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
 
-          {!loading && !error && (
-            <>
-              {/* Class Info */}
-              <div className="bg-slate-50 rounded-lg p-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <div className="text-sm font-medium text-slate-500">
-                      Giáo viên
+            {!loading && !error && (
+              <>
+                {/* Class Info */}
+                <div className="bg-slate-50 rounded-lg p-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <div className="text-sm font-medium text-slate-500">
+                        Giáo viên
+                      </div>
+                      <div className="text-sm text-slate-900">
+                        {getTeacherName()}
+                      </div>
                     </div>
-                    <div className="text-sm text-slate-900">
-                      {getTeacherName()}
+                    <div>
+                      <div className="text-sm font-medium text-slate-500">
+                        Phòng học
+                      </div>
+                      <div className="text-sm text-slate-900">
+                        {classData?.room}
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-slate-500">
-                      Phòng học
-                    </div>
-                    <div className="text-sm text-slate-900">
-                      {classData?.room}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-slate-500">
-                      Số học viên hiện tại
-                    </div>
-                    <div className="text-sm text-slate-900">
-                      {selectedStudents.length}/{classData?.maxStudents}
+                    <div>
+                      <div className="text-sm font-medium text-slate-500">
+                        Số học viên hiện tại
+                      </div>
+                      <div className="text-sm text-slate-900">
+                        {selectedStudents.length}/{classData?.maxStudents}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Search and Actions */}
-              <div className="flex flex-col lg:flex-row gap-4">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
-                  <input
-                    type="text"
-                    placeholder="Tìm kiếm học viên..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
-                  />
+                {/* Search and Actions */}
+                <div className="flex flex-col lg:flex-row gap-4">
+                  <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+                    <input
+                      type="text"
+                      placeholder="Tìm kiếm học viên..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
+                    />
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleSelectAll}
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary-main bg-primary-light border border-primary-main rounded-lg hover:bg-primary-main hover:text-white transition-colors cursor-pointer"
+                    >
+                      <UserPlus className="h-4 w-4" />
+                      Chọn tất cả
+                    </button>
+                    <button
+                      onClick={handleDeselectAll}
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer "
+                    >
+                      <UserMinus className="h-4 w-4" />
+                      Bỏ chọn tất cả
+                    </button>
+                  </div>
                 </div>
 
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleSelectAll}
-                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary-main bg-primary-light border border-primary-main rounded-lg hover:bg-primary-main hover:text-white transition-colors cursor-pointer"
-                  >
-                    <UserPlus className="h-4 w-4" />
-                    Chọn tất cả
-                  </button>
-                  <button
-                    onClick={handleDeselectAll}
-                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer "
-                  >
-                    <UserMinus className="h-4 w-4" />
-                    Bỏ chọn tất cả
-                  </button>
-                </div>
-              </div>
+                {/* Students List */}
+                <div className="border border-slate-200 rounded-lg">
+                  <div className="max-h-96 overflow-y-auto scrollbar-hide">
+                    {filteredStudents.length === 0 ? (
+                      <div className="text-center py-8 text-slate-500">
+                        Không tìm thấy học viên nào
+                      </div>
+                    ) : (
+                      filteredStudents.map((student) => {
+                        const isSelected = selectedStudents.includes(student.id);
+                        return (
+                          <div
+                            key={student.id}
+                            className={`flex items-center gap-4 p-4 border-b border-slate-200 last:border-b-0 hover:bg-slate-50 transition-colors ${
+                              isSelected ? 'bg-primary-50' : ''
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => handleStudentToggle(student.id)}
+                              className="h-4 w-4 text-primary-main focus:ring-primary-main border-slate-300 rounded cursor-pointer"
+                            />
 
-              {/* Students List */}
-              <div className="border border-slate-200 rounded-lg">
-                <div className="max-h-96 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-                  {filteredStudents.length === 0 ? (
-                    <div className="text-center py-8 text-slate-500">
-                      Không tìm thấy học viên nào
-                    </div>
-                  ) : (
-                    filteredStudents.map((student) => {
-                      const isSelected = selectedStudents.includes(student.id);
-                      return (
-                        <div
-                          key={student.id}
-                          className={`flex items-center gap-4 p-4 border-b border-slate-200 last:border-b-0 hover:bg-slate-50 transition-colors ${
-                            isSelected ? 'bg-primary-50' : ''
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => handleStudentToggle(student.id)}
-                            className="h-4 w-4 text-primary-main focus:ring-primary-main border-slate-300 rounded cursor-pointer"
-                          />
-
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3">
-                              <div className="h-10 w-10 bg-slate-200 rounded-full flex items-center justify-center">
-                                <span className="text-sm font-medium text-slate-600">
-                                  {(student.ten || 'N').charAt(0).toUpperCase()}
-                                </span>
-                              </div>
-                              <div>
-                                <div className="text-sm font-medium text-slate-900">
-                                  {student.ten || 'Chưa có tên'}
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 bg-slate-200 rounded-full flex items-center justify-center">
+                                  <span className="text-sm font-medium text-slate-600">
+                                    {(student.ten || 'N').charAt(0).toUpperCase()}
+                                  </span>
                                 </div>
-                                <div className="text-sm text-slate-500">
-                                  {student.sdt || 'Chưa có SĐT'} •{' '}
-                                  {student.email || 'Chưa có email'}
+                                <div>
+                                  <div className="text-sm font-medium text-slate-900">
+                                    {student.ten || 'Chưa có tên'}
+                                  </div>
+                                  <div className="text-sm text-slate-500">
+                                    {student.sdt || 'Chưa có SĐT'} •{' '}
+                                    {student.email || 'Chưa có email'}
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
 
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStudentStatus(
-                                student
-                              )}`}
-                            >
-                              {student.status || 'Chưa xác định'}
-                            </span>
-                            {student.already_in_class && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                Đã có trong lớp
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStudentStatus(
+                                  student
+                                )}`}
+                              >
+                                {student.status || 'Chưa xác định'}
                               </span>
-                            )}
+                              {student.already_in_class && (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  Đã có trong lớp
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-
-              {/* Summary */}
-              <div className="bg-slate-50 rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-medium text-slate-900">
-                      Đã chọn {selectedStudents.length} học viên
-                    </div>
-                    <div className="text-sm text-slate-600">
-                      Tối đa {classData?.maxStudents} học viên
-                    </div>
+                        );
+                      })
+                    )}
                   </div>
-                  {selectedStudents.length > classData?.maxStudents && (
-                    <div className="text-sm text-red-600 font-medium">
-                      Vượt quá số lượng cho phép
-                    </div>
-                  )}
                 </div>
-              </div>
-            </>
-          )}
+
+                {/* Summary */}
+                <div className="bg-slate-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-medium text-slate-900">
+                        Đã chọn {selectedStudents.length} học viên
+                      </div>
+                      <div className="text-sm text-slate-600">
+                        Tối đa {classData?.maxStudents} học viên
+                      </div>
+                    </div>
+                    {selectedStudents.length > classData?.maxStudents && (
+                      <div className="text-sm text-red-600 font-medium">
+                        Vượt quá số lượng cho phép
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200">
+        <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200 flex-shrink-0">
           <button
             onClick={onClose}
             disabled={loading}
@@ -320,4 +362,7 @@ export default function AssignStudentsModal({ classData, onClose, onSuccess }) {
       </div>
     </div>
   );
+
+  // Render modal at root level using Portal
+  return createPortal(modalContent, document.body);
 }
