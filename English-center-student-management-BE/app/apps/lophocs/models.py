@@ -15,7 +15,7 @@ class LopHoc(BaseModel):
         on_delete=models.CASCADE,
         verbose_name='Khóa học'
     )
-    giang_vien_id = models.ForeignKey(
+    giang_vien = models.ForeignKey(  # Changed from giang_vien_id to giang_vien
         User,
         on_delete=models.SET_NULL,
         null=True,
@@ -25,15 +25,17 @@ class LopHoc(BaseModel):
     phong_hoc = models.CharField(max_length=50, verbose_name='Phòng học', blank=True, null=True)
     ngay_bat_dau = models.DateField(verbose_name='Ngày bắt đầu')
     ngay_ket_thuc = models.DateField(verbose_name='Ngày kết thúc', null=True, blank=True)
+    so_hoc_vien_toi_da = models.IntegerField(default=20, verbose_name='Số học viên tối đa')  # Added field
     trang_thai = models.CharField(
         max_length=20,
         choices=[
-            ('mo', 'Mở'),
-            ('dang_hoc', 'Đang học'),
-            ('hoan_thanh', 'Hoàn thành'),
-            ('huy', 'Hủy')
+            ('Chờ mở lớp', 'Chờ mở lớp'),
+            ('Đang học', 'Đang học'),
+            ('Tạm dừng', 'Tạm dừng'),
+            ('Đã kết thúc', 'Đã kết thúc'),
+            ('Đã hủy', 'Đã hủy')
         ],
-        default='mo',
+        default='Chờ mở lớp',
         verbose_name='Trạng thái'
     )
     mo_ta = models.TextField(blank=True, null=True, verbose_name='Mô tả')
