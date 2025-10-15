@@ -460,18 +460,32 @@ class CourseService {
 
   /**
    * Tạo lịch học mới
-   * @param {Object} scheduleData - Dữ liệu lịch học
+   * @param {Array} scheduleData - Mảng dữ liệu lịch học
+   * @example
+   * [
+   *   {
+   *     id: 1, // lớp học id
+   *     date: "2024-10-20",
+   *     time: "19:00",
+   *     topic: "Chủ đề bài học",
+   *     note: "Ghi chú"
+   *   }
+   * ]
    */
   async createSchedule(scheduleData) {
     try {
+      // Ensure scheduleData is an array
+      const dataToSend = Array.isArray(scheduleData) ? scheduleData : [scheduleData];
+      
       const response = await fetch(`${API_BASE_URL}/lichhocs/`, {
         method: "POST",
         headers: this.getHeaders(),
-        body: JSON.stringify(scheduleData),
+        body: JSON.stringify(dataToSend),
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
 
       return await response.json();

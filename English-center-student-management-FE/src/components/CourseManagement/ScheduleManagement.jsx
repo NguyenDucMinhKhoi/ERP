@@ -53,6 +53,7 @@ export default function ScheduleManagement({ classData, onClose }) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [formData, setFormData] = useState({
     date: "",
@@ -102,6 +103,43 @@ export default function ScheduleManagement({ classData, onClose }) {
     }).join(', ');
   };
 
+  // Load schedules from API
+  useEffect(() => {
+    const loadSchedules = async () => {
+      try {
+        setLoading(true);
+        
+        // Remove "class_" prefix if present
+        const realClassId = typeof classData.id === "string" && classData.id.startsWith("class_")
+          ? classData.id.replace("class_", "")
+          : classData.id;
+
+        const response = await courseService.getClassSchedules(realClassId);
+        
+        // Transform API response to match UI format
+        const transformedSchedules = (Array.isArray(response) ? response : []).map(schedule => ({
+          id: schedule.id,
+          classId: classData.id,
+          date: schedule.date,
+          time: schedule.time,
+          topic: schedule.topic,
+          notes: schedule.note || schedule.notes || "",
+          status: schedule.status || "Sắp diễn ra",
+          attendance: schedule.attendance || null,
+        }));
+        
+        setSchedules(transformedSchedules);
+      } catch (error) {
+        console.error("Error loading schedules:", error);
+        setSchedules([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSchedules();
+  }, [classData.id]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -132,9 +170,15 @@ export default function ScheduleManagement({ classData, onClose }) {
     });
   };
 
-  const handleDeleteSchedule = (scheduleId) => {
+  const handleDeleteSchedule = async (scheduleId) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa buổi học này?")) {
-      setSchedules((prev) => prev.filter((s) => s.id !== scheduleId));
+      try {
+        await courseService.deleteSchedule(scheduleId);
+        setSchedules((prev) => prev.filter((s) => s.id !== scheduleId));
+      } catch (error) {
+        console.error("Error deleting schedule:", error);
+        alert("Có lỗi xảy ra khi xóa lịch học. Vui lòng thử lại.");
+      }
     }
   };
 
@@ -144,11 +188,21 @@ export default function ScheduleManagement({ classData, onClose }) {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Remove "class_" prefix if present
+      const realClassId = typeof classData.id === "string" && classData.id.startsWith("class_")
+        ? classData.id.replace("class_", "")
+        : classData.id;
 
       if (editingSchedule) {
         // Update existing schedule
+        await courseService.updateSchedule(editingSchedule.id, {
+          id: realClassId,
+          date: formData.date,
+          time: formData.time,
+          topic: formData.topic,
+          note: formData.notes,
+        });
+
         setSchedules((prev) =>
           prev.map((s) =>
             s.id === editingSchedule.id
@@ -157,14 +211,29 @@ export default function ScheduleManagement({ classData, onClose }) {
           )
         );
       } else {
-        // Add new schedule
+        // Add new schedule - POST as array
+        const scheduleArray = [{
+          id: realClassId, // lớp học id
+          date: formData.date,
+          time: formData.time,
+          topic: formData.topic,
+          note: formData.notes,
+        }];
+
+        const response = await courseService.createSchedule(scheduleArray);
+        
+        // Add to local state
         const newSchedule = {
-          id: Date.now(),
+          id: response[0]?.id || Date.now(),
           classId: classData.id,
-          ...formData,
+          date: formData.date,
+          time: formData.time,
+          topic: formData.topic,
+          notes: formData.notes,
           status: "Sắp diễn ra",
           attendance: null,
         };
+        
         setSchedules((prev) => [...prev, newSchedule]);
       }
 
@@ -178,6 +247,7 @@ export default function ScheduleManagement({ classData, onClose }) {
       });
     } catch (error) {
       console.error("Error saving schedule:", error);
+      alert("Có lỗi xảy ra khi lưu lịch học. Vui lòng thử lại.");
     } finally {
       setIsSubmitting(false);
     }
@@ -291,8 +361,16 @@ export default function ScheduleManagement({ classData, onClose }) {
             </button>
           </div>
 
+          {/* Loading State */}
+          {loading && (
+            <div className="flex items-center justify-center py-8">
+              <div className="text-slate-600">Đang tải lịch học...</div>
+            </div>
+          )}
+
           {/* Schedules List */}
-          <div className="space-y-4">
+          {!loading && (
+            <div className="space-y-4">
             {schedules.map((schedule) => (
               <div
                 key={schedule.id}
@@ -353,10 +431,11 @@ export default function ScheduleManagement({ classData, onClose }) {
                 </div>
               </div>
             ))}
-          </div>
+            </div>
+          )}
 
           {/* Empty State */}
-          {schedules.length === 0 && (
+          {!loading && schedules.length === 0 && (
             <div className="text-center py-12">
               <Calendar className="h-12 w-12 text-slate-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-slate-900 mb-2">
