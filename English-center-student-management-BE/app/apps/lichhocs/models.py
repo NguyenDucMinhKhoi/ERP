@@ -12,7 +12,7 @@ class LichHoc(BaseModel):
         on_delete=models.CASCADE,
         verbose_name='Lớp học'
     )
-    ngay_hoc = models.DateField(verbose_name='Ngày học')
+    ngay_hoc = models.CharField(max_length=16)  # e.g. "friday", "sunday"
     gio_bat_dau = models.TimeField(verbose_name='Giờ bắt đầu')
     gio_ket_thuc = models.TimeField(verbose_name='Giờ kết thúc')
     phong_hoc = models.CharField(max_length=50, verbose_name='Phòng học', blank=True, null=True)

@@ -1,6 +1,8 @@
 # app/apps/diemdanhs/views.py
 from rest_framework import viewsets, generics, filters
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework import status
 from .models import DiemDanh
 from .serializers import DiemDanhSerializer
 from app.core.permissions import IsOwnerOrStaff, CanManageCourses
@@ -83,3 +85,49 @@ class DiemDanhMeListView(generics.ListAPIView):
         if lich_hoc:
             qs = qs.filter(lich_hoc_id=lich_hoc)
         return qs.order_by('-created_at')
+
+
+class DiemDanhBulkCreateView(APIView):
+    """
+    POST /api/diemdanhs/
+    Body: [{studentId, status, checkinTime, note}]
+    Creates multiple DiemDanh records.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        data = request.data
+        if not isinstance(data, list):
+            return Response({"error": "Body must be a list of objects"}, status=status.HTTP_400_BAD_REQUEST)
+        created = []
+        errors = []
+        for item in data:
+            student_id = item.get("studentId")
+            status_val = item.get("status")
+            checkin_time = item.get("checkinTime")
+            note = item.get("note", "")
+            lich_hoc_id = item.get("lich_hoc")  # required: FE must send lich_hoc id
+
+            if not (student_id and status_val and checkin_time and lich_hoc_id):
+                errors.append({"item": item, "error": "Missing required fields"})
+                continue
+
+            try:
+                hocvien = Hocvien.objects.get(id=student_id)
+                diem_danh = DiemDanh(
+                    hoc_vien=hocvien,
+                    lich_hoc_id=lich_hoc_id,
+                    trang_thai=status_val,
+                    thoi_gian=checkin_time,
+                    ghi_chu=note
+                )
+                diem_danh.save()
+                created.append(diem_danh.id)
+            except Exception as e:
+                errors.append({"item": item, "error": str(e)})
+
+        return Response({
+            "created": created,
+            "errors": errors,
+            "message": f"{len(created)} diem_danh created, {len(errors)} errors."
+        }, status=status.HTTP_201_CREATED if created else status.HTTP_400_BAD_REQUEST)
