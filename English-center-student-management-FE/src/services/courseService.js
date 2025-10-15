@@ -473,10 +473,11 @@ class CourseService {
    * ]
    */
   async createSchedule(scheduleData) {
-    try {
+    try {;
       // Ensure scheduleData is an array
-      const dataToSend = Array.isArray(scheduleData) ? scheduleData : [scheduleData];
-      
+      const dataToSend = scheduleData;
+           console.log('dataToSend ',dataToSend);
+           
       const response = await fetch(`${API_BASE_URL}/lichhocs/`, {
         method: "POST",
         headers: this.getHeaders(),

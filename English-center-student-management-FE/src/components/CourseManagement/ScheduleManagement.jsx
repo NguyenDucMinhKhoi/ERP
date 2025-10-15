@@ -57,7 +57,8 @@ export default function ScheduleManagement({ classData, onClose }) {
 
   const [formData, setFormData] = useState({
     date: "",
-    time: "",
+    startTime: "",
+    endTime: "",
     topic: "",
     notes: "",
   });
@@ -114,14 +115,15 @@ export default function ScheduleManagement({ classData, onClose }) {
           ? classData.id.replace("class_", "")
           : classData.id;
 
-        const response = await courseService.getClassSchedules(realClassId);
+        // const response = await courseService.getClassSchedules(realClassId);
         
         // Transform API response to match UI format
         const transformedSchedules = (Array.isArray(response) ? response : []).map(schedule => ({
           id: schedule.id,
           classId: classData.id,
           date: schedule.date,
-          time: schedule.time,
+          startTime: schedule.startTime || schedule.time || "",
+          endTime: schedule.endTime || "",
           topic: schedule.topic,
           notes: schedule.note || schedule.notes || "",
           status: schedule.status || "Sắp diễn ra",
@@ -153,7 +155,8 @@ export default function ScheduleManagement({ classData, onClose }) {
     setEditingSchedule(null);
     setFormData({
       date: "",
-      time: "",
+      startTime: "",
+      endTime: "",
       topic: "",
       notes: "",
     });
@@ -164,7 +167,8 @@ export default function ScheduleManagement({ classData, onClose }) {
     setShowAddForm(true);
     setFormData({
       date: schedule.date,
-      time: schedule.time,
+      startTime: schedule.startTime || schedule.time || "",
+      endTime: schedule.endTime || "",
       topic: schedule.topic,
       notes: schedule.notes || "",
     });
@@ -198,7 +202,8 @@ export default function ScheduleManagement({ classData, onClose }) {
         await courseService.updateSchedule(editingSchedule.id, {
           id: realClassId,
           date: formData.date,
-          time: formData.time,
+          startTime: formData.startTime,
+          endTime: formData.endTime,
           topic: formData.topic,
           note: formData.notes,
         });
@@ -206,28 +211,38 @@ export default function ScheduleManagement({ classData, onClose }) {
         setSchedules((prev) =>
           prev.map((s) =>
             s.id === editingSchedule.id
-              ? { ...s, ...formData, status: "Sắp diễn ra" }
+              ? { 
+                  ...s, 
+                  date: formData.date,
+                  startTime: formData.startTime,
+                  endTime: formData.endTime,
+                  topic: formData.topic,
+                  notes: formData.notes,
+                  status: "Sắp diễn ra" 
+                }
               : s
           )
         );
       } else {
         // Add new schedule - POST as array
-        const scheduleArray = [{
+        const schedule = {
           id: realClassId, // lớp học id
           date: formData.date,
-          time: formData.time,
+          startTime: formData.startTime,
+          endTime: formData.endTime,
           topic: formData.topic,
           note: formData.notes,
-        }];
+        };
 
-        const response = await courseService.createSchedule(scheduleArray);
+        const response = await courseService.createSchedule(schedule);
         
         // Add to local state
         const newSchedule = {
           id: response[0]?.id || Date.now(),
           classId: classData.id,
           date: formData.date,
-          time: formData.time,
+          startTime: formData.startTime,
+          endTime: formData.endTime,
           topic: formData.topic,
           notes: formData.notes,
           status: "Sắp diễn ra",
@@ -241,7 +256,8 @@ export default function ScheduleManagement({ classData, onClose }) {
       setEditingSchedule(null);
       setFormData({
         date: "",
-        time: "",
+        startTime: "",
+        endTime: "",
         topic: "",
         notes: "",
       });
@@ -386,7 +402,10 @@ export default function ScheduleManagement({ classData, onClose }) {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-slate-600">
                           <Clock className="h-4 w-4" />
-                          <span>{schedule.time}</span>
+                          <span>
+                            {schedule.startTime}
+                            {schedule.endTime && ` - ${schedule.endTime}`}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -491,24 +510,46 @@ export default function ScheduleManagement({ classData, onClose }) {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Giờ học *
-                  </label>
-                  <select
-                    name="time"
-                    value={formData.time}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
-                  >
-                    <option value="">Chọn giờ học</option>
-                    {timeSlots.map((time) => (
-                      <option key={time} value={time}>
-                        {time}
-                      </option>
-                    ))}
-                  </select>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Giờ bắt đầu *
+                    </label>
+                    <select
+                      name="startTime"
+                      value={formData.startTime}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
+                    >
+                      <option value="">Chọn giờ</option>
+                      {timeSlots.map((time) => (
+                        <option key={time} value={time}>
+                          {time}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Giờ kết thúc *
+                    </label>
+                    <select
+                      name="endTime"
+                      value={formData.endTime}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
+                    >
+                      <option value="">Chọn giờ</option>
+                      {timeSlots.map((time) => (
+                        <option key={time} value={time}>
+                          {time}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 <div>
