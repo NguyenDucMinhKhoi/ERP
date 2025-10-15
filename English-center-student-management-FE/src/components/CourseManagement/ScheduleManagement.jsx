@@ -102,22 +102,6 @@ export default function ScheduleManagement({ classData, onClose }) {
     }).join(', ');
   };
 
-  useEffect(() => {
-    // Load schedules for this class from API
-    const loadSchedules = async () => {
-      try {
-        
-        const response = await courseService.getClassSchedules(classData.id);
-        setSchedules(response.results || []);
-      } catch (error) {
-        console.error("Error loading schedules:", error);
-        setSchedules([]);
-      }
-    };
-
-    loadSchedules();
-  }, [classData]);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
