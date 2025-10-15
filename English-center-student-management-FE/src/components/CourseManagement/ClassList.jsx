@@ -24,13 +24,13 @@ export default function ClassList({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Load classes from API
-   useEffect(() => {
+   // Load classes from API
+  useEffect(() => {
     const loadClasses = async () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await courseService.fetchClass(); // Use fetchClass instead of getClasses
+        const response = await courseService.fetchClass();
         console.log('Classes response:', response);
         
         // Transform API response to match frontend format
@@ -60,7 +60,7 @@ export default function ClassList({
     };
 
     loadClasses();
-  }, []);
+  }, []); // Dependency removed, will use key prop from parent
 
   const filteredClasses = useMemo(() => {
     return classes.filter((classItem) => {
