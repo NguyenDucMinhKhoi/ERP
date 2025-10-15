@@ -1,126 +1,99 @@
 import React, { useState, useEffect } from "react";
-import courseService from "../../services/courseService";
 
-export default function RevenueReport({ filters }) {
+export default function RevenueReport({ filters, payments = [], enrollments = [], courses = [], loading = false }) {
   const [canViewDetail] = useState(true); // Có thể lấy từ user permissions
   const [summary, setSummary] = useState({
     totalRevenue: 0,
     thisMonth: 0,
   });
   const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(false);
 
-  // Tính toán doanh thu dựa trên filters
+  // Tính toán doanh thu dựa trên data từ props
   useEffect(() => {
-    const fetchRevenueData = async () => {
-      if (!filters.to) return; // Chờ filter được set
+    if (!filters.to || loading) return; // Chờ filter được set và data load xong
 
-      try {
-        setLoading(true);
+    try {
+      // Tạo map để lookup tên khóa học
+      const courseMap = {};
+      courses.forEach(course => {
+        courseMap[course.id] = course.ten;
+      });
 
-        // Gọi tất cả API song song trong 1 lần duy nhất
-        const [allPaymentsResponse, enrollmentsResponse, coursesResponse] = await Promise.all([
-          courseService.getPayments(),
-          courseService.getEnrollments(),
-          courseService.getCourses()
-        ]);
+      // 1. Tính tổng doanh thu (tất cả thanh toán đến ngày mới nhất)
+      const totalRevenue = payments
+        .filter(payment => {
+          const paymentDate = new Date(payment.ngay_dong);
+          const filterToDate = new Date(filters.to);
+          return paymentDate <= filterToDate;
+        })
+        .reduce((sum, payment) => sum + Number(payment.so_tien || 0), 0);
 
-        const allPayments = allPaymentsResponse.results || [];
-        const enrollments = enrollmentsResponse.results || [];
-        const courses = coursesResponse.results || [];
+      // 2. Tính doanh thu tháng này (dựa trên filter đến ngày)
+      const toDate = new Date(filters.to);
+      const fromDateForMonth = new Date(toDate);
+      fromDateForMonth.setMonth(toDate.getMonth() - 1); // 1 tháng trước
 
-        // Tạo map để lookup tên khóa học
-        const courseMap = {};
-        courses.forEach(course => {
-          courseMap[course.id] = course.ten;
-        });
+      const thisMonthRevenue = payments
+        .filter(payment => {
+          const paymentDate = new Date(payment.ngay_dong);
+          return paymentDate >= fromDateForMonth && paymentDate <= toDate;
+        })
+        .reduce((sum, payment) => sum + Number(payment.so_tien || 0), 0);
 
-        const enrollmentCourseMap = {};
-        enrollments.forEach(enrollment => {
-          enrollmentCourseMap[enrollment.id] = enrollment.khoahoc;
-        });
+      // 3. Lấy danh sách thanh toán trong khoảng thời gian filter
+      const fromDate = new Date(filters.from || fromDateForMonth);
+      let filteredPayments = payments.filter(payment => {
+        const paymentDate = new Date(payment.ngay_dong);
+        return paymentDate >= fromDate && paymentDate <= toDate;
+      });
 
-        // Tính tổng doanh thu (tất cả thanh toán đã hoàn thành đến ngày mới nhất)
-        const totalRevenue = allPayments
-          .filter(payment => {
-            const paymentDate = new Date(payment.ngay_thanh_toan || payment.created_at);
-            const filterToDate = new Date(filters.to);
-            return payment.trang_thai === 'da_thanh_toan' && paymentDate <= filterToDate;
-          })
-          .reduce((sum, payment) => sum + (payment.so_tien || 0), 0);
+      // Filter theo khóa học nếu có
+      if (filters.course) {
+        // Tìm các học viên đăng ký khóa học này
+        const courseStudentIds = enrollments
+          .filter(enrollment => enrollment.khoahoc == filters.course)
+          .map(enrollment => enrollment.hocvien);
 
-        // Tính doanh thu tháng này (dựa trên filter đến ngày)
-        const toDate = new Date(filters.to);
-        const fromDateForMonth = new Date(toDate);
-        fromDateForMonth.setMonth(toDate.getMonth() - 1); // 1 tháng trước
-
-        const thisMonthRevenue = allPayments
-          .filter(payment => {
-            const paymentDate = new Date(payment.ngay_thanh_toan || payment.created_at);
-            return payment.trang_thai === 'da_thanh_toan' && 
-                   paymentDate >= fromDateForMonth && 
-                   paymentDate <= toDate;
-          })
-          .reduce((sum, payment) => sum + (payment.so_tien || 0), 0);
-
-        // Lấy danh sách thanh toán trong khoảng thời gian filter
-        const fromDate = new Date(filters.from || fromDateForMonth);
-        let filteredPayments = allPayments.filter(payment => {
-          const paymentDate = new Date(payment.ngay_thanh_toan || payment.created_at);
-          return payment.trang_thai === 'da_thanh_toan' &&
-                 paymentDate >= fromDate && 
-                 paymentDate <= toDate;
-        });
-
-        // Filter theo khóa học nếu có
-        if (filters.course) {
-          const courseEnrollmentIds = enrollments
-            .filter(enrollment => enrollment.khoahoc == filters.course)
-            .map(enrollment => enrollment.id);
-
-          filteredPayments = filteredPayments.filter(payment => 
-            courseEnrollmentIds.includes(payment.dangky || payment.enrollment_id)
-          );
-        }
-
-        // Format dữ liệu cho bảng
-        const formattedRows = filteredPayments
-          .sort((a, b) => new Date(b.ngay_thanh_toan || b.created_at) - new Date(a.ngay_thanh_toan || a.created_at))
-          .slice(0, 20) // Giới hạn 20 record gần nhất
-          .map(payment => {
-            const courseId = enrollmentCourseMap[payment.dangky || payment.enrollment_id];
-            const courseName = courseMap[courseId] || 'Không xác định';
-            const paymentDate = new Date(payment.ngay_thanh_toan || payment.created_at);
-            
-            return {
-              date: paymentDate.toISOString().split('T')[0], // Format yyyy-mm-dd
-              course: courseName,
-              amount: payment.so_tien || 0
-            };
-          });
-
-        setSummary({
-          totalRevenue,
-          thisMonth: thisMonthRevenue,
-        });
-
-        setRows(formattedRows);
-
-      } catch (error) {
-        console.error("Error fetching revenue data:", error);
-        // Hiển thị 0 nếu có lỗi API
-        setSummary({
-          totalRevenue: 0,
-          thisMonth: 0,
-        });
-        setRows([]);
-      } finally {
-        setLoading(false);
+        filteredPayments = filteredPayments.filter(payment => 
+          courseStudentIds.includes(payment.hocvien)
+        );
       }
-    };
 
-    fetchRevenueData();
-  }, [filters]);
+      // 4. Format dữ liệu cho bảng
+      const formattedRows = filteredPayments
+        .sort((a, b) => new Date(b.ngay_dong) - new Date(a.ngay_dong))
+        .slice(0, 20) // Giới hạn 20 record gần nhất
+        .map(payment => {
+          // Tìm khóa học của thanh toán này thông qua học viên
+          const studentEnrollments = enrollments.filter(e => e.hocvien === payment.hocvien);
+          const courseName = studentEnrollments.length > 0 
+            ? courseMap[studentEnrollments[0].khoahoc] || 'Không xác định'
+            : 'Không xác định';
+          const paymentDate = new Date(payment.ngay_dong);
+          
+          return {
+            date: paymentDate.toISOString().split('T')[0], // Format yyyy-mm-dd
+            course: courseName,
+            amount: Number(payment.so_tien || 0)
+          };
+        });
+
+      setSummary({
+        totalRevenue,
+        thisMonth: thisMonthRevenue,
+      });
+
+      setRows(formattedRows);
+
+    } catch (error) {
+      console.error("Error calculating revenue data:", error);
+      setSummary({
+        totalRevenue: 0,
+        thisMonth: 0,
+      });
+      setRows([]);
+    }
+  }, [filters, payments, enrollments, courses, loading]);
 
   return (
     <div className="space-y-4">

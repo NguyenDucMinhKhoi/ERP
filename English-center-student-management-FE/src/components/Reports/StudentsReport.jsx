@@ -1,86 +1,69 @@
 import React, { useState, useEffect } from "react";
-import courseService from "../../services/courseService";
 
-export default function StudentsReport({ filters }) {
+export default function StudentsReport({ filters, students = [], enrollments = [], courses = [], loading = false }) {
   const [stats, setStats] = useState({
     total: 0,
     newThisMonth: 0,
     completed: 0,
   });
   const [courseData, setCourseData] = useState([]);
-  const [loading, setLoading] = useState(false);
 
-  // Tính toán thống kê dựa trên filters
+  // Tính toán thống kê dựa trên data từ props
   useEffect(() => {
-    const fetchStudentStats = async () => {
-      if (!filters.to) return; // Chờ filter được set
+    if (!filters.to || loading) return; // Chờ filter được set và data load xong
+    
+    try {
+      // 1. Tổng học viên (tất cả học viên đến ngày mới nhất)
+      const totalStudents = students.length;
+
+      // 2. Học viên mới trong tháng (dựa trên filter đến ngày)
+      const toDate = new Date(filters.to);
+      const fromDateForMonth = new Date(toDate);
+      fromDateForMonth.setMonth(toDate.getMonth() - 1); // 1 tháng trước
       
-      try {
-        setLoading(true);
-        
-        // Lấy tổng học viên (tất cả học viên đến ngày mới nhất)
-        const studentsResponse = await courseService.getStudents();
-        const totalStudents = studentsResponse.results?.length || 0;
+      const newStudentsInMonth = students.filter(student => {
+        const createdDate = new Date(student.created_at);
+        return createdDate >= fromDateForMonth && createdDate <= toDate;
+      }).length;
 
-        // Lấy học viên mới trong tháng (dựa trên filter đến ngày)
-        const toDate = new Date(filters.to);
-        const fromDateForMonth = new Date(toDate);
-        fromDateForMonth.setMonth(toDate.getMonth() - 1); // 1 tháng trước
-        
-        const newStudentsInMonth = studentsResponse.results?.filter(student => {
-          const createdDate = new Date(student.created_at || student.ngay_tao);
-          return createdDate >= fromDateForMonth && createdDate <= toDate;
-        }).length || 0;
+      // 3. Học viên đã hoàn thành khóa học trong tháng
+      const completedStudentsInMonth = enrollments.filter(enrollment => {
+        const updatedDate = new Date(enrollment.updated_at);
+        return enrollment.trang_thai === 'hoan_thanh' && 
+               updatedDate >= fromDateForMonth && 
+               updatedDate <= toDate;
+      }).length;
 
-        // Lấy danh sách đăng ký để tính học viên đã hoàn thành
-        const enrollmentsResponse = await courseService.getEnrollments();
-        const completedStudentsInMonth = enrollmentsResponse.results?.filter(enrollment => {
-          // Kiểm tra xem có hoàn thành khóa học trong tháng không
-          const completedDate = new Date(enrollment.ngay_hoan_thanh || enrollment.updated_at);
-          return enrollment.trang_thai === 'hoan_thanh' && 
-                 completedDate >= fromDateForMonth && 
-                 completedDate <= toDate;
-        }).length || 0;
-
-        // Lấy dữ liệu theo khóa học cho bảng
-        const coursesResponse = await courseService.getCourses();
-        const courseStats = await Promise.all(
-          (coursesResponse.results || []).map(async (course) => {
-            const courseEnrollments = enrollmentsResponse.results?.filter(
-              enrollment => enrollment.khoahoc === course.id
-            ) || [];
-            
-            return {
-              course: course.ten,
-              count: courseEnrollments.length
-            };
-          })
+      // 4. Thống kê theo khóa học
+      const courseStats = courses.map(course => {
+        const courseEnrollments = enrollments.filter(
+          enrollment => enrollment.khoahoc === course.id
         );
-
-        setStats({
-          total: totalStudents,
-          newThisMonth: newStudentsInMonth,
-          completed: completedStudentsInMonth,
-        });
-
-        setCourseData(courseStats.filter(item => item.count > 0));
         
-      } catch (error) {
-        console.error("Error fetching student stats:", error);
-        // Hiển thị 0 nếu có lỗi API thay vì mock data
-        setStats({
-          total: 0,
-          newThisMonth: 0,
-          completed: 0,
-        });
-        setCourseData([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+        return {
+          course: course.ten,
+          count: courseEnrollments.length
+        };
+      }).filter(item => item.count > 0);
 
-    fetchStudentStats();
-  }, [filters]);
+      setStats({
+        total: totalStudents,
+        newThisMonth: newStudentsInMonth,
+        completed: completedStudentsInMonth,
+      });
+
+      setCourseData(courseStats);
+      
+    } catch (error) {
+      console.error("Error calculating student stats:", error);
+      setStats({
+        total: 0,
+        newThisMonth: 0,
+        completed: 0,
+      });
+      setCourseData([]);
+    }
+  }, [filters, students, enrollments, courses, loading]);
 
   // Tổng học viên: Số lượng học viên có trong hệ thống đến thời điểm hiện tại 
   // Học viên mới: Số lượng học viên được tạo trong tháng dựa trên ngày "đến ngày" trong filter

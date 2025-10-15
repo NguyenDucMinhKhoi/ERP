@@ -1,26 +1,8 @@
-import React, { useState, useEffect } from "react";
-import courseService from "../../services/courseService";
+import React, { useEffect } from "react";
 
-export default function Filters({ value, onChange }) {
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  // Lấy danh sách khóa học và set thời gian mặc định khi component mount
+export default function Filters({ value, onChange, courses = [], loading = false }) {
+  // Set thời gian mặc định khi component mount
   useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        setLoading(true);
-        const response = await courseService.getCourses();
-        setCourses(response.results || []);
-      } catch (error) {
-        console.error("Error fetching courses:", error);
-        setCourses([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Set thời gian mặc định: 1 tháng từ ngày hiện tại
     const setDefaultDates = () => {
       const today = new Date();
       const oneMonthAgo = new Date();
@@ -41,9 +23,8 @@ export default function Filters({ value, onChange }) {
       }
     };
 
-    fetchCourses();
     setDefaultDates();
-  }, []);
+  }, [value, onChange]);
 
   return (
     <div className="bg-white rounded-lg border border-slate-200 p-4">
