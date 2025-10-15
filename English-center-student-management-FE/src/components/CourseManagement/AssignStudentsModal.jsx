@@ -11,6 +11,12 @@ export default function AssignStudentsModal({ classData, onClose, onSuccess }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Get teacher name from classData
+  const getTeacherName = () => {
+    if (!classData?.giang_vien) return 'Chưa có giáo viên';
+    return classData.giang_vien.name || classData.giang_vien.username || 'N/A';
+  };
+
   useEffect(() => {
     const loadStudents = async () => {
       try {
@@ -21,7 +27,10 @@ export default function AssignStudentsModal({ classData, onClose, onSuccess }) {
 
         // Initialize with current class students
         if (classData && classData.students) {
-          setSelectedStudents(classData.students);
+          const studentIds = classData.students.map(s => 
+            typeof s === 'string' ? s : s?.id
+          ).filter(Boolean);
+          setSelectedStudents(studentIds);
         }
       } catch (err) {
         console.error('Error loading students:', err);
@@ -44,6 +53,7 @@ export default function AssignStudentsModal({ classData, onClose, onSuccess }) {
     return matchesSearch;
   });
   console.log('filteredStudents ', filteredStudents);
+
   const handleStudentToggle = (studentId) => {
     setSelectedStudents((prev) => {
       if (prev.includes(studentId)) {
@@ -63,24 +73,25 @@ export default function AssignStudentsModal({ classData, onClose, onSuccess }) {
     setSelectedStudents([]);
   };
 
-  const handleSubmit = async (classId, studentObjsOrIds) => {
+  const handleSubmit = async () => {
     setIsSubmitting(true);
 
-    const studentIds = (studentObjsOrIds || [])
-      .map((s) => (typeof s === 'string' ? s : s?.id))
-      .filter(Boolean);
-
     try {
-      await courseService.addStudentToClass(classId, studentIds);
+      await courseService.addStudentToClass(classData.id, selectedStudents);
 
       // Update parent with new students count and list
-      onSuccess({
-        ...classData,
-        currentStudents: studentIds.length,
-        students: studentIds,
-      });
+      if (classData.onStudentsAssigned) {
+        classData.onStudentsAssigned({
+          ...classData,
+          currentStudents: selectedStudents.length,
+          students: selectedStudents,
+        });
+      }
+      
+      onSuccess();
     } catch (error) {
       console.error('Error assigning students:', error);
+      setError('Có lỗi xảy ra khi gán học viên. Vui lòng thử lại.');
     } finally {
       setIsSubmitting(false);
     }
@@ -145,7 +156,7 @@ export default function AssignStudentsModal({ classData, onClose, onSuccess }) {
                       Giáo viên
                     </div>
                     <div className="text-sm text-slate-900">
-                      {classData?.teacherName}
+                      {getTeacherName()}
                     </div>
                   </div>
                   <div>
@@ -201,59 +212,64 @@ export default function AssignStudentsModal({ classData, onClose, onSuccess }) {
               {/* Students List */}
               <div className="border border-slate-200 rounded-lg">
                 <div className="max-h-96 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-                  {filteredStudents.map((student) => {
-                    const isSelected = selectedStudents.includes(student.id);
-                    // Use student.already_in_class for badge
-                    return (
-                      <div
-                        key={student.id}
-                        className={`flex items-center gap-4 p-4 border-b border-slate-200 last:border-b-0 hover:bg-slate-50 ${
-                          isSelected ? 'bg-primary-50' : ''
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => handleStudentToggle(student.id)}
-                          className="h-4 w-4 text-primary-main focus:ring-primary-main border-slate-300 rounded"
-                        />
+                  {filteredStudents.length === 0 ? (
+                    <div className="text-center py-8 text-slate-500">
+                      Không tìm thấy học viên nào
+                    </div>
+                  ) : (
+                    filteredStudents.map((student) => {
+                      const isSelected = selectedStudents.includes(student.id);
+                      return (
+                        <div
+                          key={student.id}
+                          className={`flex items-center gap-4 p-4 border-b border-slate-200 last:border-b-0 hover:bg-slate-50 transition-colors ${
+                            isSelected ? 'bg-primary-50' : ''
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleStudentToggle(student.id)}
+                            className="h-4 w-4 text-primary-main focus:ring-primary-main border-slate-300 rounded cursor-pointer"
+                          />
 
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 bg-slate-200 rounded-full flex items-center justify-center">
-                              <span className="text-sm font-medium text-slate-600">
-                                {(student.ten || 'N').charAt(0)}
-                              </span>
-                            </div>
-                            <div>
-                              <div className="text-sm font-medium text-slate-900">
-                                {student.ten || 'Chưa có tên'}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 bg-slate-200 rounded-full flex items-center justify-center">
+                                <span className="text-sm font-medium text-slate-600">
+                                  {(student.ten || 'N').charAt(0).toUpperCase()}
+                                </span>
                               </div>
-                              <div className="text-sm text-slate-500">
-                                {student.sdt || 'Chưa có SĐT'} •{' '}
-                                {student.email || 'Chưa có email'}
+                              <div>
+                                <div className="text-sm font-medium text-slate-900">
+                                  {student.ten || 'Chưa có tên'}
+                                </div>
+                                <div className="text-sm text-slate-500">
+                                  {student.sdt || 'Chưa có SĐT'} •{' '}
+                                  {student.email || 'Chưa có email'}
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
 
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStudentStatus(
-                              student
-                            )}`}
-                          >
-                            {student.status}
-                          </span>
-                          {student.already_in_class && (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              Đã có trong lớp
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStudentStatus(
+                                student
+                              )}`}
+                            >
+                              {student.status || 'Chưa xác định'}
                             </span>
-                          )}
+                            {student.already_in_class && (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                Đã có trong lớp
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                 </div>
               </div>
 
@@ -289,7 +305,7 @@ export default function AssignStudentsModal({ classData, onClose, onSuccess }) {
             Hủy
           </button>
           <button
-            onClick={() => handleSubmit(classData.id, selectedStudents)}
+            onClick={handleSubmit}
             disabled={
               isSubmitting ||
               loading ||
