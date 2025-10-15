@@ -180,47 +180,58 @@ class LopHocListView(generics.ListCreateAPIView):
         return Response({"results": items})
     def create(self, request, *args, **kwargs):
         """
-        Create LopHoc and optionally create related LichHoc records
+        Create LopHoc and optionally create related LichHoc records from 'schedule' array.
+        Expects payload:
+        {
+            ten: ...,
+            khoa_hoc: ...,
+            giang_vien: ...,
+            mo_ta: ...,
+            ngay_bat_dau: ...,
+            ngay_ket_thuc: ...,
+            phong_hoc: ...,
+            so_hoc_vien_toi_da: ...,
+            trang_thai: ...,
+            schedule: [{day: "...", time: "..."}]
+        }
         """
-        serializer = self.get_serializer(data=request.data)
+        data = request.data.copy()
+        schedule_data = data.pop('schedule', [])
+
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
-        
-        # Create the LopHoc instance
         lop_hoc = serializer.save()
-        
-        # Handle schedule creation if provided
-        schedule_data = request.data.get('schedule', [])
-        if schedule_data:
+
+        # Create LichHoc records for each schedule item
+        if isinstance(schedule_data, list):
             try:
                 LichHoc = apps.get_model('lichhocs', 'LichHoc')
-                for schedule_item in schedule_data:
-                    day = schedule_item.get('day')
-                    time = schedule_item.get('time')
-                    if day and time:
-                        # Time format: "HH:MM" or "HH:MM-HH:MM"
-                        if '-' in time:
-                            start_time, end_time = time.split('-')
-                        else:
-                            start_time = time
-                            end_time = None
-                        
-                        LichHoc.objects.create(
-                            lop_hoc=lop_hoc,
-                            ngay_hoc=day,
-                            gio_bat_dau=start_time.strip(),
-                            gio_ket_thuc=end_time.strip() if end_time else None
-                        )
+                print(f"Creating LichHoc for LopHoc ID {lop_hoc.id} with schedule: {schedule_data}")
+                for item in schedule_data:
+                    day = item.get('day')
+                    time = item.get('time')
+                    if not (day and time):
+                        continue
+                    # time format: "HH:MM-HH:MM"
+                    if '-' in time:
+                        gio_bat_dau, gio_ket_thuc = time.split('-', 1)
+                    else:
+                        gio_bat_dau, gio_ket_thuc = time, None
+                    # day is just a string (e.g. "friday"), do not parse as date
+                    LichHoc.objects.create(
+                        lop_hoc=lop_hoc,
+                        ngay_hoc=day,  # keep as string
+                        gio_bat_dau=gio_bat_dau.strip(),
+                        gio_ket_thuc=gio_ket_thuc.strip() if gio_ket_thuc else None,
+                        phong_hoc=getattr(lop_hoc, 'phong_hoc', None),
+                        noi_dung="",
+                    )
             except Exception as e:
-                # Log error but don't fail the class creation
-                print(f"Error creating schedule: {e}")
-        
-        # Return the created LopHoc with schedule
+                print(f"Error creating LichHoc schedule: {e}")
+
         headers = self.get_success_headers(serializer.data)
-        
-        # Build response with schedule
         response_data = serializer.data
         response_data['schedule'] = schedule_data
-        
         return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
 
 

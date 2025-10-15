@@ -13,6 +13,7 @@ urlpatterns = [
     path('diemdanhs/', views.DiemDanhListView.as_view(), name='diemdanh-list'),
     path('diemdanhs/<uuid:pk>/', views.DiemDanhDetailView.as_view(), name='diemdanh-detail'),
     path('diemdanhs/me/', views.DiemDanhMeListView.as_view(), name='diemdanh-me'),
+    path('diemdanhs/bulk/', views.DiemDanhBulkCreateView.as_view(), name='diemdanh-bulk-create'),
 ]
 
 urlpatterns += router.urls
