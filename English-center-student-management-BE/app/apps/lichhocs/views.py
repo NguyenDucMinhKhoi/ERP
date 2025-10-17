@@ -38,14 +38,17 @@ class LichHocListView(generics.ListCreateAPIView):
     permission_classes = [CanManageCourses]
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        """
+        Filter queryset based on query params (e.g., lop_hoc, ngay_hoc).
+        """
+        queryset = super().get_queryset()
         lop_hoc_id = self.request.query_params.get('lop_hoc')
         ngay_hoc = self.request.query_params.get('ngay_hoc')
         if lop_hoc_id:
-            qs = qs.filter(lop_hoc_id=lop_hoc_id)
+            queryset = queryset.filter(lop_hoc_id=lop_hoc_id)
         if ngay_hoc:
-            qs = qs.filter(ngay_hoc=ngay_hoc)
-        return qs.order_by('ngay_hoc', 'gio_bat_dau')
+            queryset = queryset.filter(ngay_hoc=ngay_hoc)
+        return queryset.order_by('ngay_hoc', 'gio_bat_dau')
 
 
 class LichHocDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -105,3 +108,19 @@ class LichHocBulkCreateView(APIView):
             "errors": errors,
             "message": f"{len(created)} lichhoc created, {len(errors)} errors."
         }, status=status.HTTP_201_CREATED if created else status.HTTP_400_BAD_REQUEST)
+
+
+class LichHocByClassView(APIView):
+    """
+    GET /api/lichhocs/class/<class_id>/
+    Return list of LichHoc for the given class (lop_hoc) id.
+    """
+    permission_classes = [CanManageCourses]
+
+    def get(self, request, class_id):
+        try:
+            qs = LichHoc.objects.filter(lop_hoc_id=class_id).order_by('ngay_hoc', 'gio_bat_dau')
+            serializer = LichHocSerializer(qs, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

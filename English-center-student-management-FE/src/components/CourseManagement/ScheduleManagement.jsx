@@ -115,24 +115,26 @@ export default function ScheduleManagement({ classData, onClose }) {
           ? classData.id.replace("class_", "")
           : classData.id;
 
-        // const response = await courseService.getClassSchedules(realClassId);
-        
+        const response = await courseService.getClassSchedules(realClassId);
+
         // Transform API response to match UI format
-        const transformedSchedules = (Array.isArray(response) ? response : []).map(schedule => ({
+        const transformedSchedules = (
+          Array.isArray(response) ? response : []
+        ).map((schedule) => ({
           id: schedule.id,
           classId: classData.id,
-          date: schedule.date,
-          startTime: schedule.startTime || schedule.time || "",
-          endTime: schedule.endTime || "",
-          topic: schedule.topic,
-          notes: schedule.note || schedule.notes || "",
-          status: schedule.status || "Sắp diễn ra",
+          date: schedule.ngay_hoc,
+          startTime: schedule.gio_bat_dau,
+          endTime: schedule.gio_ket_thuc,
+          topic: schedule.noi_dung,
+          notes: schedule.ghi_chu || '',
+          status: schedule.status || 'Sắp diễn ra',
           attendance: schedule.attendance || null,
         }));
-        
+
         setSchedules(transformedSchedules);
       } catch (error) {
-        console.error("Error loading schedules:", error);
+        console.error('Error loading schedules:', error);
         setSchedules([]);
       } finally {
         setLoading(false);
@@ -154,11 +156,11 @@ export default function ScheduleManagement({ classData, onClose }) {
     setShowAddForm(true);
     setEditingSchedule(null);
     setFormData({
-      date: "",
-      startTime: "",
-      endTime: "",
-      topic: "",
-      notes: "",
+      date: '',
+      startTime: '',
+      endTime: '',
+      topic: '',
+      notes: '',
     });
   };
 
@@ -167,21 +169,21 @@ export default function ScheduleManagement({ classData, onClose }) {
     setShowAddForm(true);
     setFormData({
       date: schedule.date,
-      startTime: schedule.startTime || schedule.time || "",
-      endTime: schedule.endTime || "",
+      startTime: schedule.startTime || schedule.time || '',
+      endTime: schedule.endTime || '',
       topic: schedule.topic,
-      notes: schedule.notes || "",
+      notes: schedule.notes || '',
     });
   };
 
   const handleDeleteSchedule = async (scheduleId) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa buổi học này?")) {
+    if (window.confirm('Bạn có chắc chắn muốn xóa buổi học này?')) {
       try {
         await courseService.deleteSchedule(scheduleId);
         setSchedules((prev) => prev.filter((s) => s.id !== scheduleId));
       } catch (error) {
-        console.error("Error deleting schedule:", error);
-        alert("Có lỗi xảy ra khi xóa lịch học. Vui lòng thử lại.");
+        console.error('Error deleting schedule:', error);
+        alert('Có lỗi xảy ra khi xóa lịch học. Vui lòng thử lại.');
       }
     }
   };
@@ -193,22 +195,23 @@ export default function ScheduleManagement({ classData, onClose }) {
 
     try {
       // Remove "class_" prefix if present
-      const realClassId = typeof classData.id === "string" && classData.id.startsWith("class_")
-        ? classData.id.replace("class_", "")
-        : classData.id;
+      const realClassId =
+        typeof classData.id === 'string' && classData.id.startsWith('class_')
+          ? classData.id.replace('class_', '')
+          : classData.id;
 
       // Create new schedule - POST as array
       const schedule = {
-        id: realClassId, // lớp học id
-        date: formData.date,
-        startTime: formData.startTime,
-        endTime: formData.endTime,
-        topic: formData.topic,
+        lophocid: realClassId, // lớp học id
+        ngay_hoc: formData.date,
+        gio_bat_dau: formData.startTime,
+        gio_ket_thuc: formData.endTime,
+        noi_dung: formData.topic,
         note: formData.notes,
       };
 
       const response = await courseService.createSchedule(schedule);
-      
+
       // Add to local state
       const newSchedule = {
         id: response[0]?.id || Date.now(),
@@ -218,29 +221,29 @@ export default function ScheduleManagement({ classData, onClose }) {
         endTime: formData.endTime,
         topic: formData.topic,
         notes: formData.notes,
-        status: "Sắp diễn ra",
+        status: 'Sắp diễn ra',
         attendance: null,
       };
-      
+
       setSchedules((prev) => [...prev, newSchedule]);
 
       setShowAddForm(false);
       setEditingSchedule(null);
       setFormData({
-        date: "",
-        startTime: "",
-        endTime: "",
-        topic: "",
-        notes: "",
+        date: '',
+        startTime: '',
+        endTime: '',
+        topic: '',
+        notes: '',
       });
     } catch (error) {
-      console.error("Error saving schedule:", error);
-      alert("Có lỗi xảy ra khi lưu lịch học. Vui lòng thử lại.");
+      console.error('Error saving schedule:', error);
+      alert('Có lỗi xảy ra khi lưu lịch học. Vui lòng thử lại.');
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
 
@@ -248,9 +251,10 @@ export default function ScheduleManagement({ classData, onClose }) {
 
     try {
       // Remove "class_" prefix if present
-      const realClassId = typeof classData.id === "string" && classData.id.startsWith("class_")
-        ? classData.id.replace("class_", "")
-        : classData.id;
+      const realClassId =
+        typeof classData.id === 'string' && classData.id.startsWith('class_')
+          ? classData.id.replace('class_', '')
+          : classData.id;
 
       if (editingSchedule) {
         // Update existing schedule
@@ -266,14 +270,14 @@ export default function ScheduleManagement({ classData, onClose }) {
         setSchedules((prev) =>
           prev.map((s) =>
             s.id === editingSchedule.id
-              ? { 
-                  ...s, 
+              ? {
+                  ...s,
                   date: formData.date,
                   startTime: formData.startTime,
                   endTime: formData.endTime,
                   topic: formData.topic,
                   notes: formData.notes,
-                  status: "Sắp diễn ra" 
+                  status: 'Sắp diễn ra',
                 }
               : s
           )
@@ -290,7 +294,7 @@ export default function ScheduleManagement({ classData, onClose }) {
         };
 
         const response = await courseService.createSchedule(schedule);
-        
+
         // Add to local state
         const newSchedule = {
           id: response[0]?.id || Date.now(),
@@ -300,25 +304,25 @@ export default function ScheduleManagement({ classData, onClose }) {
           endTime: formData.endTime,
           topic: formData.topic,
           notes: formData.notes,
-          status: "Sắp diễn ra",
+          status: 'Sắp diễn ra',
           attendance: null,
         };
-        
+
         setSchedules((prev) => [...prev, newSchedule]);
       }
 
       setShowAddForm(false);
       setEditingSchedule(null);
       setFormData({
-        date: "",
-        startTime: "",
-        endTime: "",
-        topic: "",
-        notes: "",
+        date: '',
+        startTime: '',
+        endTime: '',
+        topic: '',
+        notes: '',
       });
     } catch (error) {
-      console.error("Error saving schedule:", error);
-      alert("Có lỗi xảy ra khi lưu lịch học. Vui lòng thử lại.");
+      console.error('Error saving schedule:', error);
+      alert('Có lỗi xảy ra khi lưu lịch học. Vui lòng thử lại.');
     } finally {
       setIsSubmitting(false);
     }
@@ -326,15 +330,15 @@ export default function ScheduleManagement({ classData, onClose }) {
 
   const getStatusBadge = (status) => {
     const statusColors = {
-      "Đã hoàn thành": "bg-green-100 text-green-800",
-      "Sắp diễn ra": "bg-blue-100 text-blue-800",
-      "Đã hủy": "bg-red-100 text-red-800",
+      'Đã hoàn thành': 'bg-green-100 text-green-800',
+      'Sắp diễn ra': 'bg-blue-100 text-blue-800',
+      'Đã hủy': 'bg-red-100 text-red-800',
     };
 
     return (
       <span
         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          statusColors[status] || "bg-gray-100 text-gray-800"
+          statusColors[status] || 'bg-gray-100 text-gray-800'
         }`}
       >
         {status}
@@ -342,34 +346,34 @@ export default function ScheduleManagement({ classData, onClose }) {
     );
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return 'Chưa xác định';
-    return new Date(dateString).toLocaleDateString("vi-VN", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
+  // const formatDate = (dateString) => {
+  //   if (!dateString) return 'Chưa xác định';
+  //   return new Date(dateString).toLocaleDateString('vi-VN', {
+  //     weekday: 'long',
+  //     year: 'numeric',
+  //     month: 'long',
+  //     day: 'numeric',
+  //   });
+  // };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
-      style={{ 
+      style={{
         position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        overflow: 'hidden'
+        overflow: 'hidden',
       }}
     >
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/30 backdrop-blur-sm"
         onClick={onClose}
       />
-      
+
       {/* Modal */}
       <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
         {/* Header */}
@@ -393,133 +397,137 @@ export default function ScheduleManagement({ classData, onClose }) {
         {/* Content - scrollable area with hidden scrollbar */}
         <div className="flex-1 overflow-y-auto scrollbar-hide">
           <div className="p-6 space-y-6">
-          {/* Class Info */}
-          <div className="bg-slate-50 rounded-lg p-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <div className="text-sm font-medium text-slate-500">
-                  Giáo viên
+            {/* Class Info */}
+            <div className="bg-slate-50 rounded-lg p-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <div className="text-sm font-medium text-slate-500">
+                    Giáo viên
+                  </div>
+                  <div className="text-sm text-slate-900">
+                    {getTeacherName()}
+                  </div>
                 </div>
-                <div className="text-sm text-slate-900">
-                  {getTeacherName()}
+                <div>
+                  <div className="text-sm font-medium text-slate-500">
+                    Phòng học
+                  </div>
+                  <div className="text-sm text-slate-900">
+                    {classData?.room}
+                  </div>
                 </div>
-              </div>
-              <div>
-                <div className="text-sm font-medium text-slate-500">
-                  Phòng học
-                </div>
-                <div className="text-sm text-slate-900">{classData?.room}</div>
-              </div>
-              <div>
-                <div className="text-sm font-medium text-slate-500">
-                  Lịch học cố định
-                </div>
-                <div className="text-sm text-slate-900">
-                  {getScheduleDisplay()}
+                <div>
+                  <div className="text-sm font-medium text-slate-500">
+                    Lịch học cố định
+                  </div>
+                  <div className="text-sm text-slate-900">
+                    {getScheduleDisplay()}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Add Schedule Button */}
-          <div className="flex justify-end">
-            <button
-              onClick={handleAddSchedule}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-main border border-transparent rounded-lg hover:bg-primary-dark transition-colors cursor-pointer"
-            >
-              <Plus className="h-4 w-4" />
-              Thêm buổi học
-            </button>
-          </div>
-
-          {/* Loading State */}
-          {loading && (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-slate-600">Đang tải lịch học...</div>
-            </div>
-          )}
-
-          {/* Schedules List */}
-          {!loading && (
-            <div className="space-y-4">
-            {schedules.map((schedule) => (
-              <div
-                key={schedule.id}
-                className="border border-slate-200 rounded-lg p-4"
+            {/* Add Schedule Button */}
+            <div className="flex justify-end">
+              <button
+                onClick={handleAddSchedule}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-main border border-transparent rounded-lg hover:bg-primary-dark transition-colors cursor-pointer"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Calendar className="h-5 w-5 text-slate-400" />
-                      <div>
-                        <div className="text-lg font-medium text-slate-900">
-                          {schedule.date ? formatDate(schedule.date) : (schedule.day ? daysOfWeek[schedule.day] : 'Chưa xác định')}
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-slate-600">
-                          <Clock className="h-4 w-4" />
-                          <span>
-                            {schedule.startTime}
-                            {schedule.endTime && ` - ${schedule.endTime}`}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                <Plus className="h-4 w-4" />
+                Thêm buổi học
+              </button>
+            </div>
 
-                    <div className="ml-8">
-                      <div className="text-sm font-medium text-slate-900 mb-1">
-                        Chủ đề: {schedule.topic}
-                      </div>
-                      {schedule.notes && (
-                        <div className="text-sm text-slate-600">
-                          Ghi chú: {schedule.notes}
-                        </div>
-                      )}
-                      {schedule.attendance && (
-                        <div className="text-sm text-slate-600 mt-2">
-                          Điểm danh: {schedule.attendance.present} có mặt,{" "}
-                          {schedule.attendance.absent} vắng mặt
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {getStatusBadge(schedule.status)}
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => handleEditSchedule(schedule)}
-                        className="text-slate-600 hover:text-slate-900 p-1 rounded cursor-pointer"
-                        title="Chỉnh sửa"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteSchedule(schedule.id)}
-                        className="text-red-600 hover:text-red-900 p-1 rounded cursor-pointer"
-                        title="Xóa"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
+            {/* Loading State */}
+            {loading && (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-slate-600">Đang tải lịch học...</div>
               </div>
-            ))}
-            </div>
-          )}
+            )}
 
-          {/* Empty State */}
-          {!loading && schedules.length === 0 && (
-            <div className="text-center py-12">
-              <Calendar className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-slate-900 mb-2">
-                Chưa có lịch học
-              </h3>
-              <p className="text-slate-600">
-                Nhấn "Thêm buổi học" để tạo lịch học đầu tiên
-              </p>
-            </div>
-          )}
+            {/* Schedules List */}
+            {!loading && (
+              <div className="space-y-4">
+                {schedules.map((schedule) => (
+                  <div
+                    key={schedule.id}
+                    className="border border-slate-200 rounded-lg p-4"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <Calendar className="h-5 w-5 text-slate-400" />
+                          <div>
+                            <div className="text-lg font-medium text-slate-900">
+                              {schedule.date
+                                ? schedule.date
+                                : 'Chưa xác định'}
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-slate-600">
+                              <Clock className="h-4 w-4" />
+                              <span>
+                                {schedule.startTime}
+                                {schedule.endTime && ` - ${schedule.endTime}`}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="ml-8">
+                          <div className="text-sm font-medium text-slate-900 mb-1">
+                            Chủ đề: {schedule.topic}
+                          </div>
+                          {schedule.notes && (
+                            <div className="text-sm text-slate-600">
+                              Ghi chú: {schedule.notes}
+                            </div>
+                          )}
+                          {schedule.attendance && (
+                            <div className="text-sm text-slate-600 mt-2">
+                              Điểm danh: {schedule.attendance.present} có mặt,{' '}
+                              {schedule.attendance.absent} vắng mặt
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {getStatusBadge(schedule.status)}
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => handleEditSchedule(schedule)}
+                            className="text-slate-600 hover:text-slate-900 p-1 rounded cursor-pointer"
+                            title="Chỉnh sửa"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteSchedule(schedule.id)}
+                            className="text-red-600 hover:text-red-900 p-1 rounded cursor-pointer"
+                            title="Xóa"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Empty State */}
+            {!loading && schedules.length === 0 && (
+              <div className="text-center py-12">
+                <Calendar className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-slate-900 mb-2">
+                  Chưa có lịch học
+                </h3>
+                <p className="text-slate-600">
+                  Nhấn "Thêm buổi học" để tạo lịch học đầu tiên
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -536,127 +544,130 @@ export default function ScheduleManagement({ classData, onClose }) {
 
       {/* Add/Edit Form Modal */}
       {showAddForm && (
-          <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-60 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-              <div className="flex items-center justify-between p-6 border-b border-slate-200">
-                <h3 className="text-lg font-semibold text-slate-900">
-                  {editingSchedule ? "Chỉnh sửa buổi học" : "Thêm buổi học mới"}
-                </h3>
-                <button
-                  onClick={() => setShowAddForm(false)}
-                  className="text-slate-400 hover:text-slate-600 p-1 rounded cursor-pointer"
-                >
-                  <X className="h-5 w-5" />
-                </button>
+        <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-60 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+              <h3 className="text-lg font-semibold text-slate-900">
+                {editingSchedule ? 'Chỉnh sửa buổi học' : 'Thêm buổi học mới'}
+              </h3>
+              <button
+                onClick={() => setShowAddForm(false)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={editingSchedule ? handleUpdateSubmit : handleSubmit}
+              className="p-6 space-y-4"
+            >
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Ngày học *
+                </label>
+                <input
+                  type="date"
+                  name="date"
+                  value={formData.date}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
+                />
               </div>
 
-              <form onSubmit={editingSchedule ? handleUpdateSubmit : handleSubmit} className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Ngày học *
+                    Giờ bắt đầu *
                   </label>
-                  <input
-                    type="date"
-                    name="date"
-                    value={formData.date}
+                  <select
+                    name="startTime"
+                    value={formData.startTime}
                     onChange={handleChange}
                     required
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                      Giờ bắt đầu *
-                    </label>
-                    <select
-                      name="startTime"
-                      value={formData.startTime}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
-                    >
-                      <option value="">Chọn giờ</option>
-                      {timeSlots.map((time) => (
-                        <option key={time} value={time}>
-                          {time}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                      Giờ kết thúc *
-                    </label>
-                    <select
-                      name="endTime"
-                      value={formData.endTime}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
-                    >
-                      <option value="">Chọn giờ</option>
-                      {timeSlots.map((time) => (
-                        <option key={time} value={time}>
-                          {time}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  >
+                    <option value="">Chọn giờ</option>
+                    {timeSlots.map((time) => (
+                      <option key={time} value={time}>
+                        {time}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Chủ đề bài học *
+                    Giờ kết thúc *
                   </label>
-                  <input
-                    type="text"
-                    name="topic"
-                    value={formData.topic}
+                  <select
+                    name="endTime"
+                    value={formData.endTime}
                     onChange={handleChange}
                     required
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
-                    placeholder="Ví dụ: Listening Part 1-2"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Ghi chú
-                  </label>
-                  <textarea
-                    name="notes"
-                    value={formData.notes}
-                    onChange={handleChange}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
-                    placeholder="Ghi chú về buổi học..."
-                  />
-                </div>
-
-                <div className="flex items-center justify-end gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowAddForm(false)}
-                    className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer"
                   >
-                    Hủy
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-main border border-transparent rounded-lg hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                  >
-                    <Save className="h-4 w-4" />
-                    {isSubmitting ? "Đang lưu..." : "Lưu"}
-                  </button>
+                    <option value="">Chọn giờ</option>
+                    {timeSlots.map((time) => (
+                      <option key={time} value={time}>
+                        {time}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-              </form>
-            </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Chủ đề bài học *
+                </label>
+                <input
+                  type="text"
+                  name="topic"
+                  value={formData.topic}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
+                  placeholder="Ví dụ: Listening Part 1-2"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Ghi chú
+                </label>
+                <textarea
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleChange}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
+                  placeholder="Ghi chú về buổi học..."
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowAddForm(false)}
+                  className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-main border border-transparent rounded-lg hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  <Save className="h-4 w-4" />
+                  {isSubmitting ? 'Đang lưu...' : 'Lưu'}
+                </button>
+              </div>
+            </form>
           </div>
-        )}
+        </div>
+      )}
     </div>
   );
 }

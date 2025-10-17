@@ -13,4 +13,5 @@ urlpatterns = router.urls + [
     path('lichhocs/', views.LichHocListView.as_view(), name='lichhoc-list'),
     path('lichhocs/<uuid:pk>/', views.LichHocDetailView.as_view(), name='lichhoc-detail'),
     path('lichhocs/', views.LichHocBulkCreateView.as_view(), name='lichhoc-bulk-create'),
+    path('lichhocs/class/<uuid:class_id>/', views.LichHocByClassView.as_view(), name='lichhoc-by-class'),  # NEW
 ]
