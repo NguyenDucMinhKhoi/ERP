@@ -26,6 +26,29 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Lock body scroll when modal opens
+  useEffect(() => {
+    // Save current overflow and position
+    const originalOverflow = document.body.style.overflow;
+    const originalPosition = document.body.style.position;
+    const scrollY = window.scrollY;
+    
+    // Lock scroll
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    
+    // Cleanup: restore scroll
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.position = originalPosition;
+      document.body.style.top = '';
+      document.body.style.width = '';
+      window.scrollTo(0, scrollY);
+    };
+  }, []);
+
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -140,10 +163,27 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
   const stats = getAttendanceStats();
 
   return (
-    <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] ">
+    <div 
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        overflow: 'hidden'
+      }}
+    >
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      
+      {/* Modal */}
+      <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 flex-shrink-0">
           <div>
             <h2 className="text-xl font-semibold text-slate-900">
               Điểm danh học viên
@@ -154,14 +194,15 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 p-1 rounded interactive-element"
+            className="text-slate-400 hover:text-slate-600 p-1 rounded cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-6">
+        {/* Content - scrollable area with hidden scrollbar */}
+        <div className="flex-1 overflow-y-auto scrollbar-hide">
+          <div className="p-6 space-y-6">
           {loading && (
             <div className="flex items-center justify-center py-8">
               <div className="text-slate-600">Đang tải dữ liệu...</div>
@@ -273,9 +314,9 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
             </div>
           </div>
 
-          {/* Attendance List */}
+              {/* Attendance List */}
           <div className="border border-slate-200 rounded-lg">
-            <div className="overflow-x-auto">
+            <div className="max-h-96 overflow-y-auto scrollbar-hide">
               <table className="w-full">
                 <thead className="bg-slate-50">
                   <tr>
@@ -375,10 +416,11 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
           </div>
             </>
           )}
+          </div>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200">
+        <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200 flex-shrink-0">
           <button
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:ring-2 focus:ring-primary-main focus:border-transparent cursor-pointer"

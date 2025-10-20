@@ -199,7 +199,7 @@ export default function CreateCourseForm({ onClose, onSuccess }) {
                   <option value="dong">Đã đóng</option>
                   <option value="hoan_thanh">Hoàn thành</option>
                 </select>
-              </div>
+             a </div>
 
             </div>
           </form>

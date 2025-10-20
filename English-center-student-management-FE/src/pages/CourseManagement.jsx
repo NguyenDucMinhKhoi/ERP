@@ -15,6 +15,7 @@ export default function CourseManagement() {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
   const [selectedClass, setSelectedClass] = useState(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleCreateClass = () => {
     setShowCreateClassForm(true);
@@ -24,8 +25,8 @@ export default function CourseManagement() {
     setShowCreateCourseForm(true);
   };
 
-  const handleAssignStudents = (classData) => {
-    setSelectedClass(classData);
+  const handleAssignStudents = (classData, onStudentsAssigned) => {
+    setSelectedClass({ ...classData, onStudentsAssigned });
     setShowAssignStudentsModal(true);
   };
 
@@ -46,6 +47,12 @@ export default function CourseManagement() {
     setShowScheduleModal(false);
     setShowAttendanceModal(false);
     setSelectedClass(null);
+  };
+
+  const handleSuccess = () => {
+    // Trigger refresh by incrementing the counter
+    setRefreshTrigger(prev => prev + 1);
+    handleCloseModals();
   };
 
   const tabs = [
@@ -129,9 +136,13 @@ export default function CourseManagement() {
 
       {/* Content */}
       <div className="mt-6">
-        {activeTab === "courses" && <CourseList />}
+        {activeTab === "courses" && (
+          <CourseList key={`courses-${refreshTrigger}`} />
+        )}
         {activeTab === "classes" && (
           <ClassList
+            key={`classes-${refreshTrigger}`}
+            refreshTrigger={refreshTrigger}
             onAssignStudents={handleAssignStudents}
             onManageSchedule={handleManageSchedule}
             onTrackAttendance={handleTrackAttendance}
@@ -143,14 +154,14 @@ export default function CourseManagement() {
       {showCreateCourseForm && (
         <CreateCourseForm
           onClose={handleCloseModals}
-          onSuccess={handleCloseModals}
+          onSuccess={handleSuccess}
         />
       )}
 
       {showCreateClassForm && (
         <CreateClassForm
           onClose={handleCloseModals}
-          onSuccess={handleCloseModals}
+          onSuccess={handleSuccess}
         />
       )}
 
@@ -158,7 +169,7 @@ export default function CourseManagement() {
         <AssignStudentsModal
           classData={selectedClass}
           onClose={handleCloseModals}
-          onSuccess={handleCloseModals}
+          onSuccess={handleSuccess}
         />
       )}
 
@@ -166,7 +177,7 @@ export default function CourseManagement() {
         <ScheduleManagement
           classData={selectedClass}
           onClose={handleCloseModals}
-          onSuccess={handleCloseModals}
+          onSuccess={handleSuccess}
         />
       )}
 
@@ -174,7 +185,7 @@ export default function CourseManagement() {
         <AttendanceTracking
           classData={selectedClass}
           onClose={handleCloseModals}
-          onSuccess={handleCloseModals}
+          onSuccess={handleSuccess}
         />
       )}
     </div>

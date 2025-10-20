@@ -14,6 +14,10 @@ urlpatterns = [
     path('api/', include('app.apps.chamsoc.urls')),
     path('api/', include('app.apps.thongbaos.urls')),
     path('api/', include('app.apps.reports.urls')),
+    path('api/', include('app.apps.lichhocs.urls')),
+    path('api/', include('app.apps.diemdanhs.urls')),
+    path('api/', include('app.apps.lophocs.urls')),
+    path('api/', include('app.apps.teachers.urls')),
     
     # API Documentation
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
