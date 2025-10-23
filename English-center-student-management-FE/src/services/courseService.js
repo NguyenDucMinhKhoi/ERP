@@ -177,25 +177,25 @@ class CourseService {
    * @param {Object} params - Query parameters
    */
   async getClasses(params = {}) {
-    // Fallback to mock data if API not available
     try {
-      const courses = await this.fetchClass(params);
+      const lophocsResponse = await this.fetchClass(params);
 
-      const classes = courses.results?.map(course => ({
-        id: `class_${course.id}`,
-        courseId: course.id,
-        courseName: course.ten,
-        name: `Lớp ${course.ten}`,
-        giang_vien: course.giang_vien,
-        room: `P${Math.floor(Math.random() * 20) + 1}`,
-        schedule: course.schedule,
-        maxStudents: 20,
-        currentStudents: course.currentStudents || 0,
-        status: course.trang_thai === 'mo' ? 'Đang học' : 'Đã kết thúc',
-        startDate: course.created_at,
-        students: course.students,
-        price: course.hoc_phi,
-        description: course.mo_ta
+      const classes = lophocsResponse.results?.map(lophoc => ({
+        id: `class_${lophoc.id}`,
+        courseId: lophoc.khoa_hoc, // ID của khóa học (foreign key)
+        courseName: lophoc.ten,
+        name: lophoc.ten,
+        giang_vien: lophoc.giang_vien,
+        teacherName: lophoc.giang_vien?.name || lophoc.giang_vien?.username || 'Chưa có giáo viên',
+        room: lophoc.phong_hoc || `P${Math.floor(Math.random() * 20) + 1}`,
+        schedule: lophoc.lich_hoc || [],
+        maxStudents: lophoc.si_so_toi_da || 20,
+        currentStudents: lophoc.students?.length || 0,
+        status: lophoc.trang_thai === 'dang_hoc' ? 'Đang học' : 'Đã kết thúc',
+        startDate: lophoc.ngay_bat_dau || lophoc.created_at,
+        students: lophoc.students || [],
+        price: lophoc.hoc_phi,
+        description: lophoc.mo_ta
       })) || [];
 
       return { results: classes };

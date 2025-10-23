@@ -10,6 +10,7 @@ export default function CreateCourseForm({ onClose, onSuccess }) {
     hoc_phi: "",
     so_buoi: "",
     giang_vien: "",
+    giao_trinh: "",
     trang_thai: "mo",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,6 +37,7 @@ export default function CreateCourseForm({ onClose, onSuccess }) {
         hoc_phi: parseFloat(formData.hoc_phi) || 0,
         so_buoi: parseInt(formData.so_buoi) || 1,
         giang_vien: formData.giang_vien,
+        giao_trinh: formData.giao_trinh,
         trang_thai: formData.trang_thai,
       };
 
@@ -183,6 +185,25 @@ export default function CreateCourseForm({ onClose, onSuccess }) {
                 </div>
               </div>
 
+              {/* Giáo trình (Google Drive Link) */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Giáo trình (Link Google Drive)
+                </label>
+                <input
+                  type="url"
+                  value={formData.giao_trinh}
+                  onChange={(e) =>
+                    setFormData({ ...formData, giao_trinh: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
+                  placeholder="VD: https://drive.google.com/file/d/..."
+                />
+                <p className="text-xs text-slate-500 mt-1">
+                  Dán link Google Drive của file giáo trình (PDF, Doc, v.v.)
+                </p>
+              </div>
+
               {/* Trạng thái */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -199,7 +220,7 @@ export default function CreateCourseForm({ onClose, onSuccess }) {
                   <option value="dong">Đã đóng</option>
                   <option value="hoan_thanh">Hoàn thành</option>
                 </select>
-             a </div>
+              </div>
 
             </div>
           </form>
