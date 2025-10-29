@@ -1,17 +1,11 @@
 // Course Management API Service
 import authService from "./authService";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+// Sử dụng axios client từ authService để có auto refresh token
+const http = authService.client;
 
 class CourseService {
-  // Helper method để lấy headers với authentication
-  getHeaders() {
-    const token = authService.getAccessToken();
-    return {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-  }
+  // Không cần getHeaders() nữa vì axios interceptor tự động thêm token
 
   // ===== KHÓA HỌC (KhoaHoc) APIs =====
 
@@ -21,16 +15,8 @@ class CourseService {
    */
   async getCourses(params = {}) {
     try {
-      const queryString = new URLSearchParams(params).toString();
-      const response = await fetch(`${API_BASE_URL}/khoahocs/?${queryString}`, {
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.get('/khoahocs/', { params });
+      return data;
     } catch (error) {
       console.error("Error fetching courses:", error);
       throw error;
@@ -43,15 +29,8 @@ class CourseService {
    */
   async getCourse(courseId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/khoahocs/${courseId}/`, {
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.get(`/khoahocs/${courseId}/`);
+      return data;
     } catch (error) {
       console.error("Error fetching course:", error);
       throw error;
@@ -64,17 +43,8 @@ class CourseService {
    */
   async createCourse(courseData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/khoahocs/`, {
-        method: "POST",
-        headers: this.getHeaders(),
-        body: JSON.stringify(courseData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.post('/khoahocs/', courseData);
+      return data;
     } catch (error) {
       console.error("Error creating course:", error);
       throw error;
@@ -88,17 +58,8 @@ class CourseService {
    */
   async updateCourse(courseId, courseData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/khoahocs/${courseId}/`, {
-        method: "PUT",
-        headers: this.getHeaders(),
-        body: JSON.stringify(courseData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.put(`/khoahocs/${courseId}/`, courseData);
+      return data;
     } catch (error) {
       console.error("Error updating course:", error);
       throw error;
@@ -111,17 +72,8 @@ class CourseService {
    */
   async deleteCourse(courseId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/khoahocs/${courseId}/`, {
-        method: "DELETE",
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      // DELETE thường trả về 204 No Content
-      return response.status === 204 ? true : await response.json();
+      const { data } = await http.delete(`/khoahocs/${courseId}/`);
+      return data;
     } catch (error) {
       console.error("Error deleting course:", error);
       throw error;
@@ -133,15 +85,8 @@ class CourseService {
    */
   async getCourseStats() {
     try {
-      const response = await fetch(`${API_BASE_URL}/khoahocs/stats/`, {
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.get('/khoahocs/stats/');
+      return data;
     } catch (error) {
       console.error("Error fetching course stats:", error);
       throw error;
@@ -153,17 +98,8 @@ class CourseService {
    */
   async getPublicCourses() {
     try {
-      const response = await fetch(`${API_BASE_URL}/khoahocs/public/`, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.get('/khoahocs/public/');
+      return data;
     } catch (error) {
       console.error("Error fetching public courses:", error);
       throw error;
@@ -212,16 +148,8 @@ class CourseService {
      */
   async fetchClass(params = {}) {
     try {
-      const queryString = new URLSearchParams(params).toString();
-      const response = await fetch(`${API_BASE_URL}/lophocs/?${queryString}`, {
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.get('/lophocs/', { params });
+      return data;
     } catch (error) {
       console.error("Error fetching classes (lophocs):", error);
       throw error;
@@ -233,24 +161,14 @@ class CourseService {
    * @param {Object} classData - Dữ liệu lớp học
    */
   async createClass(classData) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/lophocs/`, {
-      method: "POST",
-      headers: this.getHeaders(),
-      body: JSON.stringify(classData),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    try {
+      const { data } = await http.post('/lophocs/', classData);
+      return data;
+    } catch (error) {
+      console.error("Error creating class:", error);
+      throw error;
     }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error creating class:", error);
-    throw error;
   }
-}
 
   /**
    * Cập nhật lớp học
@@ -259,17 +177,8 @@ class CourseService {
    */
   async updateClass(classId, classData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/lophocs/${classId}/`, {
-        method: "PATCH",
-        headers: this.getHeaders(),
-        body: JSON.stringify(classData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.patch(`/lophocs/${classId}/`, classData);
+      return data;
     } catch (error) {
       console.error("Error updating class:", error);
       throw error;
@@ -282,17 +191,8 @@ class CourseService {
    */
   async deleteClass(classId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/lophocs/${classId}/`, {
-        method: "DELETE",
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      // DELETE thường trả về 204 No Content
-      return response.status === 204 ? true : await response.json();
+      const { data } = await http.delete(`/lophocs/${classId}/`);
+      return data;
     } catch (error) {
       console.error("Error deleting class:", error);
       throw error;
@@ -305,15 +205,8 @@ class CourseService {
    */
   async getClassStudents(classId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/lophocs/${classId}/students/`, {
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.get(`/lophocs/${classId}/students/`);
+      return data;
     } catch (error) {
       console.error("Error fetching class students:", error);
       throw error;
@@ -331,17 +224,10 @@ class CourseService {
       ? classId.replace("class_", "")
       : classId;
 
-    const response = await fetch(`${API_BASE_URL}/lophocs/${realClassId}/add-student/`, {
-      method: "POST",
-      headers: this.getHeaders(),
-      body: JSON.stringify({ student_id: studentId }),
+    const { data } = await http.post(`/lophocs/${realClassId}/add-student/`, {
+      student_id: studentId
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
+    return data;
   }
 
   /**
@@ -351,17 +237,8 @@ class CourseService {
    */
   async removeStudentFromClass(classId, studentId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/lophocs/${classId}/remove-student/${studentId}/`, {
-        method: "DELETE",
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      // DELETE thường trả về 204 No Content
-      return response.status === 204 ? true : await response.json();
+      const { data } = await http.delete(`/lophocs/${classId}/remove-student/${studentId}/`);
+      return data;
     } catch (error) {
       console.error("Error removing student from class:", error);
       throw error;
@@ -396,16 +273,8 @@ class CourseService {
    */
   async getEnrollments(params = {}) {
     try {
-      const queryString = new URLSearchParams(params).toString();
-      const response = await fetch(`${API_BASE_URL}/dangky/?${queryString}`, {
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.get('/dangky/', { params });
+      return data;
     } catch (error) {
       console.error("Error fetching enrollments:", error);
       return { results: [] };
@@ -417,17 +286,8 @@ class CourseService {
    */
   async enrollStudent(enrollmentData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/dangky/`, {
-        method: "POST",
-        headers: this.getHeaders(),
-        body: JSON.stringify(enrollmentData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.post('/dangky/', enrollmentData);
+      return data;
     } catch (error) {
       console.error("Error creating enrollment:", error);
       throw error;
@@ -442,16 +302,8 @@ class CourseService {
    */
   async getSchedules(params = {}) {
     try {
-      const queryString = new URLSearchParams(params).toString();
-      const response = await fetch(`${API_BASE_URL}/lichhocs/?${queryString}`, {
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.get('/lichhocs/', { params });
+      return data;
     } catch (error) {
       console.error("Error fetching schedules:", error);
       throw error;
@@ -473,23 +325,12 @@ class CourseService {
    * ]
    */
   async createSchedule(scheduleData) {
-    try {;
-      // Ensure scheduleData is an array
+    try {
       const dataToSend = scheduleData;
-           console.log('dataToSend ',dataToSend);
-           
-      const response = await fetch(`${API_BASE_URL}/lichhocs/`, {
-        method: "POST",
-        headers: this.getHeaders(),
-        body: JSON.stringify(dataToSend),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      console.log('dataToSend ', dataToSend);
+      
+      const { data } = await http.post('/lichhocs/', dataToSend);
+      return data;
     } catch (error) {
       console.error("Error creating schedule:", error);
       throw error;
@@ -503,17 +344,8 @@ class CourseService {
    */
   async updateSchedule(scheduleId, scheduleData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/lichhocs/${scheduleId}/`, {
-        method: "PATCH",
-        headers: this.getHeaders(),
-        body: JSON.stringify(scheduleData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.patch(`/lichhocs/${scheduleId}/`, scheduleData);
+      return data;
     } catch (error) {
       console.error("Error updating schedule:", error);
       throw error;
@@ -526,17 +358,8 @@ class CourseService {
    */
   async deleteSchedule(scheduleId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/lichhocs/${scheduleId}/`, {
-        method: "DELETE",
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      // DELETE thường trả về 204 No Content
-      return response.status === 204 ? true : await response.json();
+      const { data } = await http.delete(`/lichhocs/${scheduleId}/`);
+      return data;
     } catch (error) {
       console.error("Error deleting schedule:", error);
       throw error;
@@ -549,15 +372,8 @@ class CourseService {
    */
   async getClassSchedules(classId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/lichhocs/class/${classId}/`, {
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.get(`/lichhocs/class/${classId}/`);
+      return data;
     } catch (error) {
       console.error("Error fetching class schedules:", error);
       // Fallback to mock data if API not available
@@ -618,16 +434,8 @@ class CourseService {
    */
   async getStudents(params = {}) {
     try {
-      const queryString = new URLSearchParams(params).toString();
-      const response = await fetch(`${API_BASE_URL}/hocviens/?${queryString}`, {
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.get('/hocviens/', { params });
+      return data;
     } catch (error) {
       console.error("Error fetching students:", error);
       return { results: [] };
@@ -639,16 +447,8 @@ class CourseService {
    */
   async getTeachers(params = {}) {
     try {
-      const queryString = new URLSearchParams(params).toString();
-      const response = await fetch(`${API_BASE_URL}/teachers/?${queryString}`, {
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.get('/teachers/', { params });
+      return data;
     } catch (error) {
       console.error("Error fetching teachers:", error);
       return [];
