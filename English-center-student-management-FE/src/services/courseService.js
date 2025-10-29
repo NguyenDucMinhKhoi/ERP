@@ -380,11 +380,11 @@ class CourseService {
       try {
         const schedules = [];
         const startDate = new Date();
-        
+
         for (let i = 0; i < 10; i++) {
           const date = new Date(startDate);
           date.setDate(date.getDate() + (i * 3)); // Mỗi 3 ngày 1 buổi
-          
+
           schedules.push({
             id: `schedule_${classId}_${i}`,
             classId: classId,
@@ -409,13 +409,17 @@ class CourseService {
   /**
    * Lưu điểm danh
    */
-  async saveAttendance(attendanceData) {
+  async saveAttendance({ attendance, scheduleId }) {
     try {
       // Mock save attendance - in real app this would be a separate API
-      console.log("Saving attendance:", attendanceData);
+      console.log("Saving attendance:", attendance);
 
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await fetch(`${API_BASE_URL}/khoahocs/`, {
+        method: "POST",
+        headers: this.getHeaders(),
+        body: JSON.stringify({ hoc_vien: attendance, lich_hoc: scheduleId }),
+      });
 
       return {
         success: true,
