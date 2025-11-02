@@ -22,10 +22,14 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [attendanceData, setAttendanceData] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [schedules] = useState([]);
+  const [schedules, setSchedules] = useState([]);
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
 
+ const getTeacherName = () => {
+    if (!classData?.giang_vien) return 'Chưa có giáo viên';
+    return classData.giang_vien.name || classData.giang_vien.username || 'N/A';
+  };
   // Lock body scroll when modal opens
   useEffect(() => {
     // Save current overflow and position
@@ -54,17 +58,20 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
       try {
         setLoading(true);
 
-        // Load schedules for this class
+        // Load schedules for this class from API
         const classSchedules = await courseService.getClassSchedules(
           classData.id
         );
+        
+        console.log('Loaded schedules:', classSchedules);
+        setSchedules(classSchedules || []);
 
-        if (classSchedules.length > 0) {
+        if (classSchedules && classSchedules.length > 0) {
           setSelectedSchedule(classSchedules[0]);
         }
 
-        // Filter students who are enrolled in this class
-        const classStudents = classData.students;
+        // Get all students in this class
+        const classStudents = classData.students || [];
         setStudents(classStudents);
       } catch (error) {
         console.error('Error loading attendance data:', error);
@@ -130,12 +137,24 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('vi-VN', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+    if (!dateString) return 'Chưa có ngày học';
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return dateString; // Return original if can't parse
+      }
+      
+      return date.toLocaleDateString('vi-VN', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error, dateString);
+      return dateString || 'Ngày không hợp lệ';
+    }
   };
 
   const getAttendanceStats = () => {
@@ -218,7 +237,7 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
                         Giáo viên
                       </div>
                       <div className="text-sm text-slate-900">
-                        {classData?.teacherName}
+                        {getTeacherName()}
                       </div>
                     </div>
                     <div>
@@ -242,24 +261,75 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
 
                 {/* Schedule Selection */}
                 <div className="bg-white border border-slate-200 rounded-lg p-4">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Calendar className="h-5 w-5 text-slate-400" />
-                    <div>
-                      <div className="text-lg font-medium text-slate-900">
-                        {selectedSchedule
-                          ? formatDate(selectedSchedule.date)
-                          : 'Chọn buổi học'}
-                      </div>
-                      {selectedSchedule && (
-                        <div className="flex items-center gap-2 text-sm text-slate-600">
-                          <Clock className="h-4 w-4" />
-                          <span>{selectedSchedule.time}</span>
-                          <span>•</span>
-                          <span>{selectedSchedule.topic}</span>
-                        </div>
-                      )}
-                    </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Chọn buổi học để điểm danh
+                    </label>
+                    {schedules.length > 0 ? (
+                      <select
+                        value={selectedSchedule?.id || ''}
+                        onChange={(e) => {
+                          const schedule = schedules.find(s => s.id.toString() === e.target.value);
+                          console.log('Selected schedule:', schedule);
+                          setSelectedSchedule(schedule);
+                        }}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
+                      >
+                        {schedules.map((schedule) => {
+                          const dateField = schedule.ngay_hoc || schedule.date;
+                          const timeField = schedule.gio_bat_dau || schedule.time;
+                          
+                          return (
+                            <option key={schedule.id} value={schedule.id}>
+                              {dateField ? formatDate(dateField) : 'Chưa có ngày'} - {timeField || 'Chưa có giờ'}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    ) : (
+                      <p className="text-sm text-slate-500">Chưa có lịch học nào</p>
+                    )}
                   </div>
+                  
+                  {selectedSchedule && (
+                    <div className="p-4 bg-slate-50 rounded-lg">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <div className="flex items-center gap-2 text-sm font-medium text-slate-500 mb-1">
+                            <Calendar className="h-4 w-4" />
+                            <span>Ngày học</span>
+                          </div>
+                          <div className="text-base font-medium text-slate-900">
+                            {formatDate(selectedSchedule.ngay_hoc || selectedSchedule.date)}
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div className="flex items-center gap-2 text-sm font-medium text-slate-500 mb-1">
+                            <Clock className="h-4 w-4" />
+                            <span>Thời gian</span>
+                          </div>
+                          <div className="text-base font-medium text-slate-900">
+                            {selectedSchedule.gio_bat_dau || selectedSchedule.time || 'Chưa có giờ bắt đầu'}
+                            {(selectedSchedule.gio_ket_thuc || selectedSchedule.endTime) && 
+                              ` - ${selectedSchedule.gio_ket_thuc || selectedSchedule.endTime}`
+                            }
+                          </div>
+                        </div>
+                        
+                        {(selectedSchedule.chu_de || selectedSchedule.topic) && (
+                          <div className="md:col-span-2">
+                            <div className="text-sm font-medium text-slate-500 mb-1">
+                              Chủ đề
+                            </div>
+                            <div className="text-base text-slate-900">
+                              {selectedSchedule.chu_de || selectedSchedule.topic}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Quick Actions */}
