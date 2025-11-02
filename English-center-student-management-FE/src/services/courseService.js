@@ -372,35 +372,29 @@ class CourseService {
    */
   async getClassSchedules(classId) {
     try {
-      const { data } = await http.get(`/lichhocs/class/${classId}/`);
-      return data;
+      // Remove "class_" prefix if present
+      const realClassId = typeof classId === "string" && classId.startsWith("class_")
+        ? classId.replace("class_", "")
+        : classId;
+
+      // Try to get schedules from the specific endpoint first
+      try {
+        const { data } = await http.get(`/lichhocs/class/${realClassId}/`);
+        return data;
+      } catch (endpointError) {
+        console.log("Class-specific endpoint not available, filtering from all schedules");
+        
+        // Fallback: Get all schedules and filter by class
+        const allSchedules = await this.getSchedules();
+        const classSchedules = (allSchedules.results || allSchedules).filter(
+          schedule => schedule.lop_hoc === parseInt(realClassId)
+        );
+        
+        return classSchedules;
+      }
     } catch (error) {
       console.error("Error fetching class schedules:", error);
-      // Fallback to mock data if API not available
-      try {
-        const schedules = [];
-        const startDate = new Date();
-
-        for (let i = 0; i < 10; i++) {
-          const date = new Date(startDate);
-          date.setDate(date.getDate() + (i * 3)); // Mỗi 3 ngày 1 buổi
-
-          schedules.push({
-            id: `schedule_${classId}_${i}`,
-            classId: classId,
-            date: date.toISOString().split('T')[0], // Format YYYY-MM-DD
-            time: "19:00",
-            topic: `Bài ${i + 1}: Chủ đề học tập`,
-            notes: "",
-            status: i < 3 ? 'Đã hoàn thành' : 'Sắp diễn ra'
-          });
-        }
-
-        return schedules;
-      } catch (fallbackError) {
-        console.error("Error in fallback:", fallbackError);
-        return [];
-      }
+      return [];
     }
   }
 
