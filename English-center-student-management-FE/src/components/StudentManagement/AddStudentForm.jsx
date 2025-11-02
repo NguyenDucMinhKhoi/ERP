@@ -9,40 +9,36 @@ import {
   BookOpen,
   Calendar,
 } from "lucide-react";
+import crmService from "../../services/crmService";
+import courseService from "../../services/courseService";
 
-// Options constants
-const courseOptions = [
-  { value: "1", label: "Tiếng Anh Cơ Bản" },
-  { value: "2", label: "Tiếng Anh Nâng Cao" },
-  { value: "3", label: "IELTS Preparation" },
-  { value: "4", label: "TOEIC Intensive" },
-];
-
+// Status options
 const statusOptions = [
-  { value: "dang_hoc", label: "Đang Học" },
-  { value: "nghi_hoc", label: "Nghỉ Học" },
-  { value: "hoan_thanh", label: "Hoàn Thành" },
-];
-
-const classOptions = [
-  { value: "1", label: "Lớp A1" },
-  { value: "2", label: "Lớp A2" },
-  { value: "3", label: "Lớp B1" },
-  { value: "4", label: "Lớp B2" },
+  { value: "chuadong", label: "Chưa đóng" },
+  { value: "dadong", label: "Đã đóng" },
+  { value: "conno", label: "Còn nợ" },
 ];
 
 export default function AddStudentForm({ onClose, onSuccess }) {
   const [formData, setFormData] = useState({
     ten: "",
     ngay_sinh: "",
-    so_dien_thoai: "",
+    sdt: "",
     email: "",
     dia_chi: "",
+    nhu_cau_hoc: "",
+    khoa_hoc_quan_tam: "",
+    trang_thai: "chuadong",
+    lop_hoc: "",
     ghi_chu: "",
   });
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [courses, setCourses] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [loadingCourses, setLoadingCourses] = useState(true);
+  const [loadingClasses, setLoadingClasses] = useState(true);
 
   // Ngăn scroll khi mở popup
   useEffect(() => {
@@ -50,6 +46,40 @@ export default function AddStudentForm({ onClose, onSuccess }) {
     return () => {
       document.body.style.overflow = "unset";
     };
+  }, []);
+
+  // Load courses from API
+  useEffect(() => {
+    const loadCourses = async () => {
+      try {
+        setLoadingCourses(true);
+        const response = await courseService.getCourses();
+        setCourses(response.results || response || []);
+      } catch (err) {
+        console.error("Error loading courses:", err);
+      } finally {
+        setLoadingCourses(false);
+      }
+    };
+
+    loadCourses();
+  }, []);
+
+  // Load classes from API
+  useEffect(() => {
+    const loadClasses = async () => {
+      try {
+        setLoadingClasses(true);
+        const response = await courseService.getClasses();
+        setClasses(response.results || response || []);
+      } catch (err) {
+        console.error("Error loading classes:", err);
+      } finally {
+        setLoadingClasses(false);
+      }
+    };
+
+    loadClasses();
   }, []);
 
   const handleChange = (e) => {
@@ -79,12 +109,12 @@ export default function AddStudentForm({ onClose, onSuccess }) {
       newErrors.ngay_sinh = "Ngày sinh là bắt buộc";
     }
 
-    if (!formData.so_dien_thoai.trim()) {
-      newErrors.so_dien_thoai = "Số điện thoại là bắt buộc";
+    if (!formData.sdt.trim()) {
+      newErrors.sdt = "Số điện thoại là bắt buộc";
     } else if (
-      !/^[0-9]{10,11}$/.test(formData.so_dien_thoai.replace(/\s/g, ""))
+      !/^[0-9]{10,11}$/.test(formData.sdt.replace(/\s/g, ""))
     ) {
-      newErrors.so_dien_thoai = "Số điện thoại không hợp lệ";
+      newErrors.sdt = "Số điện thoại không hợp lệ";
     }
 
     if (!formData.email.trim()) {
@@ -107,33 +137,21 @@ export default function AddStudentForm({ onClose, onSuccess }) {
     setIsSubmitting(true);
 
     try {
-      // Create student via API
+      // Create student via crmService with auto refresh token
       const studentData = {
         ten: formData.ten,
         ngay_sinh: formData.ngay_sinh,
-        so_dien_thoai: formData.so_dien_thoai,
+        sdt: formData.sdt,
         email: formData.email,
         dia_chi: formData.dia_chi,
+        nhu_cau_hoc: formData.nhu_cau_hoc,
+        khoa_hoc_quan_tam: formData.khoa_hoc_quan_tam,
+        trang_thai: formData.trang_thai,
+        lop_hoc: formData.lop_hoc,
         ghi_chu: formData.ghi_chu,
       };
 
-      // Create student via hocviens API
-      const token = localStorage.getItem("access_token");
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/hocviens/`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(studentData),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      await crmService.createStudent(studentData);
       onSuccess();
     } catch (error) {
       console.error("Error adding student:", error);
@@ -164,6 +182,13 @@ export default function AddStudentForm({ onClose, onSuccess }) {
         {/* Form - Scrollable area */}
         <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {/* Error message */}
+            {errors.submit && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-sm text-red-600">{errors.submit}</p>
+              </div>
+            )}
+
             {/* Basic Information */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium text-slate-900 flex items-center gap-2">
@@ -178,17 +203,17 @@ export default function AddStudentForm({ onClose, onSuccess }) {
                   </label>
                   <input
                     type="text"
-                    name="fullName"
-                    value={formData.fullName}
+                    name="ten"
+                    value={formData.ten}
                     onChange={handleChange}
                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
-                      errors.fullName ? "border-red-300" : "border-slate-300"
+                      errors.ten ? "border-red-300" : "border-slate-300"
                     }`}
                     placeholder="Nhập họ và tên"
                   />
-                  {errors.fullName && (
+                  {errors.ten && (
                     <p className="mt-1 text-sm text-red-600">
-                      {errors.fullName}
+                      {errors.ten}
                     </p>
                   )}
                 </div>
@@ -199,16 +224,16 @@ export default function AddStudentForm({ onClose, onSuccess }) {
                   </label>
                   <input
                     type="date"
-                    name="dateOfBirth"
-                    value={formData.dateOfBirth}
+                    name="ngay_sinh"
+                    value={formData.ngay_sinh}
                     onChange={handleChange}
                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
-                      errors.dateOfBirth ? "border-red-300" : "border-slate-300"
+                      errors.ngay_sinh ? "border-red-300" : "border-slate-300"
                     }`}
                   />
-                  {errors.dateOfBirth && (
+                  {errors.ngay_sinh && (
                     <p className="mt-1 text-sm text-red-600">
-                      {errors.dateOfBirth}
+                      {errors.ngay_sinh}
                     </p>
                   )}
                 </div>
@@ -221,16 +246,16 @@ export default function AddStudentForm({ onClose, onSuccess }) {
                   </label>
                   <input
                     type="tel"
-                    name="phone"
-                    value={formData.phone}
+                    name="sdt"
+                    value={formData.sdt}
                     onChange={handleChange}
                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
-                      errors.phone ? "border-red-300" : "border-slate-300"
+                      errors.sdt ? "border-red-300" : "border-slate-300"
                     }`}
                     placeholder="0901234567"
                   />
-                  {errors.phone && (
-                    <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+                  {errors.sdt && (
+                    <p className="mt-1 text-sm text-red-600">{errors.sdt}</p>
                   )}
                 </div>
 
@@ -260,8 +285,8 @@ export default function AddStudentForm({ onClose, onSuccess }) {
                 </label>
                 <input
                   type="text"
-                  name="address"
-                  value={formData.address}
+                  name="dia_chi"
+                  value={formData.dia_chi}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
                   placeholder="Nhập địa chỉ"
@@ -282,8 +307,8 @@ export default function AddStudentForm({ onClose, onSuccess }) {
                 </label>
                 <input
                   type="text"
-                  name="learningNeeds"
-                  value={formData.learningNeeds}
+                  name="nhu_cau_hoc"
+                  value={formData.nhu_cau_hoc}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
                   placeholder="Ví dụ: Giao tiếp cơ bản, IELTS Academic, Business English"
@@ -293,30 +318,24 @@ export default function AddStudentForm({ onClose, onSuccess }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Khóa học quan tâm *
+                    Khóa học quan tâm
                   </label>
                   <select
-                    name="courseInterest"
-                    value={formData.courseInterest}
+                    name="khoa_hoc_quan_tam"
+                    value={formData.khoa_hoc_quan_tam}
                     onChange={handleChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
-                      errors.courseInterest
-                        ? "border-red-300"
-                        : "border-slate-300"
-                    }`}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
+                    disabled={loadingCourses}
                   >
-                    <option value="">Chọn khóa học</option>
-                    {courseOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
+                    <option value="">
+                      {loadingCourses ? "Đang tải..." : "Chọn khóa học"}
+                    </option>
+                    {courses.map((course) => (
+                      <option key={course.id} value={course.id}>
+                        {course.ten}
                       </option>
                     ))}
                   </select>
-                  {errors.courseInterest && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.courseInterest}
-                    </p>
-                  )}
                 </div>
 
                 <div>
@@ -324,8 +343,8 @@ export default function AddStudentForm({ onClose, onSuccess }) {
                     Trạng thái
                   </label>
                   <select
-                    name="status"
-                    value={formData.status}
+                    name="trang_thai"
+                    value={formData.trang_thai}
                     onChange={handleChange}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
                   >
@@ -343,15 +362,18 @@ export default function AddStudentForm({ onClose, onSuccess }) {
                   Lớp học
                 </label>
                 <select
-                  name="class"
-                  value={formData.class}
+                  name="lop_hoc"
+                  value={formData.lop_hoc}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
+                  disabled={loadingClasses}
                 >
-                  <option value="">Chọn lớp học</option>
-                  {classOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
+                  <option value="">
+                    {loadingClasses ? "Đang tải..." : "Chọn lớp học"}
+                  </option>
+                  {classes.map((classItem) => (
+                    <option key={classItem.id} value={classItem.id}>
+                      {classItem.name}
                     </option>
                   ))}
                 </select>
@@ -362,8 +384,8 @@ export default function AddStudentForm({ onClose, onSuccess }) {
                   Ghi chú
                 </label>
                 <textarea
-                  name="notes"
-                  value={formData.notes}
+                  name="ghi_chu"
+                  value={formData.ghi_chu}
                   onChange={handleChange}
                   rows={3}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
