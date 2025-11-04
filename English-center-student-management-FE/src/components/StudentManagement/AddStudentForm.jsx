@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Save,
@@ -8,29 +8,29 @@ import {
   MapPin,
   BookOpen,
   Calendar,
-} from "lucide-react";
-import crmService from "../../services/crmService";
-import courseService from "../../services/courseService";
+} from 'lucide-react';
+import crmService from '../../services/crmService';
+import courseService from '../../services/courseService';
 
 // Status options
 const statusOptions = [
-  { value: "chuadong", label: "Chưa đóng" },
-  { value: "dadong", label: "Đã đóng" },
-  { value: "conno", label: "Còn nợ" },
+  { value: 'chuadong', label: 'Chưa đóng' },
+  { value: 'dadong', label: 'Đã đóng' },
+  { value: 'conno', label: 'Còn nợ' },
 ];
 
 export default function AddStudentForm({ onClose, onSuccess }) {
   const [formData, setFormData] = useState({
-    ten: "",
-    ngay_sinh: "",
-    sdt: "",
-    email: "",
-    dia_chi: "",
-    nhu_cau_hoc: "",
-    khoa_hoc_quan_tam: "",
-    trang_thai: "chuadong",
-    lop_hoc: "",
-    ghi_chu: "",
+    ten: '',
+    ngay_sinh: '',
+    sdt: '',
+    email: '',
+    dia_chi: '',
+    nhu_cau_hoc: '',
+    khoa_hoc_quan_tam: '',
+    trang_thai: 'chuadong',
+    lop_hoc: '',
+    ghi_chu: '',
   });
 
   const [errors, setErrors] = useState({});
@@ -42,9 +42,9 @@ export default function AddStudentForm({ onClose, onSuccess }) {
 
   // Ngăn scroll khi mở popup
   useEffect(() => {
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = 'unset';
     };
   }, []);
 
@@ -56,7 +56,7 @@ export default function AddStudentForm({ onClose, onSuccess }) {
         const response = await courseService.getCourses();
         setCourses(response.results || response || []);
       } catch (err) {
-        console.error("Error loading courses:", err);
+        console.error('Error loading courses:', err);
       } finally {
         setLoadingCourses(false);
       }
@@ -73,7 +73,7 @@ export default function AddStudentForm({ onClose, onSuccess }) {
         const response = await courseService.getClasses();
         setClasses(response.results || response || []);
       } catch (err) {
-        console.error("Error loading classes:", err);
+        console.error('Error loading classes:', err);
       } finally {
         setLoadingClasses(false);
       }
@@ -93,7 +93,7 @@ export default function AddStudentForm({ onClose, onSuccess }) {
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
-        [name]: "",
+        [name]: '',
       }));
     }
   };
@@ -102,25 +102,23 @@ export default function AddStudentForm({ onClose, onSuccess }) {
     const newErrors = {};
 
     if (!formData.ten.trim()) {
-      newErrors.ten = "Tên học viên là bắt buộc";
+      newErrors.ten = 'Tên học viên là bắt buộc';
     }
 
     if (!formData.ngay_sinh) {
-      newErrors.ngay_sinh = "Ngày sinh là bắt buộc";
+      newErrors.ngay_sinh = 'Ngày sinh là bắt buộc';
     }
 
     if (!formData.sdt.trim()) {
-      newErrors.sdt = "Số điện thoại là bắt buộc";
-    } else if (
-      !/^[0-9]{10,11}$/.test(formData.sdt.replace(/\s/g, ""))
-    ) {
-      newErrors.sdt = "Số điện thoại không hợp lệ";
+      newErrors.sdt = 'Số điện thoại là bắt buộc';
+    } else if (!/^[0-9]{10,11}$/.test(formData.sdt.replace(/\s/g, ''))) {
+      newErrors.sdt = 'Số điện thoại không hợp lệ';
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = "Email là bắt buộc";
+      newErrors.email = 'Email là bắt buộc';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Email không hợp lệ";
+      newErrors.email = 'Email không hợp lệ';
     }
 
     setErrors(newErrors);
@@ -137,13 +135,13 @@ export default function AddStudentForm({ onClose, onSuccess }) {
     setIsSubmitting(true);
 
     try {
-      // Create student via crmService with auto refresh token
+      // Prepare payload
       const studentData = {
         ten: formData.ten,
         ngay_sinh: formData.ngay_sinh,
         sdt: formData.sdt,
         email: formData.email,
-        dia_chi: formData.dia_chi,
+        address: formData.dia_chi,
         nhu_cau_hoc: formData.nhu_cau_hoc,
         khoa_hoc_quan_tam: formData.khoa_hoc_quan_tam,
         trang_thai: formData.trang_thai,
@@ -151,12 +149,20 @@ export default function AddStudentForm({ onClose, onSuccess }) {
         ghi_chu: formData.ghi_chu,
       };
 
-      await crmService.createStudent(studentData);
+      // If formData.id exists -> update flow (verify using getStudent), else create
+      if (formData.id) {
+        // verify existing student
+        await crmService.getStudent(formData.id);
+        await crmService.updateStudent(formData.id, studentData);
+      } else {
+        await crmService.createStudent(studentData);
+      }
+
       onSuccess();
     } catch (error) {
-      console.error("Error adding student:", error);
+      console.error('Error adding/updating student:', error);
       setErrors({
-        submit: "Có lỗi xảy ra khi thêm học viên. Vui lòng thử lại.",
+        submit: 'Có lỗi xảy ra khi lưu học viên. Vui lòng thử lại.',
       });
     } finally {
       setIsSubmitting(false);
@@ -207,14 +213,12 @@ export default function AddStudentForm({ onClose, onSuccess }) {
                     value={formData.ten}
                     onChange={handleChange}
                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
-                      errors.ten ? "border-red-300" : "border-slate-300"
+                      errors.ten ? 'border-red-300' : 'border-slate-300'
                     }`}
                     placeholder="Nhập họ và tên"
                   />
                   {errors.ten && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.ten}
-                    </p>
+                    <p className="mt-1 text-sm text-red-600">{errors.ten}</p>
                   )}
                 </div>
 
@@ -228,7 +232,7 @@ export default function AddStudentForm({ onClose, onSuccess }) {
                     value={formData.ngay_sinh}
                     onChange={handleChange}
                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
-                      errors.ngay_sinh ? "border-red-300" : "border-slate-300"
+                      errors.ngay_sinh ? 'border-red-300' : 'border-slate-300'
                     }`}
                   />
                   {errors.ngay_sinh && (
@@ -250,7 +254,7 @@ export default function AddStudentForm({ onClose, onSuccess }) {
                     value={formData.sdt}
                     onChange={handleChange}
                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
-                      errors.sdt ? "border-red-300" : "border-slate-300"
+                      errors.sdt ? 'border-red-300' : 'border-slate-300'
                     }`}
                     placeholder="0901234567"
                   />
@@ -269,7 +273,7 @@ export default function AddStudentForm({ onClose, onSuccess }) {
                     value={formData.email}
                     onChange={handleChange}
                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
-                      errors.email ? "border-red-300" : "border-slate-300"
+                      errors.email ? 'border-red-300' : 'border-slate-300'
                     }`}
                     placeholder="example@gmail.com"
                   />
@@ -328,7 +332,7 @@ export default function AddStudentForm({ onClose, onSuccess }) {
                     disabled={loadingCourses}
                   >
                     <option value="">
-                      {loadingCourses ? "Đang tải..." : "Chọn khóa học"}
+                      {loadingCourses ? 'Đang tải...' : 'Chọn khóa học'}
                     </option>
                     {courses.map((course) => (
                       <option key={course.id} value={course.id}>
@@ -369,7 +373,7 @@ export default function AddStudentForm({ onClose, onSuccess }) {
                   disabled={loadingClasses}
                 >
                   <option value="">
-                    {loadingClasses ? "Đang tải..." : "Chọn lớp học"}
+                    {loadingClasses ? 'Đang tải...' : 'Chọn lớp học'}
                   </option>
                   {classes.map((classItem) => (
                     <option key={classItem.id} value={classItem.id}>
@@ -404,12 +408,13 @@ export default function AddStudentForm({ onClose, onSuccess }) {
                 Hủy
               </button>
               <button
+                onClick={handleSubmit}
                 type="submit"
                 disabled={isSubmitting}
                 className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-main border border-transparent rounded-lg hover:bg-primary-dark focus:ring-2 focus:ring-primary-main focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed interactive-button"
               >
                 <Save className="h-4 w-4" />
-                {isSubmitting ? "Đang lưu..." : "Lưu"}
+                {isSubmitting ? 'Đang lưu...' : 'Lưu'}
               </button>
             </div>
           </form>

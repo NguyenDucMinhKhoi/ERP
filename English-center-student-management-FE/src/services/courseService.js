@@ -328,7 +328,7 @@ class CourseService {
     try {
       const dataToSend = scheduleData;
       console.log('dataToSend ', dataToSend);
-      
+
       const { data } = await http.post('/lichhocs/', dataToSend);
       return data;
     } catch (error) {
@@ -383,13 +383,13 @@ class CourseService {
         return data;
       } catch (endpointError) {
         console.log("Class-specific endpoint not available, filtering from all schedules");
-        
+
         // Fallback: Get all schedules and filter by class
         const allSchedules = await this.getSchedules();
         const classSchedules = (allSchedules.results || allSchedules).filter(
           schedule => schedule.lop_hoc === parseInt(realClassId)
         );
-        
+
         return classSchedules;
       }
     } catch (error) {
@@ -409,12 +409,10 @@ class CourseService {
       console.log("Saving attendance:", attendance);
 
       // Simulate API delay
-      await fetch(`${API_BASE_URL}/khoahocs/`, {
-        method: "POST",
-        headers: this.getHeaders(),
-        body: JSON.stringify({ hoc_vien: attendance, lich_hoc: scheduleId }),
+      await http.post(`/diemdanhs/`, {
+        hoc_vien: attendance,
+        lich_hoc: scheduleId
       });
-
       return {
         success: true,
         message: "Điểm danh đã được lưu thành công"
