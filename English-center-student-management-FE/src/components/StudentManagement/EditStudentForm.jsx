@@ -9,50 +9,39 @@ import {
   BookOpen,
   Calendar,
 } from "lucide-react";
+import crmService from "../../services/crmService";
+import courseService from "../../services/courseService";
 
 // Options for dropdowns
 const statusOptions = [
-  { value: "Chờ lớp", label: "Chờ lớp" },
-  { value: "Đang học", label: "Đang học" },
-  { value: "Tạm dừng", label: "Tạm dừng" },
-  { value: "Hoàn thành", label: "Hoàn thành" },
-  { value: "Đã nghỉ", label: "Đã nghỉ" },
-];
-
-const courseOptions = [
-  { value: "IELTS 5.0-6.0", label: "IELTS 5.0-6.0" },
-  { value: "IELTS 6.5-7.0", label: "IELTS 6.5-7.0" },
-  { value: "TOEIC 450-650", label: "TOEIC 450-650" },
-  { value: "TOEIC 750-850", label: "TOEIC 750-850" },
-  { value: "General English", label: "General English" },
-  { value: "Business English", label: "Business English" },
-];
-
-const classOptions = [
-  { value: "Lớp IELTS 5.0-6.0 - Sáng", label: "Lớp IELTS 5.0-6.0 - Sáng" },
-  { value: "Lớp IELTS 5.0-6.0 - Tối", label: "Lớp IELTS 5.0-6.0 - Tối" },
-  { value: "Lớp TOEIC 450-650 - Sáng", label: "Lớp TOEIC 450-650 - Sáng" },
-  { value: "Lớp TOEIC 450-650 - Tối", label: "Lớp TOEIC 450-650 - Tối" },
-  { value: "Lớp General English - Sáng", label: "Lớp General English - Sáng" },
-  { value: "Lớp Business English - Tối", label: "Lớp Business English - Tối" },
+  { value: "chuadong", label: "Chưa đóng" },
+  { value: "dadong", label: "Đã đóng" },
+  { value: "conno", label: "Còn nợ" },
+  { value: "tamdung", label: "Tạm dừng" },
+  { value: "hoanthanh", label: "Hoàn thành" },
+  { value: "danghi", label: "Đã nghỉ" },
 ];
 
 export default function EditStudentForm({ student, onClose, onSuccess }) {
   const [formData, setFormData] = useState({
-    fullName: "",
-    dateOfBirth: "",
-    phone: "",
+    ten: "",
+    ngay_sinh: "",
+    sdt: "",
     email: "",
-    address: "",
-    learningNeeds: "",
-    courseInterest: "",
-    status: "Chờ lớp",
-    class: "",
-    notes: "",
+    dia_chi: "",
+    nhu_cau_hoc: "",
+    khoa_hoc_quan_tam: "",
+    trang_thai: "chuadong",
+    lop_hoc: "",
+    ghi_chu: "",
   });
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [courses, setCourses] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [loadingCourses, setLoadingCourses] = useState(true);
+  const [loadingClasses, setLoadingClasses] = useState(true);
 
   // Ngăn scroll khi mở popup
   useEffect(() => {
@@ -62,19 +51,54 @@ export default function EditStudentForm({ student, onClose, onSuccess }) {
     };
   }, []);
 
+  // Load courses from API
+  useEffect(() => {
+    const loadCourses = async () => {
+      try {
+        setLoadingCourses(true);
+        const response = await courseService.getCourses();
+        setCourses(response.results || response || []);
+      } catch (err) {
+        console.error("Error loading courses:", err);
+      } finally {
+        setLoadingCourses(false);
+      }
+    };
+
+    loadCourses();
+  }, []);
+
+  // Load classes from API
+  useEffect(() => {
+    const loadClasses = async () => {
+      try {
+        setLoadingClasses(true);
+        const response = await courseService.getClasses();
+        setClasses(response.results || response || []);
+      } catch (err) {
+        console.error("Error loading classes:", err);
+      } finally {
+        setLoadingClasses(false);
+      }
+    };
+
+    loadClasses();
+  }, []);
+
+  // Populate form with student data
   useEffect(() => {
     if (student) {
       setFormData({
-        fullName: student.fullName || "",
-        dateOfBirth: student.dateOfBirth || "",
-        phone: student.phone || "",
+        ten: student.ten || "",
+        ngay_sinh: student.ngay_sinh || "",
+        sdt: student.sdt || "",
         email: student.email || "",
-        address: student.address || "",
-        learningNeeds: student.learningNeeds || "",
-        courseInterest: student.courseInterest || "",
-        status: student.status || "Chờ lớp",
-        class: student.class || "",
-        notes: student.notes || "",
+        dia_chi: student.dia_chi || "",
+        nhu_cau_hoc: student.nhu_cau_hoc || "",
+        khoa_hoc_quan_tam: student.khoa_hoc_quan_tam || "",
+        trang_thai: student.trang_thai || "cho_lop",
+        lop_hoc: student.lop_hoc || "",
+        ghi_chu: student.ghi_chu || "",
       });
     }
   }, [student]);
@@ -98,28 +122,24 @@ export default function EditStudentForm({ student, onClose, onSuccess }) {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = "Tên học viên là bắt buộc";
+    if (!formData.ten.trim()) {
+      newErrors.ten = "Tên học viên là bắt buộc";
     }
 
-    if (!formData.dateOfBirth) {
-      newErrors.dateOfBirth = "Ngày sinh là bắt buộc";
+    if (!formData.ngay_sinh) {
+      newErrors.ngay_sinh = "Ngày sinh là bắt buộc";
     }
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Số điện thoại là bắt buộc";
-    } else if (!/^[0-9]{10,11}$/.test(formData.phone.replace(/\s/g, ""))) {
-      newErrors.phone = "Số điện thoại không hợp lệ";
+    if (!formData.sdt.trim()) {
+      newErrors.sdt = "Số điện thoại là bắt buộc";
+    } else if (!/^[0-9]{10,11}$/.test(formData.sdt.replace(/\s/g, ""))) {
+      newErrors.sdt = "Số điện thoại không hợp lệ";
     }
 
     if (!formData.email.trim()) {
       newErrors.email = "Email là bắt buộc";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "Email không hợp lệ";
-    }
-
-    if (!formData.courseInterest) {
-      newErrors.courseInterest = "Khóa học quan tâm là bắt buộc";
     }
 
     setErrors(newErrors);
@@ -136,15 +156,27 @@ export default function EditStudentForm({ student, onClose, onSuccess }) {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Update student via crmService with auto refresh token
+      const studentData = {
+        ten: formData.ten,
+        ngay_sinh: formData.ngay_sinh,
+        sdt: formData.sdt,
+        email: formData.email,
+        dia_chi: formData.dia_chi,
+        nhu_cau_hoc: formData.nhu_cau_hoc,
+        khoa_hoc_quan_tam: formData.khoa_hoc_quan_tam,
+        trang_thai: formData.trang_thai,
+        lop_hoc: formData.lop_hoc,
+        ghi_chu: formData.ghi_chu,
+      };
 
-      // In real app, this would be an API call
-      console.log("Updating student:", { id: student.id, ...formData });
-
+      await crmService.updateStudent(student.id, studentData);
       onSuccess();
     } catch (error) {
       console.error("Error updating student:", error);
+      setErrors({
+        submit: "Có lỗi xảy ra khi cập nhật học viên. Vui lòng thử lại.",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -183,17 +215,17 @@ export default function EditStudentForm({ student, onClose, onSuccess }) {
                   </label>
                   <input
                     type="text"
-                    name="fullName"
-                    value={formData.fullName}
+                    name="ten"
+                    value={formData.ten}
                     onChange={handleChange}
                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
-                      errors.fullName ? "border-red-300" : "border-slate-300"
+                      errors.ten ? "border-red-300" : "border-slate-300"
                     }`}
                     placeholder="Nhập họ và tên"
                   />
-                  {errors.fullName && (
+                  {errors.ten && (
                     <p className="mt-1 text-sm text-red-600">
-                      {errors.fullName}
+                      {errors.ten}
                     </p>
                   )}
                 </div>
@@ -204,16 +236,16 @@ export default function EditStudentForm({ student, onClose, onSuccess }) {
                   </label>
                   <input
                     type="date"
-                    name="dateOfBirth"
-                    value={formData.dateOfBirth}
+                    name="ngay_sinh"
+                    value={formData.ngay_sinh}
                     onChange={handleChange}
                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
-                      errors.dateOfBirth ? "border-red-300" : "border-slate-300"
+                      errors.ngay_sinh ? "border-red-300" : "border-slate-300"
                     }`}
                   />
-                  {errors.dateOfBirth && (
+                  {errors.ngay_sinh && (
                     <p className="mt-1 text-sm text-red-600">
-                      {errors.dateOfBirth}
+                      {errors.ngay_sinh}
                     </p>
                   )}
                 </div>
@@ -226,16 +258,16 @@ export default function EditStudentForm({ student, onClose, onSuccess }) {
                   </label>
                   <input
                     type="tel"
-                    name="phone"
-                    value={formData.phone}
+                    name="sdt"
+                    value={formData.sdt}
                     onChange={handleChange}
                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
-                      errors.phone ? "border-red-300" : "border-slate-300"
+                      errors.sdt ? "border-red-300" : "border-slate-300"
                     }`}
                     placeholder="0901234567"
                   />
-                  {errors.phone && (
-                    <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+                  {errors.sdt && (
+                    <p className="mt-1 text-sm text-red-600">{errors.sdt}</p>
                   )}
                 </div>
 
@@ -265,8 +297,8 @@ export default function EditStudentForm({ student, onClose, onSuccess }) {
                 </label>
                 <input
                   type="text"
-                  name="address"
-                  value={formData.address}
+                  name="dia_chi"
+                  value={formData.dia_chi}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
                   placeholder="Nhập địa chỉ"
@@ -287,8 +319,8 @@ export default function EditStudentForm({ student, onClose, onSuccess }) {
                 </label>
                 <input
                   type="text"
-                  name="learningNeeds"
-                  value={formData.learningNeeds}
+                  name="nhu_cau_hoc"
+                  value={formData.nhu_cau_hoc}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
                   placeholder="Ví dụ: Giao tiếp cơ bản, IELTS Academic, Business English"
@@ -298,30 +330,24 @@ export default function EditStudentForm({ student, onClose, onSuccess }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
-                    Khóa học quan tâm *
+                    Khóa học quan tâm
                   </label>
                   <select
-                    name="courseInterest"
-                    value={formData.courseInterest}
+                    name="khoa_hoc_quan_tam"
+                    value={formData.khoa_hoc_quan_tam}
                     onChange={handleChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
-                      errors.courseInterest
-                        ? "border-red-300"
-                        : "border-slate-300"
-                    }`}
+                    disabled={loadingCourses}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
                   >
-                    <option value="">Chọn khóa học</option>
-                    {courseOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
+                    <option value="">
+                      {loadingCourses ? "Đang tải..." : "Chọn khóa học"}
+                    </option>
+                    {courses.map((course) => (
+                      <option key={course.id} value={course.id}>
+                        {course.ten}
                       </option>
                     ))}
                   </select>
-                  {errors.courseInterest && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.courseInterest}
-                    </p>
-                  )}
                 </div>
 
                 <div>
@@ -329,8 +355,8 @@ export default function EditStudentForm({ student, onClose, onSuccess }) {
                     Trạng thái
                   </label>
                   <select
-                    name="status"
-                    value={formData.status}
+                    name="trang_thai"
+                    value={formData.trang_thai}
                     onChange={handleChange}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
                   >
@@ -348,15 +374,18 @@ export default function EditStudentForm({ student, onClose, onSuccess }) {
                   Lớp học
                 </label>
                 <select
-                  name="class"
-                  value={formData.class}
+                  name="lop_hoc"
+                  value={formData.lop_hoc}
                   onChange={handleChange}
+                  disabled={loadingClasses}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
                 >
-                  <option value="">Chọn lớp học</option>
-                  {classOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
+                  <option value="">
+                    {loadingClasses ? "Đang tải..." : "Chọn lớp học"}
+                  </option>
+                  {classes.map((classItem) => (
+                    <option key={classItem.id} value={classItem.id}>
+                      {classItem.name}
                     </option>
                   ))}
                 </select>
@@ -367,8 +396,8 @@ export default function EditStudentForm({ student, onClose, onSuccess }) {
                   Ghi chú
                 </label>
                 <textarea
-                  name="notes"
-                  value={formData.notes}
+                  name="ghi_chu"
+                  value={formData.ghi_chu}
                   onChange={handleChange}
                   rows={3}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
