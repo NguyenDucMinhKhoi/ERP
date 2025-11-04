@@ -61,6 +61,8 @@ class HocVienDetailSerializer(serializers.ModelSerializer):
     tuoi = serializers.ReadOnlyField()
     co_tai_khoan = serializers.ReadOnlyField()
     user_info = UserSerializer(source='user', read_only=True)
+    # include nested course object for detail view
+    khoa_hoc_quan_tam_detail = KhoaHocSummarySerializer(source='khoa_hoc_quan_tam', read_only=True)
 
     class Meta:
         model = HocVien

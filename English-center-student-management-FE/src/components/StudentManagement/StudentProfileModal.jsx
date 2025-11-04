@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   X,
   Edit,
@@ -10,8 +10,8 @@ import {
   User,
   Clock,
   CheckCircle,
-} from "lucide-react";
-import crmService from "../../services/crmService";
+} from 'lucide-react';
+import crmService from '../../services/crmService';
 
 export default function StudentProfileModal({ student, onClose, onEdit }) {
   const [studentData, setStudentData] = useState(null);
@@ -20,9 +20,9 @@ export default function StudentProfileModal({ student, onClose, onEdit }) {
 
   // Ngăn scroll khi mở popup
   useEffect(() => {
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = 'unset';
     };
   }, []);
 
@@ -30,15 +30,15 @@ export default function StudentProfileModal({ student, onClose, onEdit }) {
   useEffect(() => {
     const fetchStudentDetails = async () => {
       if (!student?.id) return;
-      
+
       try {
         setLoading(true);
         setError(null);
         const data = await crmService.getStudent(student.id);
         setStudentData(data);
       } catch (err) {
-        console.error("Error fetching student details:", err);
-        setError("Không thể tải thông tin học viên. Vui lòng thử lại.");
+        console.error('Error fetching student details:', err);
+        setError('Không thể tải thông tin học viên. Vui lòng thử lại.');
       } finally {
         setLoading(false);
       }
@@ -54,25 +54,25 @@ export default function StudentProfileModal({ student, onClose, onEdit }) {
 
   const getStatusBadge = (status) => {
     const statusColors = {
-      "cho_lop": "bg-yellow-100 text-yellow-800",
-      "dang_hoc": "bg-green-100 text-green-800",
-      "tam_dung": "bg-orange-100 text-orange-800",
-      "da_hoan_thanh": "bg-blue-100 text-blue-800",
-      "da_huy": "bg-red-100 text-red-800",
+      cho_lop: 'bg-yellow-100 text-yellow-800',
+      dang_hoc: 'bg-green-100 text-green-800',
+      tam_dung: 'bg-orange-100 text-orange-800',
+      da_hoan_thanh: 'bg-blue-100 text-blue-800',
+      da_huy: 'bg-red-100 text-red-800',
     };
 
     const statusLabels = {
-      "cho_lop": "Chờ lớp",
-      "dang_hoc": "Đang học",
-      "tam_dung": "Tạm dừng",
-      "da_hoan_thanh": "Đã hoàn thành",
-      "da_huy": "Đã hủy",
+      cho_lop: 'Chờ lớp',
+      dang_hoc: 'Đang học',
+      tam_dung: 'Tạm dừng',
+      da_hoan_thanh: 'Đã hoàn thành',
+      da_huy: 'Đã hủy',
     };
 
     return (
       <span
         className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-          statusColors[status] || "bg-gray-100 text-gray-800"
+          statusColors[status] || 'bg-gray-100 text-gray-800'
         }`}
       >
         {statusLabels[status] || status}
@@ -81,8 +81,8 @@ export default function StudentProfileModal({ student, onClose, onEdit }) {
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return "Chưa cập nhật";
-    return new Date(dateString).toLocaleDateString("vi-VN");
+    if (!dateString) return 'Chưa cập nhật';
+    return new Date(dateString).toLocaleDateString('vi-VN');
   };
 
   return (
@@ -92,11 +92,11 @@ export default function StudentProfileModal({ student, onClose, onEdit }) {
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
           <div className="flex items-center gap-4">
             <div className="h-16 w-16 bg-primary-main rounded-full flex items-center justify-center text-white text-xl font-bold">
-              {displayStudent.ten?.charAt(0)?.toUpperCase() || "?"}
+              {displayStudent.ten?.charAt(0)?.toUpperCase() || '?'}
             </div>
             <div>
               <h2 className="text-2xl font-bold text-slate-900">
-                {displayStudent.ten || "Chưa có tên"}
+                {displayStudent.ten || 'Chưa có tên'}
               </h2>
               <p className="text-slate-600">ID: {displayStudent.id}</p>
             </div>
@@ -124,7 +124,9 @@ export default function StudentProfileModal({ student, onClose, onEdit }) {
             <div className="flex items-center justify-center p-12">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-main mx-auto"></div>
-                <p className="mt-4 text-slate-600">Đang tải thông tin học viên...</p>
+                <p className="mt-4 text-slate-600">
+                  Đang tải thông tin học viên...
+                </p>
               </div>
             </div>
           ) : error ? (
@@ -152,7 +154,7 @@ export default function StudentProfileModal({ student, onClose, onEdit }) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-primary-main">
-                      {displayStudent.lop_hoc || "Chưa xếp lớp"}
+                      {displayStudent.lop_hoc || 'Chưa xếp lớp'}
                     </div>
                     <div className="text-sm text-slate-600">Lớp hiện tại</div>
                   </div>
@@ -199,7 +201,7 @@ export default function StudentProfileModal({ student, onClose, onEdit }) {
                           Số điện thoại
                         </div>
                         <div className="text-sm text-slate-600">
-                          {displayStudent.sdt || "Chưa cập nhật"}
+                          {displayStudent.sdt || 'Chưa cập nhật'}
                         </div>
                       </div>
                     </div>
@@ -211,7 +213,7 @@ export default function StudentProfileModal({ student, onClose, onEdit }) {
                           Email
                         </div>
                         <div className="text-sm text-slate-600">
-                          {displayStudent.email || "Chưa cập nhật"}
+                          {displayStudent.email || 'Chưa cập nhật'}
                         </div>
                       </div>
                     </div>
@@ -223,7 +225,7 @@ export default function StudentProfileModal({ student, onClose, onEdit }) {
                           Địa chỉ
                         </div>
                         <div className="text-sm text-slate-600">
-                          {displayStudent.dia_chi || "Chưa cập nhật"}
+                          {displayStudent.dia_chi || 'Chưa cập nhật'}
                         </div>
                       </div>
                     </div>
@@ -242,7 +244,7 @@ export default function StudentProfileModal({ student, onClose, onEdit }) {
                         Nhu cầu học
                       </div>
                       <div className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg">
-                        {displayStudent.nhu_cau_hoc || "Chưa cập nhật"}
+                        {displayStudent.nhu_cau_hoc || 'Chưa cập nhật'}
                       </div>
                     </div>
 
@@ -251,7 +253,8 @@ export default function StudentProfileModal({ student, onClose, onEdit }) {
                         Khóa học quan tâm
                       </div>
                       <div className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg">
-                        {displayStudent.khoa_hoc_quan_tam || "Chưa cập nhật"}
+                        {displayStudent.khoa_hoc_quan_tam_detail?.ten ||
+                          'Chưa cập nhật'}
                       </div>
                     </div>
 
@@ -260,7 +263,7 @@ export default function StudentProfileModal({ student, onClose, onEdit }) {
                         Lớp học
                       </div>
                       <div className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg">
-                        {displayStudent.lop_hoc || "Chưa xếp lớp"}
+                        {displayStudent.lop_hoc || 'Chưa xếp lớp'}
                       </div>
                     </div>
                   </div>
