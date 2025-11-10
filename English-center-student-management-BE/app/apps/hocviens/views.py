@@ -7,6 +7,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.views import APIView
 from django.db.models import Count
 from django.utils.timezone import now
+from django.apps import apps
 
 from app.core.permissions import CanManageStudents, IsOwnerOrStaff, CanManageCourses
 from .models import HocVien
@@ -116,12 +117,23 @@ class HocVienStatsView(APIView):
             first_of_month = now_ts.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
             students_this_month = HocVien.objects.filter(created_at__gte=first_of_month).count()
 
-            # per-course counts using unique students who attended classes of that course
-            # Count distinct students via LopHoc -> LichHoc -> DiemDanh -> hoc_vien
-            courses_qs = KhoaHoc.objects.annotate(
-                student_count=Count('lophoc__lichhoc__diemdanh__hoc_vien', distinct=True)
-            ).values('id', 'ten', 'student_count')
-            courses = list(courses_qs)
+            # --- CHANGED: compute student_count per KhoaHoc from enrollments (dangkykhoahoc) ---
+            # Use apps.get_model to load the enrollment model (avoid hardcoding class name)
+            DangKy = apps.get_model('dangky', 'dangkykhoahoc')
+            # aggregate unique students per khoahoc
+            enroll_counts = DangKy.objects.values('khoahoc').annotate(student_count=Count('hocvien', distinct=True))
+            enroll_map = {str(item['khoahoc']): item['student_count'] for item in enroll_counts}
+
+            # build courses list using enroll_map (falls back to 0)
+            courses_qs = KhoaHoc.objects.all().values('id', 'ten')
+            courses = []
+            for c in courses_qs:
+                cid = str(c['id'])
+                courses.append({
+                    'id': c['id'],
+                    'ten': c['ten'],
+                    'student_count': enroll_map.get(cid, 0)
+                })
 
             return Response({
                 "total_students": total_students,
