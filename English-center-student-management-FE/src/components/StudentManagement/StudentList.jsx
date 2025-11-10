@@ -16,7 +16,7 @@ const courseOptions = [
   { value: '4', label: 'TOEIC Intensive' },
 ];
 
-export default function StudentList({ onEdit, onViewProfile }) {
+export default function StudentList({ onEdit, onViewProfile, refreshTrigger }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [courseFilter, setCourseFilter] = useState('');
@@ -27,23 +27,23 @@ export default function StudentList({ onEdit, onViewProfile }) {
   const [error, setError] = useState(null);
 
   // Load students from API
-  useEffect(() => {
-    const loadStudents = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await crmService.getStudents();
-        setStudents(response.results || response || []);
-      } catch (err) {
-        console.error('Error loading students:', err);
-        setError('Không thể tải danh sách học viên. Vui lòng thử lại.');
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadStudents = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await crmService.getStudents();
+      setStudents(response.results || response || []);
+    } catch (err) {
+      console.error('Error loading students:', err);
+      setError('Không thể tải danh sách học viên. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadStudents();
-  }, []);
+  }, [refreshTrigger]);
 
   // Filter and search students
   const filteredStudents = useMemo(() => {

@@ -28,10 +28,10 @@ export default function EditStudentForm({ student, onClose, onSuccess }) {
     ngay_sinh: "",
     sdt: "",
     email: "",
-    dia_chi: "",
+    address: "",
     nhu_cau_hoc: "",
     khoa_hoc_quan_tam: "",
-    trang_thai: "chuadong",
+    trang_thai_hoc_phi: "chuadong",
     lop_hoc: "",
     ghi_chu: "",
   });
@@ -93,10 +93,10 @@ export default function EditStudentForm({ student, onClose, onSuccess }) {
         ngay_sinh: student.ngay_sinh || "",
         sdt: student.sdt || "",
         email: student.email || "",
-        dia_chi: student.dia_chi || "",
+        address: student.address || "",
         nhu_cau_hoc: student.nhu_cau_hoc || "",
         khoa_hoc_quan_tam: student.khoa_hoc_quan_tam || "",
-        trang_thai: student.trang_thai || "cho_lop",
+        trang_thai_hoc_phi: student.trang_thai_hoc_phi || "chuadong",
         lop_hoc: student.lop_hoc || "",
         ghi_chu: student.ghi_chu || "",
       });
@@ -162,10 +162,10 @@ export default function EditStudentForm({ student, onClose, onSuccess }) {
         ngay_sinh: formData.ngay_sinh,
         sdt: formData.sdt,
         email: formData.email,
-        dia_chi: formData.dia_chi,
+        address: formData.address,
         nhu_cau_hoc: formData.nhu_cau_hoc,
         khoa_hoc_quan_tam: formData.khoa_hoc_quan_tam,
-        trang_thai: formData.trang_thai,
+        trang_thai_hoc_phi: formData.trang_thai_hoc_phi,
         lop_hoc: formData.lop_hoc,
         ghi_chu: formData.ghi_chu,
       };
@@ -297,8 +297,8 @@ export default function EditStudentForm({ student, onClose, onSuccess }) {
                 </label>
                 <input
                   type="text"
-                  name="dia_chi"
-                  value={formData.dia_chi}
+                  name="address"
+                  value={formData.address}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
                   placeholder="Nhập địa chỉ"
@@ -355,8 +355,8 @@ export default function EditStudentForm({ student, onClose, onSuccess }) {
                     Trạng thái
                   </label>
                   <select
-                    name="trang_thai"
-                    value={formData.trang_thai}
+                    name="trang_thai_hoc_phi"
+                    value={formData.trang_thai_hoc_phi}
                     onChange={handleChange}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent"
                   >

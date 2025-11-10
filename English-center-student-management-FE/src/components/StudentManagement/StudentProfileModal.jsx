@@ -225,7 +225,7 @@ export default function StudentProfileModal({ student, onClose, onEdit }) {
                           Địa chỉ
                         </div>
                         <div className="text-sm text-slate-600">
-                          {displayStudent.dia_chi || 'Chưa cập nhật'}
+                          {displayStudent.address || 'Chưa cập nhật'}
                         </div>
                       </div>
                     </div>

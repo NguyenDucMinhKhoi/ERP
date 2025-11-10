@@ -27,6 +27,8 @@ export default function CRMpage() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   // Role
   const [role, setRole] = useState(null);
+  // Refresh trigger for student list
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     let mounted = true;
@@ -92,6 +94,11 @@ export default function CRMpage() {
     setShowProfileModal(false);
     setSelectedStudent(null);
   };
+  
+  const handleStudentSuccess = () => {
+    closeAll();
+    setRefreshTrigger(prev => prev + 1); // Trigger refresh
+  };
 
   const isAdmin = role === ROLES.ADMIN;
   // Fields staff can update per policy image: phone, status, class, notes
@@ -101,7 +108,7 @@ export default function CRMpage() {
     switch (activeTab) {
       case "students":
         return (
-          <StudentList onEdit={openEditStudent} onViewProfile={openProfile} />
+          <StudentList onEdit={openEditStudent} onViewProfile={openProfile} refreshTrigger={refreshTrigger} />
         );
       case "profile":
         return <StudentProfile student={selectedStudent} />;
@@ -109,7 +116,7 @@ export default function CRMpage() {
         return <CRMReports />;
       default:
         return (
-          <StudentList onEdit={openEditStudent} onViewProfile={openProfile} />
+          <StudentList onEdit={openEditStudent} onViewProfile={openProfile} refreshTrigger={refreshTrigger} />
         );
     }
   };
@@ -236,13 +243,13 @@ export default function CRMpage() {
       {activeTab === "students" && (
         <>
           {showAddForm && (
-            <AddStudentForm onClose={closeAll} onSuccess={closeAll} />
+            <AddStudentForm onClose={closeAll} onSuccess={handleStudentSuccess} />
           )}
           {showEditForm && selectedStudent && (
             <EditStudentForm
               student={selectedStudent}
               onClose={closeAll}
-              onSuccess={closeAll}
+              onSuccess={handleStudentSuccess}
               allowedFields={isAdmin ? null : staffAllowedFields}
             />
           )}
