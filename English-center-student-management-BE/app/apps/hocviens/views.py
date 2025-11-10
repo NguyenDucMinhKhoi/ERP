@@ -4,9 +4,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.views import APIView
+from django.db.models import Count
+from django.utils.timezone import now
 
-from app.core.permissions import CanManageStudents, IsOwnerOrStaff
+from app.core.permissions import CanManageStudents, IsOwnerOrStaff, CanManageCourses
 from .models import HocVien
+from app.apps.khoahocs.models import KhoaHoc
 from .serializers import (
     HocVienSerializer, HocVienCreateSerializer,
     HocVienUpdateSerializer, HocVienDetailSerializer
@@ -85,3 +89,44 @@ def hocvien_stats(request):
         'co_taikhoan': co_taikhoan,
         'khong_co_taikhoan': total_hocvien - co_taikhoan
     })
+
+
+class HocVienStatsView(APIView):
+    """
+    GET /api/hocviens/stats/
+    Returns:
+      {
+        "total_students": int,
+        "students_this_month": int,
+        "courses": [
+          { "id": "<khoahoc_id>", "ten": "Course name", "student_count": 12 },
+          ...
+        ]
+      }
+    """
+    permission_classes = [CanManageCourses]
+
+    def get(self, request):
+        try:
+            # total students
+            total_students = HocVien.objects.count()
+
+            # students created this month (use created_at from BaseModel)
+            now_ts = now()
+            first_of_month = now_ts.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            students_this_month = HocVien.objects.filter(created_at__gte=first_of_month).count()
+
+            # per-course counts using unique students who attended classes of that course
+            # Count distinct students via LopHoc -> LichHoc -> DiemDanh -> hoc_vien
+            courses_qs = KhoaHoc.objects.annotate(
+                student_count=Count('lophoc__lichhoc__diemdanh__hoc_vien', distinct=True)
+            ).values('id', 'ten', 'student_count')
+            courses = list(courses_qs)
+
+            return Response({
+                "total_students": total_students,
+                "students_this_month": students_this_month,
+                "courses": courses
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

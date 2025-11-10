@@ -44,6 +44,19 @@ class CRMService {
       throw error;
     }
   }
+
+  /**
+   * Lấy thống kê học viên (total, this month, per-course)
+   */
+  async getStudentStats(params = {}) {
+    try {
+      const { data } = await http.get('/hocviens/stats/', { params });
+      return data;
+    } catch (error) {
+      console.error('Error fetching student stats:', error);
+      throw error;
+    }
+  }
 }
 
 const crmService = new CRMService();
