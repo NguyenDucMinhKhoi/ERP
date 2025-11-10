@@ -18,6 +18,7 @@ class DiemDanh(BaseModel):
         on_delete=models.CASCADE,
         verbose_name='Học viên'
     )
+    thoi_gian = models.DateTimeField(blank=True, null=True, verbose_name='Thời gian điểm danh')
     trang_thai = models.CharField(
         max_length=20,
         choices=[

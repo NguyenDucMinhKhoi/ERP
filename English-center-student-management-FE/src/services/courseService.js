@@ -328,7 +328,7 @@ class CourseService {
     try {
       const dataToSend = scheduleData;
       console.log('dataToSend ', dataToSend);
-      
+
       const { data } = await http.post('/lichhocs/', dataToSend);
       return data;
     } catch (error) {
@@ -372,26 +372,8 @@ class CourseService {
    */
   async getClassSchedules(classId) {
     try {
-      // Remove "class_" prefix if present
-      const realClassId = typeof classId === "string" && classId.startsWith("class_")
-        ? classId.replace("class_", "")
-        : classId;
-
-      // Try to get schedules from the specific endpoint first
-      try {
-        const { data } = await http.get(`/lichhocs/class/${realClassId}/`);
-        return data;
-      } catch (endpointError) {
-        console.log("Class-specific endpoint not available, filtering from all schedules");
-        
-        // Fallback: Get all schedules and filter by class
-        const allSchedules = await this.getSchedules();
-        const classSchedules = (allSchedules.results || allSchedules).filter(
-          schedule => schedule.lop_hoc === parseInt(realClassId)
-        );
-        
-        return classSchedules;
-      }
+      const { data } = await http.get(`/lichhocs/class/${classId}/`);
+      return data;
     } catch (error) {
       console.error("Error fetching class schedules:", error);
       return [];
@@ -403,14 +385,16 @@ class CourseService {
   /**
    * Lưu điểm danh
    */
-  async saveAttendance(attendanceData) {
+  async saveAttendance({ attendance, scheduleId }) {
     try {
       // Mock save attendance - in real app this would be a separate API
-      console.log("Saving attendance:", attendanceData);
+      console.log("Saving attendance:", attendance);
 
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
+      await http.post(`/diemdanhs/`, {
+        hoc_vien: attendance,
+        lich_hoc: scheduleId
+      });
       return {
         success: true,
         message: "Điểm danh đã được lưu thành công"

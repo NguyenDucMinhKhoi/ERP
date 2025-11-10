@@ -2,6 +2,7 @@ from django.db import models
 from django.core.validators import RegexValidator
 from app.core.models import BaseModel
 from app.apps.users.models import User
+from app.apps.khoahocs.models import KhoaHoc  # add import
 
 
 class HocVien(BaseModel):
@@ -26,13 +27,23 @@ class HocVien(BaseModel):
         ],
         verbose_name='Số điện thoại'
     )
+    address = models.CharField(max_length=255, blank=True, null=True, verbose_name='Địa chỉ')
     ngay_sinh = models.DateField(verbose_name='Ngày sinh')
+    khoa_hoc_quan_tam = models.ForeignKey(
+        KhoaHoc,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Khóa học quan tâm',
+        related_name='interested_students'
+    )
     trang_thai_hoc_phi = models.CharField(
         max_length=20,
         choices=TRANG_THAI_HOC_PHI_CHOICES,
         default='chuadong',
         verbose_name='Trạng thái học phí'
     )
+    nhu_cau_hoc = models.TextField(blank=True, null=True, verbose_name='Ghi chú')
     ghi_chu = models.TextField(blank=True, null=True, verbose_name='Ghi chú')
     user = models.OneToOneField(
         User,

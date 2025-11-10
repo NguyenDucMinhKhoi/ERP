@@ -26,7 +26,7 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
 
- const getTeacherName = () => {
+  const getTeacherName = () => {
     if (!classData?.giang_vien) return 'Chưa có giáo viên';
     return classData.giang_vien.name || classData.giang_vien.username || 'N/A';
   };
@@ -62,7 +62,7 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
         const classSchedules = await courseService.getClassSchedules(
           classData.id
         );
-        
+
         console.log('Loaded schedules:', classSchedules);
         setSchedules(classSchedules || []);
 
@@ -120,6 +120,8 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
     setIsSubmitting(true);
 
     try {
+      console.log('typeof attendanceData ', typeof attendanceData);
+      console.log('attendanceData ', attendanceData);
       // Save attendance via API
       await courseService.saveAttendance({
         scheduleId: selectedSchedule.id,
@@ -138,13 +140,13 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Chưa có ngày học';
-    
+
     try {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) {
         return dateString; // Return original if can't parse
       }
-      
+
       return date.toLocaleDateString('vi-VN', {
         weekday: 'long',
         year: 'numeric',
@@ -269,7 +271,9 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
                       <select
                         value={selectedSchedule?.id || ''}
                         onChange={(e) => {
-                          const schedule = schedules.find(s => s.id.toString() === e.target.value);
+                          const schedule = schedules.find(
+                            (s) => s.id.toString() === e.target.value
+                          );
                           console.log('Selected schedule:', schedule);
                           setSelectedSchedule(schedule);
                         }}
@@ -277,20 +281,26 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
                       >
                         {schedules.map((schedule) => {
                           const dateField = schedule.ngay_hoc || schedule.date;
-                          const timeField = schedule.gio_bat_dau || schedule.time;
-                          
+                          const timeField =
+                            schedule.gio_bat_dau || schedule.time;
+
                           return (
                             <option key={schedule.id} value={schedule.id}>
-                              {dateField ? formatDate(dateField) : 'Chưa có ngày'} - {timeField || 'Chưa có giờ'}
+                              {dateField
+                                ? formatDate(dateField)
+                                : 'Chưa có ngày'}{' '}
+                              - {timeField || 'Chưa có giờ'}
                             </option>
                           );
                         })}
                       </select>
                     ) : (
-                      <p className="text-sm text-slate-500">Chưa có lịch học nào</p>
+                      <p className="text-sm text-slate-500">
+                        Chưa có lịch học nào
+                      </p>
                     )}
                   </div>
-                  
+
                   {selectedSchedule && (
                     <div className="p-4 bg-slate-50 rounded-lg">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -300,30 +310,39 @@ export default function AttendanceTracking({ classData, onClose, onSuccess }) {
                             <span>Ngày học</span>
                           </div>
                           <div className="text-base font-medium text-slate-900">
-                            {formatDate(selectedSchedule.ngay_hoc || selectedSchedule.date)}
+                            {formatDate(
+                              selectedSchedule.ngay_hoc || selectedSchedule.date
+                            )}
                           </div>
                         </div>
-                        
+
                         <div>
                           <div className="flex items-center gap-2 text-sm font-medium text-slate-500 mb-1">
                             <Clock className="h-4 w-4" />
                             <span>Thời gian</span>
                           </div>
                           <div className="text-base font-medium text-slate-900">
-                            {selectedSchedule.gio_bat_dau || selectedSchedule.time || 'Chưa có giờ bắt đầu'}
-                            {(selectedSchedule.gio_ket_thuc || selectedSchedule.endTime) && 
-                              ` - ${selectedSchedule.gio_ket_thuc || selectedSchedule.endTime}`
-                            }
+                            {selectedSchedule.gio_bat_dau ||
+                              selectedSchedule.time ||
+                              'Chưa có giờ bắt đầu'}
+                            {(selectedSchedule.gio_ket_thuc ||
+                              selectedSchedule.endTime) &&
+                              ` - ${
+                                selectedSchedule.gio_ket_thuc ||
+                                selectedSchedule.endTime
+                              }`}
                           </div>
                         </div>
-                        
-                        {(selectedSchedule.chu_de || selectedSchedule.topic) && (
+
+                        {(selectedSchedule.chu_de ||
+                          selectedSchedule.topic) && (
                           <div className="md:col-span-2">
                             <div className="text-sm font-medium text-slate-500 mb-1">
                               Chủ đề
                             </div>
                             <div className="text-base text-slate-900">
-                              {selectedSchedule.chu_de || selectedSchedule.topic}
+                              {selectedSchedule.chu_de ||
+                                selectedSchedule.topic}
                             </div>
                           </div>
                         )}
