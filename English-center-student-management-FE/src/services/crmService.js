@@ -98,6 +98,35 @@ class CRMService {
       throw error;
     }
   }
+
+  /**
+   * Get contact note for a lead (hoc_vien)
+   * @param {string} leadId
+   */
+  async getLeadContactNote(leadId) {
+    try {
+      const { data } = await http.get(`/hocviens/${leadId}/contact-note/`);
+      return data;
+    } catch (error) {
+      console.error('Error fetching lead contact note:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create or update contact note for a lead
+   * @param {string} leadId
+   * @param {Object} payload - { content: "..." }
+   */
+  async saveLeadContactNote(leadId, payload) {
+    try {
+      const { data } = await http.post(`/hocviens/${leadId}/contact-note/`, payload);
+      return data;
+    } catch (error) {
+      console.error('Error saving lead contact note:', error);
+      throw error;
+    }
+  }
 }
 
 const crmService = new CRMService();

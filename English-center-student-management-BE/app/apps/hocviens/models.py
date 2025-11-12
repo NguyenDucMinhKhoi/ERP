@@ -91,3 +91,24 @@ class HocVien(BaseModel):
     @property
     def co_tai_khoan(self):
         return self.user is not None
+
+# New model: one-to-one contact note for a lead/hocvien
+class LeadContactNote(BaseModel):
+    """
+    Store a single contact note per HocVien (lead). One-to-one relation to HocVien.
+    """
+    hoc_vien = models.OneToOneField(
+        HocVien,
+        on_delete=models.CASCADE,
+        related_name='contact_note',
+        verbose_name='Học viên'
+    )
+    content = models.TextField(blank=True, null=True, verbose_name='Nội dung liên hệ')
+
+    class Meta:
+        verbose_name = 'Ghi chú liên hệ'
+        verbose_name_plural = 'Ghi chú liên hệ'
+        db_table = 'erp_lead_contact_notes'
+
+    def __str__(self):
+        return f"Note for {self.hoc_vien.ten}"

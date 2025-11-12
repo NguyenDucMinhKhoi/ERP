@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import HocVien
+from .models import HocVien, LeadContactNote
 from app.apps.users.serializers import UserSerializer
 from app.apps.khoahocs.models import KhoaHoc
 
@@ -92,4 +92,16 @@ class HocVienDetailSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at', 'address', 'nhu_cau_hoc',
             'khoa_hoc_quan_tam', 'khoa_hoc_quan_tam_detail', 'sourced', 'concern_level'
         ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class LeadContactNoteSerializer(serializers.ModelSerializer):
+    """
+    Serializer for LeadContactNote
+    """
+    hoc_vien = serializers.PrimaryKeyRelatedField(queryset=HocVien.objects.all())
+
+    class Meta:
+        model = LeadContactNote
+        fields = ['id', 'hoc_vien', 'content', 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']

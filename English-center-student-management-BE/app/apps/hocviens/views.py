@@ -10,11 +10,10 @@ from django.utils.timezone import now
 from django.apps import apps
 
 from app.core.permissions import CanManageStudents, IsOwnerOrStaff, CanManageCourses
-from .models import HocVien
-from app.apps.khoahocs.models import KhoaHoc
+from .models import HocVien, LeadContactNote
 from .serializers import (
     HocVienSerializer, HocVienCreateSerializer,
-    HocVienUpdateSerializer, HocVienDetailSerializer
+    HocVienUpdateSerializer, HocVienDetailSerializer, LeadContactNoteSerializer
 )
 
 
@@ -207,3 +206,43 @@ class LeadsListCreateView(generics.ListCreateAPIView):
         if self.request.method == 'GET':
             return [CanManageStudents()]
         return [AllowAny()]
+
+
+class LeadContactNoteView(APIView):
+    """
+    GET /api/hocviens/<lead_id>/contact-note/  -> retrieve note (200 or 404)
+    POST /api/hocviens/<lead_id>/contact-note/ -> create or update note (returns note)
+    """
+    permission_classes = [CanManageStudents]  # restrict to staff; adjust as needed
+
+    def get_object(self, lead_id):
+        try:
+            return HocVien.objects.get(pk=lead_id)
+        except HocVien.DoesNotExist:
+            return None
+
+    def get(self, request, lead_id):
+        lead = self.get_object(lead_id)
+        if not lead:
+            return Response({"detail": "Lead not found."}, status=status.HTTP_404_NOT_FOUND)
+        note = getattr(lead, 'contact_note', None)
+        if not note:
+            return Response({}, status=status.HTTP_200_OK)
+        serializer = LeadContactNoteSerializer(note)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, lead_id):
+        lead = self.get_object(lead_id)
+        if not lead:
+            return Response({"detail": "Lead not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # allow create or update: if exists update, else create
+        note = getattr(lead, 'contact_note', None)
+        data = {'hoc_vien': str(lead.id), 'content': request.data.get('content', '')}
+        if note:
+            serializer = LeadContactNoteSerializer(note, data=data, partial=True)
+        else:
+            serializer = LeadContactNoteSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
