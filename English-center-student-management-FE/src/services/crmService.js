@@ -84,6 +84,20 @@ class CRMService {
       throw error;
     }
   }
+
+  /**
+   * Convert a lead to student (backend sets is_converted = true)
+   * @param {string} leadId - UUID of the HocVien record
+   */
+  async convertLead(leadId) {
+    try {
+      const { data } = await http.post(`/hocviens/leads/${leadId}/convert/`);
+      return data;
+    } catch (error) {
+      console.error('Error converting lead:', error);
+      throw error;
+    }
+  }
 }
 
 const crmService = new CRMService();

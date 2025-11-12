@@ -164,12 +164,37 @@ class LeadCreateView(APIView):
         return Response(out.data, status=status.HTTP_201_CREATED)
 
 
+class LeadConvertView(APIView):
+    """
+    POST /api/hocviens/leads/<pk>/convert/
+    Mark a lead as converted to a student (is_converted=True).
+    """
+    permission_classes = [CanManageStudents]
+
+    def post(self, request, pk):
+        try:
+            hv = HocVien.objects.get(pk=pk)
+        except HocVien.DoesNotExist:
+            return Response({"detail": "Lead not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # mark converted
+        hv.is_converted = True
+        # it's fine to keep created_as_lead as-is; if desired, ensure it's True
+        if not hv.created_as_lead:
+            hv.created_as_lead = False
+        hv.save()
+
+        serializer = HocVienSerializer(hv)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class LeadsListCreateView(generics.ListCreateAPIView):
     """
-    GET  /api/hocviens/leads/  -> list all records with created_as_lead=True (staff only)
+    GET  /api/hocviens/leads/  -> list all records with created_as_lead=True and not yet converted (staff only)
     POST /api/hocviens/leads/  -> create a new lead (public allowed)
     """
-    queryset = HocVien.objects.filter(created_as_lead=True)
+    # only leads created as leads and not yet converted to student
+    queryset = HocVien.objects.filter(created_as_lead=True, is_converted=False)
     # return full serializer for listing
     def get_serializer_class(self):
         if self.request.method == 'POST':

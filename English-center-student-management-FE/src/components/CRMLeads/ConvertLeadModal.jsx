@@ -1,11 +1,31 @@
 import React from "react";
 import { X, CheckCircle2 } from "lucide-react";
+import crmService from "../../services/crmService";
 
 export default function ConvertLeadModal({ lead, onClose, onSuccess }) {
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [error, setError] = React.useState(null);
+
   const submit = async () => {
-    await new Promise((r) => setTimeout(r, 700));
-    console.log("Convert lead:", lead);
-    onSuccess?.();
+    if (!lead?.id) {
+      setError("Không xác định lead.");
+      return;
+    }
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await crmService.convertLead(lead.id);
+      onSuccess?.();
+    } catch (err) {
+      console.error("Convert lead error:", err);
+      setError(
+        (err?.response && (err.response.data?.detail || JSON.stringify(err.response.data))) ||
+          err.message ||
+          "Có lỗi khi chuyển lead. Vui lòng thử lại."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -31,6 +51,7 @@ export default function ConvertLeadModal({ lead, onClose, onSuccess }) {
               <p className="text-slate-600 text-sm">
                 Dữ liệu sẽ được đồng bộ sang module Quản lý học viên.
               </p>
+              {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
             </div>
           </div>
           
@@ -44,9 +65,10 @@ export default function ConvertLeadModal({ lead, onClose, onSuccess }) {
             <button 
               onClick={submit} 
               className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-primary-main rounded-lg hover:bg-primary-dark transition-colors"
+              disabled={isSubmitting}
             >
               <CheckCircle2 className="h-4 w-4" />
-              Xác nhận
+              {isSubmitting ? "Đang xử lý..." : "Xác nhận"}
             </button>
           </div>
         </div>
