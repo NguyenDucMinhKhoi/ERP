@@ -1,6 +1,25 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 export default function Filters({ value, onChange }) {
+  // Set default dates: from = 1 month ago, to = today
+  useEffect(() => {
+    if (!value.from && !value.to) {
+      const today = new Date();
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(today.getMonth() - 1);
+
+      const formatDate = (date) => {
+        return date.toISOString().split('T')[0];
+      };
+
+      onChange({
+        ...value,
+        from: formatDate(oneMonthAgo),
+        to: formatDate(today)
+      });
+    }
+  }, []);
+
   return (
     <div className="bg-white rounded-lg border border-slate-200 p-4">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
