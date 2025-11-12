@@ -15,9 +15,7 @@ export default function CRMLeads() {
   const [showLog, setShowLog] = useState(false);
   const [showConvert, setShowConvert] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
-  const [leads, setLeads] = useState([]);
-  const [loadingLeads, setLoadingLeads] = useState(false);
-  const [leadsError, setLeadsError] = useState(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     let mounted = true;
@@ -36,31 +34,6 @@ export default function CRMLeads() {
     };
   }, []);
 
-  // Load leads (created_as_lead = true)
-  useEffect(() => {
-    let mounted = true;
-    const loadLeads = async () => {
-      setLoadingLeads(true);
-      setLeadsError(null);
-      try {
-        const data = await crmService.getLeads();
-        if (!mounted) return;
-        // data may be paginated or plain array depending on backend
-        const items = Array.isArray(data) ? data : (data.results || []);
-        setLeads(items);
-      } catch (err) {
-        console.error('Error loading leads:', err);
-        if (mounted) setLeadsError('Không thể tải danh sách leads');
-      } finally {
-        if (mounted) setLoadingLeads(false);
-      }
-    };
-    loadLeads();
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
   const canManageLeads = role === ROLES.ADMIN || role === ROLES.SALES_STAFF || role === ROLES.ACADEMIC_STAFF;
 
   const openAdd = () => setShowAdd(true);
@@ -74,6 +47,11 @@ export default function CRMLeads() {
     setShowLog(false);
     setShowConvert(false);
     setSelectedLead(null);
+  };
+
+  const handleLeadSuccess = () => {
+    closeAll();
+    setRefreshTrigger(prev => prev + 1); // Trigger refresh
   };
 
   return (
@@ -98,38 +76,24 @@ export default function CRMLeads() {
         onSchedule={openSchedule}
         onLog={openLog}
         onConvert={openConvert}
-        leads={leads}
-        loadingLeads={loadingLeads}
-        leadsError={leadsError}
+        refreshTrigger={refreshTrigger}
       />
 
       {showAdd && (
         <AddLeadForm
           onClose={closeAll}
-          onSuccess={async () => {
-            closeAll();
-            // refresh leads after creating a new one
-            setLoadingLeads(true);
-            try {
-              const data = await crmService.getLeads();
-              setLeads(Array.isArray(data) ? data : (data.results || []));
-            } catch {
-              // ignore
-            } finally {
-              setLoadingLeads(false);
-            }
-          }}
+          onSuccess={handleLeadSuccess}
           createLead={crmService.createLead}
         />
       )}
       {showSchedule && selectedLead && (
-        <CareScheduleModal lead={selectedLead} onClose={closeAll} onSuccess={closeAll} />
+        <CareScheduleModal lead={selectedLead} onClose={closeAll} onSuccess={handleLeadSuccess} />
       )}
       {showLog && selectedLead && (
-        <InteractionLogModal lead={selectedLead} onClose={closeAll} onSuccess={closeAll} />
+        <InteractionLogModal lead={selectedLead} onClose={closeAll} onSuccess={handleLeadSuccess} />
       )}
       {showConvert && selectedLead && (
-        <ConvertLeadModal lead={selectedLead} onClose={closeAll} onSuccess={closeAll} />
+        <ConvertLeadModal lead={selectedLead} onClose={closeAll} onSuccess={handleLeadSuccess} />
       )}
     </div>
   );

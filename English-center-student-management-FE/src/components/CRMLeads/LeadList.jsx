@@ -3,7 +3,7 @@ import { Search, Filter, Phone, Mail, MessageSquare, Calendar, UserPlus, ArrowRi
 import { leadStages } from "./dummyData";
 import crmService from "../../services/crmService";
 
-export default function LeadList({ role, onSchedule, onLog, onConvert }) {
+export default function LeadList({ role, onSchedule, onLog, onConvert, refreshTrigger }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [stageFilter, setStageFilter] = useState("");
   const [leads, setLeads] = useState([]);
@@ -13,7 +13,7 @@ export default function LeadList({ role, onSchedule, onLog, onConvert }) {
   // load leads from backend
   useEffect(() => {
     let mounted = true;
-    const load = async () => {
+    const loadLeads = async () => {
       setLoading(true);
       setError(null);
       try {
@@ -52,9 +52,9 @@ export default function LeadList({ role, onSchedule, onLog, onConvert }) {
         if (mounted) setLoading(false);
       }
     };
-    load();
+    loadLeads();
     return () => { mounted = false; };
-  }, []);
+  }, [refreshTrigger]);
 
   const filtered = useMemo(() => {
     const source = leads;
@@ -131,7 +131,7 @@ export default function LeadList({ role, onSchedule, onLog, onConvert }) {
               <tr key={lead.id} className="hover:bg-slate-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-slate-900">{lead.name}</div>
-                  <div className="text-xs text-slate-500">#{lead.id} • {lead.createdAt}</div>
+                  <div className="text-xs text-slate-500">Tạo vào:   {lead.createdAt}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
                   <div className="flex items-center gap-2"><Phone className="h-3 w-3" />{lead.phone}</div>

@@ -34,6 +34,17 @@ export default function AddLeadForm({ onClose, onSuccess }) {
   const submit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
+    
+    console.log("Form data before submit:", formData);
+    
+    // Map frontend stage values to backend concern_level values
+    const stageMap = {
+      'new': 'moi',
+      'warm': 'quan_tam',
+      'hot': 'nong',
+      'lost': 'mat'
+    };
+    
     setIsSubmitting(true);
     setErrors((p) => ({ ...p, submit: "" }));
     try {
@@ -43,15 +54,18 @@ export default function AddLeadForm({ onClose, onSuccess }) {
         email: formData.email || null,
         nhu_cau_hoc: formData.interest || null,
         sourced: formData.source || null,
-        // map stage -> concern_level (frontend stage values should match backend keys; adjust if different)
-        concern_level: formData.stage || null,
+        // map stage -> concern_level with correct backend values
+        concern_level: stageMap[formData.stage] || 'moi',
         ghi_chu: formData.note || null,
         // explicitly mark created_as_lead (backend also sets this)
         created_as_lead: true,
         is_converted: false,
       };
+      
+      console.log("Payload to API:", payload);
 
       const res = await crmService.createLead(payload);
+      console.log("API response:", res);
       // success
       onSuccess?.(res);
     } catch (err) {
@@ -113,7 +127,12 @@ export default function AddLeadForm({ onClose, onSuccess }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Mức độ quan tâm</label>
-              <select name="stage" value={formData.stage} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg border-slate-300">
+              <select 
+                name="stage" 
+                value={formData.stage} 
+                onChange={handleChange} 
+                className="w-full px-3 py-2 border rounded-lg border-slate-300"
+              >
                 {leadStages.map((s) => (
                   <option key={s.value} value={s.value}>{s.label}</option>
                 ))}
