@@ -1,4 +1,6 @@
-import { client as http } from "./authService";
+import authService from "./authService";
+
+const http = authService.client;
 
 const notificationsService = {
   // Gửi thông báo mới
