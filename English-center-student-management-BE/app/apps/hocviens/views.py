@@ -10,7 +10,7 @@ from django.utils.timezone import now
 from django.apps import apps
 
 from app.core.permissions import CanManageStudents, IsOwnerOrStaff, CanManageCourses
-from .models import HocVien, LeadContactNote
+from .models import HocVien, LeadContactNote, KhoaHoc
 from .serializers import (
     HocVienSerializer, HocVienCreateSerializer,
     HocVienUpdateSerializer, HocVienDetailSerializer, LeadContactNoteSerializer
