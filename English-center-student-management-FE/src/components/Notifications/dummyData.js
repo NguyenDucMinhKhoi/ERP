@@ -5,8 +5,11 @@ export const students = [
 ];
 
 export const staff = [
-  { id: 201, name: "Phạm Quản Trị", phone: "0911111111", email: "admin@center.com" },
-  { id: 202, name: "Ngô Nhân Viên", phone: "0912222222", email: "nhanvien@center.com" },
+  { id: 201, name: "Phạm Quản Trị", phone: "0911111111", email: "admin@center.com", role: "admin", roleLabel: "Quản trị" },
+  { id: 202, name: "Ngô Học Vụ", phone: "0912222222", email: "hocvu@center.com", role: "hocvu", roleLabel: "Học vụ" },
+  { id: 203, name: "Trần Tài Chính", phone: "0913333333", email: "taichinh@center.com", role: "taichinh", roleLabel: "Tài chính" },
+  { id: 204, name: "Lê Chăm Sóc", phone: "0914444444", email: "chamsoc@center.com", role: "chamsoc", roleLabel: "Chăm sóc" },
+  { id: 205, name: "Hoàng Giảng Viên", phone: "0915555555", email: "gv@center.com", role: "giangvien", roleLabel: "Giảng viên" },
 ];
 
 export const courses = [
@@ -37,8 +40,10 @@ export const courses = [
 ];
 
 export const threads = [
-  { id: 101, studentId: 1, studentName: "Nguyễn Văn An", lastMessage: "Em muốn hỏi lịch thi", updatedAt: "2024-10-01" },
-  { id: 102, studentId: 2, studentName: "Trần Thị Bình", lastMessage: "Học phí đóng như thế nào?", updatedAt: "2024-10-02" },
+  { id: 101, studentId: 1, studentName: "Nguyễn Văn An", role: "student", roleLabel: null, lastMessage: "Em muốn hỏi lịch thi", updatedAt: "2024-10-01" },
+  { id: 102, studentId: 2, studentName: "Trần Thị Bình", role: "student", roleLabel: null, lastMessage: "Học phí đóng như thế nào?", updatedAt: "2024-10-02" },
+  { id: 103, studentId: 201, studentName: "Phạm Quản Trị", role: "admin", roleLabel: "Quản trị", lastMessage: "Cần hỗ trợ chức năng mới", updatedAt: "2024-10-03" },
+  { id: 104, studentId: 202, studentName: "Ngô Học Vụ", role: "hocvu", roleLabel: "Học vụ", lastMessage: "Báo cáo học viên tháng này", updatedAt: "2024-10-04" },
 ];
 
 
