@@ -1,6 +1,6 @@
 from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -162,3 +162,23 @@ class LeadCreateView(APIView):
         hv = serializer.save(is_converted=False, created_as_lead=True)
         out = HocVienSerializer(hv)
         return Response(out.data, status=status.HTTP_201_CREATED)
+
+
+class LeadsListCreateView(generics.ListCreateAPIView):
+    """
+    GET  /api/hocviens/leads/  -> list all records with created_as_lead=True (staff only)
+    POST /api/hocviens/leads/  -> create a new lead (public allowed)
+    """
+    queryset = HocVien.objects.filter(created_as_lead=True)
+    # return full serializer for listing
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return HocVienCreateSerializer
+        return HocVienSerializer
+
+    def get_permissions(self):
+        # GET: only staff/admin who can manage students
+        # POST: allow public lead creation
+        if self.request.method == 'GET':
+            return [CanManageStudents()]
+        return [AllowAny()]

@@ -71,6 +71,19 @@ class CRMService {
       throw error;
     }
   }
+
+  /**
+   * Lấy danh sách leads (created_as_lead = true)
+   */
+  async getLeads(params = {}) {
+    try {
+      const { data } = await http.get('/hocviens/leads/', { params });
+      return data;
+    } catch (error) {
+      console.error('Error fetching leads:', error);
+      throw error;
+    }
+  }
 }
 
 const crmService = new CRMService();

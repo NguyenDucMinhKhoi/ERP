@@ -15,6 +15,9 @@ export default function CRMLeads() {
   const [showLog, setShowLog] = useState(false);
   const [showConvert, setShowConvert] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
+  const [leads, setLeads] = useState([]);
+  const [loadingLeads, setLoadingLeads] = useState(false);
+  const [leadsError, setLeadsError] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -28,6 +31,31 @@ export default function CRMLeads() {
         if (mounted) setRole(null);
       }
     })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // Load leads (created_as_lead = true)
+  useEffect(() => {
+    let mounted = true;
+    const loadLeads = async () => {
+      setLoadingLeads(true);
+      setLeadsError(null);
+      try {
+        const data = await crmService.getLeads();
+        if (!mounted) return;
+        // data may be paginated or plain array depending on backend
+        const items = Array.isArray(data) ? data : (data.results || []);
+        setLeads(items);
+      } catch (err) {
+        console.error('Error loading leads:', err);
+        if (mounted) setLeadsError('Không thể tải danh sách leads');
+      } finally {
+        if (mounted) setLoadingLeads(false);
+      }
+    };
+    loadLeads();
     return () => {
       mounted = false;
     };
@@ -70,13 +98,27 @@ export default function CRMLeads() {
         onSchedule={openSchedule}
         onLog={openLog}
         onConvert={openConvert}
+        leads={leads}
+        loadingLeads={loadingLeads}
+        leadsError={leadsError}
       />
 
       {showAdd && (
         <AddLeadForm
           onClose={closeAll}
-          onSuccess={closeAll}
-          // provide createLead API method to the form
+          onSuccess={async () => {
+            closeAll();
+            // refresh leads after creating a new one
+            setLoadingLeads(true);
+            try {
+              const data = await crmService.getLeads();
+              setLeads(Array.isArray(data) ? data : (data.results || []));
+            } catch {
+              // ignore
+            } finally {
+              setLoadingLeads(false);
+            }
+          }}
           createLead={crmService.createLead}
         />
       )}

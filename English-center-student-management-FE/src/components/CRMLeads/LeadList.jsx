@@ -1,19 +1,74 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Search, Filter, Phone, Mail, MessageSquare, Calendar, UserPlus, ArrowRight } from "lucide-react";
-import { dummyLeads, leadStages } from "./dummyData";
+import { leadStages } from "./dummyData";
+import crmService from "../../services/crmService";
 
 export default function LeadList({ role, onSchedule, onLog, onConvert }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [stageFilter, setStageFilter] = useState("");
+  const [leads, setLeads] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // load leads from backend
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await crmService.getLeads();
+        const items = Array.isArray(data) ? data : (data.results || []);
+        if (!mounted) return;
+
+        // map backend HocVien -> UI lead shape
+        const mapStage = (c) => {
+          if (!c) return "new";
+          const m = String(c).toLowerCase();
+          if (m === "moi") return "new";
+          if (m === "quan_tam") return "warm";
+          if (m === "nong") return "hot";
+          if (m === "mat") return "lost";
+          return "new";
+        };
+
+        const mapped = items.map((lv) => ({
+          id: lv.id,
+          name: lv.ten || `${lv.ho || ''} ${lv.ten || ''}`.trim(),
+          phone: lv.sdt || '',
+          email: lv.email || '',
+          interest: lv.nhu_cau_hoc || '',
+          stage: mapStage(lv.concern_level),
+          source: lv.sourced || '',
+          createdAt: lv.created_at ? String(lv.created_at).split("T")[0] : '',
+          raw: lv
+        }));
+
+        setLeads(mapped);
+      } catch (err) {
+        console.error("Error loading leads:", err);
+        if (mounted) setError("Không thể tải danh sách lead");
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, []);
 
   const filtered = useMemo(() => {
-    return dummyLeads.filter((l) => {
+    const source = leads;
+    return source.filter((l) => {
       const s = searchTerm.toLowerCase();
-      const okSearch = l.name.toLowerCase().includes(s) || l.phone.includes(searchTerm) || l.email.toLowerCase().includes(s) || (l.interest || "").toLowerCase().includes(s);
+      const okSearch =
+        (l.name || "").toLowerCase().includes(s) ||
+        (l.phone || "").includes(searchTerm) ||
+        (l.email || "").toLowerCase().includes(s) ||
+        ((l.interest || "").toLowerCase().includes(s));
       const okStage = !stageFilter || l.stage === stageFilter;
       return okSearch && okStage;
     });
-  }, [searchTerm, stageFilter]);
+  }, [leads, searchTerm, stageFilter]);
 
   const getStageBadge = (stage) => {
     const map = {
@@ -66,7 +121,13 @@ export default function LeadList({ role, onSchedule, onLog, onConvert }) {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-slate-200">
-            {filtered.map((lead) => (
+            {loading && (
+              <tr><td colSpan={6} className="px-6 py-4 text-center text-sm text-slate-600">Đang tải...</td></tr>
+            )}
+            {error && (
+              <tr><td colSpan={6} className="px-6 py-4 text-center text-sm text-red-600">{error}</td></tr>
+            )}
+            {!loading && !error && filtered.map((lead) => (
               <tr key={lead.id} className="hover:bg-slate-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-slate-900">{lead.name}</div>
