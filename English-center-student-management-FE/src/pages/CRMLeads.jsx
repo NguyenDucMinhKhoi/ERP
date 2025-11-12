@@ -6,6 +6,7 @@ import InteractionLogModal from "../components/CRMLeads/InteractionLogModal";
 import ConvertLeadModal from "../components/CRMLeads/ConvertLeadModal";
 import authService from "../services/authService";
 import { ROLES } from "../utils/permissions";
+import crmService from "../services/crmService";
 
 export default function CRMLeads() {
   const [role, setRole] = useState(null);
@@ -72,7 +73,12 @@ export default function CRMLeads() {
       />
 
       {showAdd && (
-        <AddLeadForm onClose={closeAll} onSuccess={closeAll} />
+        <AddLeadForm
+          onClose={closeAll}
+          onSuccess={closeAll}
+          // provide createLead API method to the form
+          createLead={crmService.createLead}
+        />
       )}
       {showSchedule && selectedLead && (
         <CareScheduleModal lead={selectedLead} onClose={closeAll} onSuccess={closeAll} />

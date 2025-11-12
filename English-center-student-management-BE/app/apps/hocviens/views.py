@@ -142,3 +142,23 @@ class HocVienStatsView(APIView):
             }, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class LeadCreateView(APIView):
+    """
+    Create a new Lead (a person not yet converted to student).
+    POST /api/hocviens/leads/
+    Accepts same payload as HocVienCreateSerializer (ten, email, sdt, ngay_sinh, address, etc.)
+    The created HocVien will have is_converted=False.
+    """
+    # Make public if you want leads created by unauthenticated sources;
+    # restrict with permission_classes = [IsAuthenticated] if you want only staff to create leads.
+    permission_classes = []
+
+    def post(self, request):
+        serializer = HocVienCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        # create as lead: mark created_as_lead True and is_converted False
+        hv = serializer.save(is_converted=False, created_as_lead=True)
+        out = HocVienSerializer(hv)
+        return Response(out.data, status=status.HTTP_201_CREATED)

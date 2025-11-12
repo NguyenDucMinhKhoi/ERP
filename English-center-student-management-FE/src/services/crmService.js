@@ -57,6 +57,20 @@ class CRMService {
       throw error;
     }
   }
+
+  /**
+   * Tạo lead mới (không phải student)
+   * @param {Object} leadData - { ten, email, sdt, ngay_sinh, address, nhu_cau_hoc, khoa_hoc_quan_tam, sourced, concern_level, ... }
+   */
+  async createLead(leadData) {
+    try {
+      const { data } = await http.post('/hocviens/leads/', leadData);
+      return data;
+    } catch (error) {
+      console.error('Error creating lead:', error);
+      throw error;
+    }
+  }
 }
 
 const crmService = new CRMService();

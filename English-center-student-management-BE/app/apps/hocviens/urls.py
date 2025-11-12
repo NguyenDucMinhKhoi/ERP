@@ -9,4 +9,5 @@ urlpatterns = [
     path('hocviens/<uuid:pk>/', views.HocVienDetailView.as_view(), name='hocvien-detail'),
     path('hocviens/me/', views.HocVienMyProfileView.as_view(), name='hocvien-me'),
     path('hocviens/stats/', HocVienStatsView.as_view(), name='hocvien-stats'),
+    path('hocviens/leads/', views.LeadCreateView.as_view(), name='hocvien-lead-create'),
 ]

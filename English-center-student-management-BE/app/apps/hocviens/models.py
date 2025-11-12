@@ -28,7 +28,7 @@ class HocVien(BaseModel):
         verbose_name='Số điện thoại'
     )
     address = models.CharField(max_length=255, blank=True, null=True, verbose_name='Địa chỉ')
-    ngay_sinh = models.DateField(verbose_name='Ngày sinh')
+    ngay_sinh = models.DateField(verbose_name='Ngày sinh', null=True, blank=True)
     khoa_hoc_quan_tam = models.ForeignKey(
         KhoaHoc,
         on_delete=models.SET_NULL,
@@ -36,6 +36,26 @@ class HocVien(BaseModel):
         blank=True,
         verbose_name='Khóa học quan tâm',
         related_name='interested_students'
+    )
+    is_converted = models.BooleanField(default=False, verbose_name='Đã chuyển đổi từ lead')
+    created_as_lead = models.BooleanField(default=False, verbose_name='Tạo như lead')
+
+    # New optional source field (e.g., "facebook", "instagram", "google")
+    sourced = models.CharField(max_length=64, blank=True, null=True, verbose_name='Nguồn')
+
+    # Concern level choices: Mới, Quan Tâm, Nóng, Mất
+    CONCERN_LEVEL_CHOICES = [
+        ('moi', 'Mới'),
+        ('quan_tam', 'Quan Tâm'),
+        ('nong', 'Nóng'),
+        ('mat', 'Mất'),
+    ]
+    concern_level = models.CharField(
+        max_length=16,
+        choices=CONCERN_LEVEL_CHOICES,
+        null=True,
+        blank=True,
+        verbose_name='Mức độ quan tâm'
     )
     trang_thai_hoc_phi = models.CharField(
         max_length=20,
