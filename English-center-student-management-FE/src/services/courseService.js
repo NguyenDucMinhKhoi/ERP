@@ -124,7 +124,7 @@ class CourseService {
         giang_vien: lophoc.giang_vien,
         teacherName: lophoc.giang_vien?.name || lophoc.giang_vien?.username || 'Chưa có giáo viên',
         room: lophoc.phong_hoc || `P${Math.floor(Math.random() * 20) + 1}`,
-        schedule: lophoc.lich_hoc || [],
+        schedule: lophoc.schedule || [],
         maxStudents: lophoc.si_so_toi_da || 20,
         currentStudents: lophoc.students?.length || 0,
         status: lophoc.trang_thai === 'dang_hoc' ? 'Đang học' : 'Đã kết thúc',
