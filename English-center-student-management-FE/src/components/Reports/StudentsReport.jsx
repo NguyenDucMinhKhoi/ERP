@@ -10,6 +10,8 @@ export default function StudentsReport({ filters, allStudents = [] }) {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [registrationTrendData, setRegistrationTrendData] = useState([]);
+  const [courseComparisonData, setCourseComparisonData] = useState([]);
 
   useEffect(() => {
     let mounted = true;
@@ -34,6 +36,45 @@ export default function StudentsReport({ filters, allStudents = [] }) {
     return () => { mounted = false; };
   }, []);
 
+  // New: load registration trend and course comparison
+  useEffect(() => {
+    let mounted = true;
+    const loadTrendAndCourses = async () => {
+      try {
+        // request date range from filters or last 30 days
+        const params = {};
+        if (filters?.from) params.from = filters.from;
+        if (filters?.to) params.to = filters.to;
+
+        const [trend, byCourse] = await Promise.all([
+          crmService.getRegistrationTrend(params),
+          crmService.getStudentCountByCourse()
+        ]);
+
+        if (!mounted) return;
+
+        // trend: [{date: 'YYYY-MM-DD', count: n}, ...] -> format for chart
+        const trendFormatted = (trend || []).map((d) => ({
+          date: new Date(d.date).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }),
+          students: d.count
+        }));
+        setRegistrationTrendData(trendFormatted);
+
+        // byCourse: [{id, ten, student_count}]
+        const courseDataFormatted = (byCourse || []).map((c) => ({
+          course: c.ten,
+          students: c.student_count
+        }));
+        setCourseComparisonData(courseDataFormatted);
+      } catch (err) {
+        console.error('Error loading trend or course data:', err);
+      }
+    };
+
+    loadTrendAndCourses();
+    return () => { mounted = false; };
+  }, [filters]);
+
   // Tính số học viên trong khoảng thời gian filter
   const studentsInFilterPeriod = React.useMemo(() => {
     if (!filters.from || !filters.to || !allStudents.length) {
@@ -52,34 +93,6 @@ export default function StudentsReport({ filters, allStudents = [] }) {
       return date >= fromDate && date <= toDate;
     }).length;
   }, [allStudents, filters.from, filters.to]);
-
-  // Mock data cho Line Chart - Học viên đăng ký theo ngày
-  const registrationTrendData = React.useMemo(() => {
-    // Mock data - sau này sẽ tính từ allStudents dựa trên filters
-    return [
-      { date: '01/11', students: 12 },
-      { date: '05/11', students: 19 },
-      { date: '10/11', students: 25 },
-      { date: '15/11', students: 32 },
-      { date: '20/11', students: 28 },
-      { date: '25/11', students: 35 },
-      { date: '30/11', students: 42 },
-    ];
-  }, [filters]);
-
-  // Mock data cho Bar Chart - Số lượng học viên theo khóa học
-  const courseComparisonData = React.useMemo(() => {
-    // Mock data - sau này sẽ tính từ allStudents dựa trên filters
-    return [
-      { course: 'IELTS 5.0-6.0', students: 45 },
-      { course: 'TOEIC', students: 38 },
-      { course: 'General English A1-A2', students: 52 },
-      { course: 'Business', students: 28 },
-      { course: 'IELTS 6.0-7.0', students: 35 },
-      { course: 'TOEFL 80-100', students: 30 },
-      { course: 'TOEIC 450-650', students: 22 },
-    ];
-  }, [filters]);
 
   return (
     <div className="space-y-4">

@@ -6,6 +6,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.views import APIView
 from django.db.models import Count
+from django.db.models.functions import TruncDate
+from django.db.models import Q
 from django.utils.timezone import now
 from django.apps import apps
 
@@ -246,3 +248,62 @@ class LeadContactNoteView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class StudentRegistrationTrendView(APIView):
+    """
+    GET /api/hocviens/registrations/?from=YYYY-MM-DD&to=YYYY-MM-DD
+    Returns daily counts of new students (not leads OR leads converted).
+    Response:
+      [{ "date": "2025-11-01", "count": 5 }, ...]
+    """
+    permission_classes = [CanManageStudents]
+
+    def get(self, request):
+        try:
+            qs = HocVien.objects.filter(
+                Q(created_as_lead=False) | Q(created_as_lead=True, is_converted=True)
+            )
+            # optional date range
+            from_date = request.query_params.get('from')
+            to_date = request.query_params.get('to')
+            if from_date:
+                qs = qs.filter(created_at__date__gte=from_date)
+            if to_date:
+                qs = qs.filter(created_at__date__lte=to_date)
+
+            daily = qs.annotate(day=TruncDate('created_at')).values('day').annotate(count=Count('id')).order_by('day')
+            result = [{'date': d['day'].strftime('%Y-%m-%d'), 'count': d['count']} for d in daily]
+            return Response(result, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class StudentCountByCourseView(APIView):
+    """
+    GET /api/hocviens/by-course/
+    Returns list of courses with student counts (based on enrollments).
+    Response:
+      [{ "id": "<khoahoc_id>", "ten": "Course name", "student_count": 12 }, ... ]
+    """
+    permission_classes = [CanManageCourses]
+
+    def get(self, request):
+        try:
+            # use enrollment model to count distinct students per khoahoc
+            DangKy = apps.get_model('dangky', 'dangkykhoahoc')
+            enroll_counts = DangKy.objects.values('khoahoc').annotate(student_count=Count('hocvien', distinct=True))
+            enroll_map = {str(item['khoahoc']): item['student_count'] for item in enroll_counts}
+
+            courses_qs = KhoaHoc.objects.all().values('id', 'ten')
+            courses = []
+            for c in courses_qs:
+                cid = str(c['id'])
+                courses.append({
+                    'id': c['id'],
+                    'ten': c['ten'],
+                    'student_count': enroll_map.get(cid, 0)
+                })
+            return Response(courses, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

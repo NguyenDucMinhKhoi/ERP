@@ -12,4 +12,6 @@ urlpatterns = [
     path('hocviens/leads/<uuid:pk>/convert/', views.LeadConvertView.as_view(), name='hocvien-lead-convert'),
     path('hocviens/<uuid:lead_id>/contact-note/', views.LeadContactNoteView.as_view(), name='hocvien-contact-note'),
     path('hocviens/stats/', HocVienStatsView.as_view(), name='hocvien-stats'),
+    path('hocviens/registrations/', views.StudentRegistrationTrendView.as_view(), name='hocvien-registrations'),
+    path('hocviens/by-course/', views.StudentCountByCourseView.as_view(), name='hocvien-by-course'),
 ]

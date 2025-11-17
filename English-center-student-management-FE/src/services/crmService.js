@@ -127,6 +127,33 @@ class CRMService {
       throw error;
     }
   }
+
+  /**
+   * Get registration trend aggregated by day.
+   * params: { from: 'YYYY-MM-DD', to: 'YYYY-MM-DD' }
+   */
+  async getRegistrationTrend(params = {}) {
+    try {
+      const { data } = await http.get('/hocviens/registrations/', { params });
+      return data;
+    } catch (error) {
+      console.error('Error fetching registration trend:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get student count grouped by course (khoahoc).
+   */
+  async getStudentCountByCourse(params = {}) {
+    try {
+      const { data } = await http.get('/hocviens/by-course/', { params });
+      return data;
+    } catch (error) {
+      console.error('Error fetching student count by course:', error);
+      throw error;
+    }
+  }
 }
 
 const crmService = new CRMService();
