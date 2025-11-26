@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { X, Save, Phone, Mail, User, Tag } from "lucide-react";
 import { leadStages } from "./dummyData";
+import crmService from '../../services/crmService';
 
 export default function AddLeadForm({ onClose, onSuccess }) {
   const [formData, setFormData] = useState({
@@ -33,11 +34,48 @@ export default function AddLeadForm({ onClose, onSuccess }) {
   const submit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
+    
+    console.log("Form data before submit:", formData);
+    
+    // Map frontend stage values to backend concern_level values
+    const stageMap = {
+      'new': 'moi',
+      'warm': 'quan_tam',
+      'hot': 'nong',
+      'lost': 'mat'
+    };
+    
     setIsSubmitting(true);
+    setErrors((p) => ({ ...p, submit: "" }));
     try {
-      await new Promise((r) => setTimeout(r, 800));
-      console.log("Create lead:", formData);
-      onSuccess?.();
+      const payload = {
+        ten: formData.name,
+        sdt: formData.phone,
+        email: formData.email || null,
+        nhu_cau_hoc: formData.interest || null,
+        sourced: formData.source || null,
+        // map stage -> concern_level with correct backend values
+        concern_level: stageMap[formData.stage] || 'moi',
+        ghi_chu: formData.note || null,
+        // explicitly mark created_as_lead (backend also sets this)
+        created_as_lead: true,
+        is_converted: false,
+      };
+      
+      console.log("Payload to API:", payload);
+
+      const res = await crmService.createLead(payload);
+      console.log("API response:", res);
+      // success
+      onSuccess?.(res);
+    } catch (err) {
+      console.error("Error creating lead:", err);
+      // attempt to extract API messages
+      const msg =
+        (err?.response && (err.response.data?.detail || JSON.stringify(err.response.data))) ||
+        err.message ||
+        "Có lỗi xảy ra khi tạo lead. Vui lòng thử lại.";
+      setErrors((p) => ({ ...p, submit: msg }));
     } finally {
       setIsSubmitting(false);
     }
@@ -54,6 +92,11 @@ export default function AddLeadForm({ onClose, onSuccess }) {
         </div>
 
         <form onSubmit={submit} className="p-6 space-y-6">
+          {errors.submit && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-sm text-red-600">{errors.submit}</p>
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Họ tên *</label>
@@ -84,7 +127,12 @@ export default function AddLeadForm({ onClose, onSuccess }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Mức độ quan tâm</label>
-              <select name="stage" value={formData.stage} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg border-slate-300">
+              <select 
+                name="stage" 
+                value={formData.stage} 
+                onChange={handleChange} 
+                className="w-full px-3 py-2 border rounded-lg border-slate-300"
+              >
                 {leadStages.map((s) => (
                   <option key={s.value} value={s.value}>{s.label}</option>
                 ))}

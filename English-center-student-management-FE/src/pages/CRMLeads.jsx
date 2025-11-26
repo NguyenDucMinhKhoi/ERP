@@ -6,6 +6,7 @@ import InteractionLogModal from "../components/CRMLeads/InteractionLogModal";
 import ConvertLeadModal from "../components/CRMLeads/ConvertLeadModal";
 import authService from "../services/authService";
 import { ROLES } from "../utils/permissions";
+import crmService from "../services/crmService";
 
 export default function CRMLeads() {
   const [role, setRole] = useState(null);
@@ -14,6 +15,7 @@ export default function CRMLeads() {
   const [showLog, setShowLog] = useState(false);
   const [showConvert, setShowConvert] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     let mounted = true;
@@ -47,6 +49,11 @@ export default function CRMLeads() {
     setSelectedLead(null);
   };
 
+  const handleLeadSuccess = () => {
+    closeAll();
+    setRefreshTrigger(prev => prev + 1); // Trigger refresh
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -69,19 +76,24 @@ export default function CRMLeads() {
         onSchedule={openSchedule}
         onLog={openLog}
         onConvert={openConvert}
+        refreshTrigger={refreshTrigger}
       />
 
       {showAdd && (
-        <AddLeadForm onClose={closeAll} onSuccess={closeAll} />
+        <AddLeadForm
+          onClose={closeAll}
+          onSuccess={handleLeadSuccess}
+          createLead={crmService.createLead}
+        />
       )}
       {showSchedule && selectedLead && (
-        <CareScheduleModal lead={selectedLead} onClose={closeAll} onSuccess={closeAll} />
+        <CareScheduleModal lead={selectedLead} onClose={closeAll} onSuccess={handleLeadSuccess} />
       )}
       {showLog && selectedLead && (
-        <InteractionLogModal lead={selectedLead} onClose={closeAll} onSuccess={closeAll} />
+        <InteractionLogModal lead={selectedLead} onClose={closeAll} onSuccess={handleLeadSuccess} />
       )}
       {showConvert && selectedLead && (
-        <ConvertLeadModal lead={selectedLead} onClose={closeAll} onSuccess={closeAll} />
+        <ConvertLeadModal lead={selectedLead} onClose={closeAll} onSuccess={handleLeadSuccess} />
       )}
     </div>
   );

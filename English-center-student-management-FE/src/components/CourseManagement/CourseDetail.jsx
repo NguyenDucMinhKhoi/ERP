@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { X, Book, Users, Clock, DollarSign, Calendar, User } from "lucide-react";
+import { X, Book, Users, Clock, DollarSign, Calendar, User, FileText, ExternalLink } from "lucide-react";
 import courseService from "../../services/courseService";
 
 export default function CourseDetail({ course, onClose }) {
@@ -13,8 +13,21 @@ export default function CourseDetail({ course, onClose }) {
         const response = await courseService.getClasses();
         const allClasses = response.results || [];
         
+        console.log('All classes:', allClasses);
+        console.log('Current course ID:', course.id);
+        
         // Filter classes for this course
-        const filteredClasses = allClasses.filter(cls => cls.courseId === course.id);
+        // Compare with course.id (remove "class_" prefix if present)
+        const courseIdToMatch = typeof course.id === 'string' && course.id.startsWith('class_') 
+          ? course.id.replace('class_', '') 
+          : course.id;
+        
+        const filteredClasses = allClasses.filter(cls => {
+          console.log('Comparing:', cls.courseId, 'with', courseIdToMatch);
+          return cls.courseId == courseIdToMatch; // Use == for flexible comparison
+        });
+        
+        console.log('Filtered classes:', filteredClasses);
         setCourseClasses(filteredClasses);
       } catch (error) {
         console.error('Error loading course classes:', error);
@@ -120,6 +133,27 @@ export default function CourseDetail({ course, onClose }) {
                     <p className="text-sm text-slate-600">{course.giang_vien || 'Chưa phân công'}</p>
                   </div>
                 </div>
+
+                {/* Giáo trình */}
+                {course.giao_trinh && (
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-5 w-5 text-slate-400" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-slate-700 mb-1">
+                        Giáo trình
+                      </p>
+                      <a
+                        href={course.giao_trinh}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-sm text-primary-main hover:text-primary-dark hover:underline cursor-pointer"
+                      >
+                        <span>Xem giáo trình</span>
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    </div>
+                  </div>
+                )}
 
                 {course.so_hoc_vien !== undefined && (
                   <div className="flex items-center gap-3">

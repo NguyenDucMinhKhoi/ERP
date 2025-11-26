@@ -6,11 +6,13 @@ import RevenueReport from "../components/Reports/RevenueReport";
 import CRMReport from "../components/Reports/CRMReport";
 import StatusReport from "../components/Reports/StatusReport";
 import authService from "../services/authService";
+import crmService from "../services/crmService";
 
 export default function Reports() {
   const [role, setRole] = useState(null);
   const [activeTab, setActiveTab] = useState("students");
   const [filters, setFilters] = useState({ from: "", to: "", course: "" });
+  const [allStudents, setAllStudents] = useState([]);
 
   useEffect(() => {
     let mounted = true;
@@ -29,6 +31,25 @@ export default function Reports() {
     };
   }, []);
 
+  // Load all students for filtering
+  useEffect(() => {
+    let mounted = true;
+    const loadAllStudents = async () => {
+      try {
+        const data = await crmService.getStudents();
+        if (mounted) {
+          setAllStudents(data.results || data || []);
+        }
+      } catch (error) {
+        console.error('Error loading all students:', error);
+      }
+    };
+    loadAllStudents();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const isAdmin = true;
 
   const tabs = [
@@ -41,7 +62,7 @@ export default function Reports() {
   const renderContent = () => {
     switch (activeTab) {
       case "students":
-        return <StudentsReport filters={filters} />;
+        return <StudentsReport filters={filters} allStudents={allStudents} />;
       case "revenue":
         return <RevenueReport filters={filters} />;
       case "crm":
@@ -49,7 +70,7 @@ export default function Reports() {
       case "status":
         return <StatusReport filters={filters} />;
       default:
-        return <StudentsReport filters={filters} />;
+        return <StudentsReport filters={filters} allStudents={allStudents} />;
     }
   };
 

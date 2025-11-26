@@ -1,17 +1,11 @@
 // Course Management API Service
 import authService from "./authService";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+// Sử dụng axios client từ authService để có auto refresh token
+const http = authService.client;
 
 class CourseService {
-  // Helper method để lấy headers với authentication
-  getHeaders() {
-    const token = authService.getAccessToken();
-    return {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-  }
+  // Không cần getHeaders() nữa vì axios interceptor tự động thêm token
 
   // ===== KHÓA HỌC (KhoaHoc) APIs =====
 
@@ -21,16 +15,8 @@ class CourseService {
    */
   async getCourses(params = {}) {
     try {
-      const queryString = new URLSearchParams(params).toString();
-      const response = await fetch(`${API_BASE_URL}/khoahocs/?${queryString}`, {
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.get('/khoahocs/', { params });
+      return data;
     } catch (error) {
       console.error("Error fetching courses:", error);
       throw error;
@@ -43,15 +29,8 @@ class CourseService {
    */
   async getCourse(courseId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/khoahocs/${courseId}/`, {
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.get(`/khoahocs/${courseId}/`);
+      return data;
     } catch (error) {
       console.error("Error fetching course:", error);
       throw error;
@@ -64,17 +43,8 @@ class CourseService {
    */
   async createCourse(courseData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/khoahocs/`, {
-        method: "POST",
-        headers: this.getHeaders(),
-        body: JSON.stringify(courseData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.post('/khoahocs/', courseData);
+      return data;
     } catch (error) {
       console.error("Error creating course:", error);
       throw error;
@@ -88,17 +58,8 @@ class CourseService {
    */
   async updateCourse(courseId, courseData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/khoahocs/${courseId}/`, {
-        method: "PUT",
-        headers: this.getHeaders(),
-        body: JSON.stringify(courseData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.put(`/khoahocs/${courseId}/`, courseData);
+      return data;
     } catch (error) {
       console.error("Error updating course:", error);
       throw error;
@@ -111,17 +72,8 @@ class CourseService {
    */
   async deleteCourse(courseId) {
     try {
-      const response = await fetch(`${API_BASE_URL}/khoahocs/${courseId}/`, {
-        method: "DELETE",
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      // DELETE thường trả về 204 No Content
-      return response.status === 204 ? true : await response.json();
+      const { data } = await http.delete(`/khoahocs/${courseId}/`);
+      return data;
     } catch (error) {
       console.error("Error deleting course:", error);
       throw error;
@@ -133,15 +85,8 @@ class CourseService {
    */
   async getCourseStats() {
     try {
-      const response = await fetch(`${API_BASE_URL}/khoahocs/stats/`, {
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.get('/khoahocs/stats/');
+      return data;
     } catch (error) {
       console.error("Error fetching course stats:", error);
       throw error;
@@ -153,83 +98,173 @@ class CourseService {
    */
   async getPublicCourses() {
     try {
-      const response = await fetch(`${API_BASE_URL}/khoahocs/public/`, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.get('/khoahocs/public/');
+      return data;
     } catch (error) {
       console.error("Error fetching public courses:", error);
       throw error;
     }
   }
 
-  // ===== LỚP HỌC (Class) APIs =====
-  // Sử dụng data từ đăng ký khóa học để mô phỏng lớp học
+  // ===== LỚP HỌC (Class) APIs - Updated =====
 
   /**
-   * Lấy danh sách "lớp học" (theo khóa học và trạng thái đăng ký)
+   * Lấy danh sách lớp học từ API
+   * @param {Object} params - Query parameters
    */
   async getClasses(params = {}) {
     try {
-      // Lấy danh sách khóa học và students đăng ký
-      const courses = await this.getCourses(params);
-      const enrollments = await this.getEnrollments();
-      
-      // Tạo mock classes từ data thật
-      const classes = courses.results?.map(course => ({
-        id: `class_${course.id}`,
-        courseId: course.id,
-        courseName: course.ten,
-        name: `Lớp ${course.ten}`,
-        teacherName: course.giang_vien,
-        room: `P${Math.floor(Math.random() * 20) + 1}`,
-        schedule: course.lich_hoc,
-        maxStudents: 20,
-        currentStudents: course.so_hoc_vien || 0,
-        status: course.trang_thai === 'mo' ? 'Đang học' : 'Đã kết thúc',
-        startDate: course.created_at,
-        students: enrollments.filter(e => e.khoahoc === course.id).map(e => e.hocvien),
-        price: course.hoc_phi,
-        description: course.mo_ta
+      const lophocsResponse = await this.fetchClass(params);
+
+      const classes = lophocsResponse.results?.map(lophoc => ({
+        id: `class_${lophoc.id}`,
+        courseId: lophoc.khoa_hoc, // ID của khóa học (foreign key)
+        courseName: lophoc.ten,
+        name: lophoc.ten,
+        giang_vien: lophoc.giang_vien,
+        teacherName: lophoc.giang_vien?.name || lophoc.giang_vien?.username || 'Chưa có giáo viên',
+        room: lophoc.phong_hoc || `P${Math.floor(Math.random() * 20) + 1}`,
+        schedule: lophoc.schedule || [],
+        maxStudents: lophoc.si_so_toi_da || 20,
+        currentStudents: lophoc.students?.length || 0,
+        status: lophoc.trang_thai === 'dang_hoc' ? 'Đang học' : 'Đã kết thúc',
+        startDate: lophoc.ngay_bat_dau || lophoc.created_at,
+        students: lophoc.students || [],
+        price: lophoc.hoc_phi,
+        description: lophoc.mo_ta
       })) || [];
 
       return { results: classes };
-    } catch (error) {
-      console.error("Error fetching classes:", error);
-      // Fallback to mock data if needed
+    } catch (fallbackError) {
+      console.error("Error in fallback:", fallbackError);
       return { results: [] };
     }
   }
 
+
   /**
-   * Tạo lớp học mới (thực chất là tạo khóa học)
+     * Fetch classes (LopHoc) from backend.
+     * This returns the raw LopHoc list (used by getClasses).
+     */
+  async fetchClass(params = {}) {
+    try {
+      const { data } = await http.get('/lophocs/', { params });
+      return data;
+    } catch (error) {
+      console.error("Error fetching classes (lophocs):", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Tạo lớp học mới
+   * @param {Object} classData - Dữ liệu lớp học
    */
   async createClass(classData) {
     try {
-      // Convert class data to course data format
-      const courseData = {
-        ten: classData.courseName || classData.name,
-        lich_hoc: classData.schedule,
-        giang_vien: classData.teacherName,
-        so_buoi: classData.sessions || 20,
-        hoc_phi: classData.price || 2000000,
-        mo_ta: classData.description,
-        trang_thai: 'mo'
-      };
-
-      return await this.createCourse(courseData);
+      const { data } = await http.post('/lophocs/', classData);
+      return data;
     } catch (error) {
       console.error("Error creating class:", error);
       throw error;
     }
   }
+
+  /**
+   * Cập nhật lớp học
+   * @param {string} classId - ID của lớp học
+   * @param {Object} classData - Dữ liệu cập nhật
+   */
+  async updateClass(classId, classData) {
+    try {
+      const { data } = await http.patch(`/lophocs/${classId}/`, classData);
+      return data;
+    } catch (error) {
+      console.error("Error updating class:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Xóa lớp học
+   * @param {string} classId - ID của lớp học
+   */
+  async deleteClass(classId) {
+    try {
+      const { data } = await http.delete(`/lophocs/${classId}/`);
+      return data;
+    } catch (error) {
+      console.error("Error deleting class:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Lấy danh sách học viên trong lớp
+   * @param {string} classId - ID của lớp học
+   */
+  async getClassStudents(classId) {
+    try {
+      const { data } = await http.get(`/lophocs/${classId}/students/`);
+      return data;
+    } catch (error) {
+      console.error("Error fetching class students:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Thêm học viên vào lớp
+   * @param {string} classId - ID của lớp học (may be prefixed with "class_")
+   * @param {string} studentId - ID của học viên
+   */
+  async addStudentToClass(classId, studentId) {
+    // Remove "class_" prefix if present
+    const realClassId = typeof classId === "string" && classId.startsWith("class_")
+      ? classId.replace("class_", "")
+      : classId;
+
+    const { data } = await http.post(`/lophocs/${realClassId}/add-student/`, {
+      student_id: studentId
+    });
+    return data;
+  }
+
+  /**
+   * Xóa học viên khỏi lớp
+   * @param {string} classId - ID của lớp học
+   * @param {string} studentId - ID của học viên
+   */
+  async removeStudentFromClass(classId, studentId) {
+    try {
+      const { data } = await http.delete(`/lophocs/${classId}/remove-student/${studentId}/`);
+      return data;
+    } catch (error) {
+      console.error("Error removing student from class:", error);
+      throw error;
+    }
+  }
+
+  // /**
+  //  * Lấy chi tiết lớp học
+  //  * @param {string} classId - ID của lớp học
+  //  */
+  // async getClassDetail(classId) {
+  //   try {
+  //     const response = await fetch(`${API_BASE_URL}/lophocs/${classId}/`, {
+  //       headers: this.getHeaders(),
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! status: ${response.status}`);
+  //     }
+
+  //     return await response.json();
+  //   } catch (error) {
+  //     console.error("Error fetching class detail:", error);
+  //     throw error;
+  //   }
+  // }
 
   // ===== ĐĂNG KÝ KHÓA HỌC APIs =====
 
@@ -238,16 +273,8 @@ class CourseService {
    */
   async getEnrollments(params = {}) {
     try {
-      const queryString = new URLSearchParams(params).toString();
-      const response = await fetch(`${API_BASE_URL}/dangky/?${queryString}`, {
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.get('/dangky/', { params });
+      return data;
     } catch (error) {
       console.error("Error fetching enrollments:", error);
       return { results: [] };
@@ -259,66 +286,115 @@ class CourseService {
    */
   async enrollStudent(enrollmentData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/dangky/`, {
-        method: "POST",
-        headers: this.getHeaders(),
-        body: JSON.stringify(enrollmentData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.post('/dangky/', enrollmentData);
+      return data;
     } catch (error) {
       console.error("Error creating enrollment:", error);
       throw error;
     }
   }
 
-  // ===== ATTENDANCE MANAGEMENT =====
+  // ===== LỊCH HỌC (Schedule) APIs =====
 
   /**
-   * Lấy lịch học của lớp (mock data)
+   * Lấy danh sách tất cả lịch học
+   * @param {Object} params - Query parameters
    */
-  async getClassSchedules(classId) {
+  async getSchedules(params = {}) {
     try {
-      // Mock schedules based on course data
-      const schedules = [];
-      const startDate = new Date();
-      
-      for (let i = 0; i < 10; i++) {
-        const date = new Date(startDate);
-        date.setDate(date.getDate() + (i * 3)); // Mỗi 3 ngày 1 buổi
-        
-        schedules.push({
-          id: `schedule_${classId}_${i}`,
-          classId: classId,
-          date: date.toISOString(),
-          time: "19:00-21:00",
-          topic: `Bài ${i + 1}: Chủ đề học tập`,
-          status: i < 3 ? 'completed' : 'scheduled'
-        });
-      }
-
-      return schedules;
+      const { data } = await http.get('/lichhocs/', { params });
+      return data;
     } catch (error) {
       console.error("Error fetching schedules:", error);
-      return [];
+      throw error;
     }
   }
 
   /**
+   * Tạo lịch học mới
+   * @param {Array} scheduleData - Mảng dữ liệu lịch học
+   * @example
+   * [
+   *   {
+   *     id: 1, // lớp học id
+   *     date: "2024-10-20",
+   *     time: "19:00",
+   *     topic: "Chủ đề bài học",
+   *     note: "Ghi chú"
+   *   }
+   * ]
+   */
+  async createSchedule(scheduleData) {
+    try {
+      const dataToSend = scheduleData;
+      console.log('dataToSend ', dataToSend);
+
+      const { data } = await http.post('/lichhocs/', dataToSend);
+      return data;
+    } catch (error) {
+      console.error("Error creating schedule:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Cập nhật lịch học
+   * @param {string} scheduleId - ID của lịch học
+   * @param {Object} scheduleData - Dữ liệu cập nhật
+   */
+  async updateSchedule(scheduleId, scheduleData) {
+    try {
+      const { data } = await http.patch(`/lichhocs/${scheduleId}/`, scheduleData);
+      return data;
+    } catch (error) {
+      console.error("Error updating schedule:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Xóa lịch học
+   * @param {string} scheduleId - ID của lịch học
+   */
+  async deleteSchedule(scheduleId) {
+    try {
+      const { data } = await http.delete(`/lichhocs/${scheduleId}/`);
+      return data;
+    } catch (error) {
+      console.error("Error deleting schedule:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Lấy lịch học của lớp
+   * @param {string} classId - ID của lớp học
+   */
+  async getClassSchedules(classId) {
+    try {
+      const { data } = await http.get(`/lichhocs/class/${classId}/`);
+      return data;
+    } catch (error) {
+      console.error("Error fetching class schedules:", error);
+      return [];
+    }
+  }
+
+  // ===== ATTENDANCE MANAGEMENT =====
+
+  /**
    * Lưu điểm danh
    */
-  async saveAttendance(attendanceData) {
+  async saveAttendance({ attendance, scheduleId }) {
     try {
       // Mock save attendance - in real app this would be a separate API
-      console.log("Saving attendance:", attendanceData);
-      
+      console.log("Saving attendance:", attendance);
+
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await http.post(`/diemdanhs/`, {
+        hoc_vien: attendance,
+        lich_hoc: scheduleId
+      });
       return {
         success: true,
         message: "Điểm danh đã được lưu thành công"
@@ -336,19 +412,24 @@ class CourseService {
    */
   async getStudents(params = {}) {
     try {
-      const queryString = new URLSearchParams(params).toString();
-      const response = await fetch(`${API_BASE_URL}/hocviens/?${queryString}`, {
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      const { data } = await http.get('/hocviens/', { params });
+      return data;
     } catch (error) {
       console.error("Error fetching students:", error);
       return { results: [] };
+    }
+  }
+
+  /**
+   * Lấy danh sách giáo viên
+   */
+  async getTeachers(params = {}) {
+    try {
+      const { data } = await http.get('/teachers/', { params });
+      return data;
+    } catch (error) {
+      console.error("Error fetching teachers:", error);
+      return [];
     }
   }
 

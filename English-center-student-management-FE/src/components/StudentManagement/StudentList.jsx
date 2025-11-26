@@ -1,49 +1,49 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { Search, Eye, Edit, Filter } from "lucide-react";
-import crmService from "../../services/crmService";
+import React, { useState, useMemo, useEffect } from 'react';
+import { Search, Eye, Edit, Filter } from 'lucide-react';
+import crmService from '../../services/crmService';
 
 // Options constants
 const statusOptions = [
-  { value: "dang_hoc", label: "Đang Học" },
-  { value: "nghi_hoc", label: "Nghỉ Học" },
-  { value: "hoan_thanh", label: "Hoàn Thành" },
+  { value: 'chuadong', label: 'Chưa Đóng' },
+  { value: 'dadong', label: 'Đã Đóng' },
+  { value: 'conno', label: 'Còn Nợ' },
 ];
 
 const courseOptions = [
-  { value: "1", label: "Tiếng Anh Cơ Bản" },
-  { value: "2", label: "Tiếng Anh Nâng Cao" },
-  { value: "3", label: "IELTS Preparation" },
-  { value: "4", label: "TOEIC Intensive" },
+  { value: '1', label: 'Tiếng Anh Cơ Bản' },
+  { value: '2', label: 'Tiếng Anh Nâng Cao' },
+  { value: '3', label: 'IELTS Preparation' },
+  { value: '4', label: 'TOEIC Intensive' },
 ];
 
-export default function StudentList({ onEdit, onViewProfile }) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [courseFilter, setCourseFilter] = useState("");
-  const [sortBy, setSortBy] = useState("ten");
-  const [sortOrder, setSortOrder] = useState("asc");
+export default function StudentList({ onEdit, onViewProfile, refreshTrigger }) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [courseFilter, setCourseFilter] = useState('');
+  const [sortBy, setSortBy] = useState('ten');
+  const [sortOrder, setSortOrder] = useState('asc');
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Load students from API
-  useEffect(() => {
-    const loadStudents = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await crmService.getStudents();
-        setStudents(response.results || response || []);
-      } catch (err) {
-        console.error("Error loading students:", err);
-        setError("Không thể tải danh sách học viên. Vui lòng thử lại.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const loadStudents = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await crmService.getStudents();
+      setStudents(response.results || response || []);
+    } catch (err) {
+      console.error('Error loading students:', err);
+      setError('Không thể tải danh sách học viên. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadStudents();
-  }, []);
+  }, [refreshTrigger]);
 
   // Filter and search students
   const filteredStudents = useMemo(() => {
@@ -67,15 +67,15 @@ export default function StudentList({ onEdit, onViewProfile }) {
       let bValue = b[sortBy];
 
       if (
-        sortBy === "dateOfBirth" ||
-        sortBy === "registrationDate" ||
-        sortBy === "lastContact"
+        sortBy === 'dateOfBirth' ||
+        sortBy === 'registrationDate' ||
+        sortBy === 'lastContact'
       ) {
         aValue = new Date(aValue);
         bValue = new Date(bValue);
       }
 
-      if (sortOrder === "asc") {
+      if (sortOrder === 'asc') {
         return aValue > bValue ? 1 : -1;
       } else {
         return aValue < bValue ? 1 : -1;
@@ -87,22 +87,22 @@ export default function StudentList({ onEdit, onViewProfile }) {
 
   const handleSort = (field) => {
     if (sortBy === field) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
       setSortBy(field);
-      setSortOrder("asc");
+      setSortOrder('asc');
     }
   };
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      dadong: { color: "bg-green-100 text-green-800", label: "Đã đóng" },
-      conno: { color: "bg-yellow-100 text-yellow-800", label: "Còn nợ" },
-      chuadong: { color: "bg-red-100 text-red-800", label: "Chưa đóng" },
+      dadong: { color: 'bg-green-100 text-green-800', label: 'Đã đóng' },
+      conno: { color: 'bg-yellow-100 text-yellow-800', label: 'Còn nợ' },
+      chuadong: { color: 'bg-red-100 text-red-800', label: 'Chưa đóng' },
     };
 
     const config = statusConfig[status] || {
-      color: "bg-gray-100 text-gray-800",
+      color: 'bg-gray-100 text-gray-800',
       label: status,
     };
 
@@ -197,64 +197,124 @@ export default function StudentList({ onEdit, onViewProfile }) {
             <tr>
               <th
                 className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100"
-                onClick={() => handleSort("ten")}
+                onClick={() => handleSort('ten')}
               >
-                Tên học viên
-                {sortBy === "ten" && (
+                <div className="whitespace-normal">Tên học viên</div>
+                {sortBy === 'ten' && (
                   <span className="ml-1">
-                    {sortOrder === "asc" ? "↑" : "↓"}
+                    {sortOrder === 'asc' ? '↑' : '↓'}
                   </span>
                 )}
               </th>
               <th
                 className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100"
-                onClick={() => handleSort("sdt")}
+                onClick={() => handleSort('sdt')}
               >
-                Số điện thoại
-                {sortBy === "sdt" && (
+                <div className="whitespace-normal">
+                  Số điện
+                  <br />
+                  thoại
+                </div>
+                {sortBy === 'sdt' && (
                   <span className="ml-1">
-                    {sortOrder === "asc" ? "↑" : "↓"}
+                    {sortOrder === 'asc' ? '↑' : '↓'}
                   </span>
                 )}
               </th>
               <th
                 className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100"
-                onClick={() => handleSort("email")}
+                onClick={() => handleSort('email')}
               >
-                Email
-                {sortBy === "email" && (
+                <div className="whitespace-normal">Email</div>
+                {sortBy === 'email' && (
                   <span className="ml-1">
-                    {sortOrder === "asc" ? "↑" : "↓"}
+                    {sortOrder === 'asc' ? '↑' : '↓'}
                   </span>
                 )}
               </th>
               <th
                 className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100"
-                onClick={() => handleSort("ghi_chu")}
+                onClick={() => handleSort('address')}
               >
-                Ghi chú
-                {sortBy === "ghi_chu" && (
+                <div className="whitespace-normal">Địa chỉ</div>
+                {sortBy === 'address' && (
                   <span className="ml-1">
-                    {sortOrder === "asc" ? "↑" : "↓"}
+                    {sortOrder === 'asc' ? '↑' : '↓'}
                   </span>
                 )}
               </th>
               <th
                 className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100"
-                onClick={() => handleSort("trang_thai_hoc_phi")}
+                onClick={() => handleSort('nhu_cau_hoc')}
               >
-                Trạng thái học phí
-                {sortBy === "trang_thai_hoc_phi" && (
+                <div className="whitespace-normal">
+                  Nhu cầu
+                  <br />
+                  học
+                </div>
+                {sortBy === 'nhu_cau_hoc' && (
                   <span className="ml-1">
-                    {sortOrder === "asc" ? "↑" : "↓"}
+                    {sortOrder === 'asc' ? '↑' : '↓'}
+                  </span>
+                )}
+              </th>
+              <th
+                className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100"
+                onClick={() => handleSort('khoa_hoc_quan_tam_detail?.ten')}
+              >
+                <div className="whitespace-normal">
+                  Khóa học
+                  <br />
+                  quan tâm
+                </div>
+                {sortBy === 'khoa_hoc_quan_tam_detail?.ten' && (
+                  <span className="ml-1">
+                    {sortOrder === 'asc' ? '↑' : '↓'}
+                  </span>
+                )}
+              </th>
+              <th
+                className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100"
+                onClick={() => handleSort('lop_hoc')}
+              >
+                <div className="whitespace-normal">Lớp học</div>
+                {sortBy === 'lop_hoc' && (
+                  <span className="ml-1">
+                    {sortOrder === 'asc' ? '↑' : '↓'}
+                  </span>
+                )}
+              </th>
+              <th
+                className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100"
+                onClick={() => handleSort('ghi_chu')}
+              >
+                <div className="whitespace-normal">Ghi chú</div>
+                {sortBy === 'ghi_chu' && (
+                  <span className="ml-1">
+                    {sortOrder === 'asc' ? '↑' : '↓'}
+                  </span>
+                )}
+              </th>
+              <th
+                className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100"
+                onClick={() => handleSort('trang_thai_hoc_phi')}
+              >
+                <div className="whitespace-normal">
+                  Trạng thái
+                  <br />
+                  học phí
+                </div>
+                {sortBy === 'trang_thai_hoc_phi' && (
+                  <span className="ml-1">
+                    {sortOrder === 'asc' ? '↑' : '↓'}
                   </span>
                 )}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                Tài khoản
+                <div className="whitespace-normal">Tài khoản</div>
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                Thao tác
+                <div className="whitespace-normal">Thao tác</div>
               </th>
             </tr>
           </thead>
@@ -266,7 +326,7 @@ export default function StudentList({ onEdit, onViewProfile }) {
                     {student.ten}
                   </div>
                   <div className="text-sm text-slate-500">
-                    {new Date(student.ngay_sinh).toLocaleDateString("vi-VN")}
+                    {new Date(student.ngay_sinh).toLocaleDateString('vi-VN')}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
@@ -275,14 +335,48 @@ export default function StudentList({ onEdit, onViewProfile }) {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
                   {student.email}
                 </td>
+                <td className="px-6 py-4 text-sm text-slate-900">
+                  <div className="max-w-xs truncate" title={student.address}>
+                    {student.address || '-'}
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-sm text-slate-900">
+                  <div
+                    className="max-w-xs truncate"
+                    title={student.nhu_cau_hoc}
+                  >
+                    {student.nhu_cau_hoc || '-'}
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-sm text-slate-900">
+                  <div
+                    className="max-w-xs truncate"
+                    title={student.khoa_hoc_quan_tam_detail?.ten}
+                  >
+                    {student.khoa_hoc_quan_tam_detail?.ten || '-'}
+                  </div>
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                  {student.ghi_chu || "-"}
+                  {student.lop_hoc ? (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {student.lop_hoc}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                      Chưa xếp lớp
+                    </span>
+                  )}
+                </td>
+                <td className="px-6 py-4 text-sm text-slate-900">
+                  <div className="max-w-xs truncate" title={student.ghi_chu}>
+                    {student.ghi_chu || '-'}
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {getStatusBadge(student.trang_thai_hoc_phi)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                  {student.co_tai_khoan ? "Có tài khoản" : "Chưa có"}
+                  {student.co_tai_khoan ? 'Có tài khoản' : 'Chưa có'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div className="flex items-center gap-2">
@@ -312,7 +406,7 @@ export default function StudentList({ onEdit, onViewProfile }) {
       <div className="px-6 py-3 bg-slate-50 border-t border-slate-200">
         <div className="flex items-center justify-between">
           <p className="text-sm text-slate-600">
-            Hiển thị {filteredStudents.length} trong tổng số {students.length}{" "}
+            Hiển thị {filteredStudents.length} trong tổng số {students.length}{' '}
             học viên
           </p>
         </div>

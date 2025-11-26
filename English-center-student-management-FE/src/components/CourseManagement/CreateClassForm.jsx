@@ -1,54 +1,103 @@
-import React, { useState } from "react";
-import { X, Save, BookOpen, User, Calendar, MapPin, Users } from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { X, Save, BookOpen, User, Calendar, MapPin, Users } from 'lucide-react';
+import courseService from '../../services/courseService';
 
 // Constants
 const daysOfWeek = [
-  { value: "monday", label: "Thứ 2" },
-  { value: "tuesday", label: "Thứ 3" },
-  { value: "wednesday", label: "Thứ 4" },
-  { value: "thursday", label: "Thứ 5" },
-  { value: "friday", label: "Thứ 6" },
-  { value: "saturday", label: "Thứ 7" },
-  { value: "sunday", label: "Chủ nhật" }
+  { value: 'monday', label: 'Thứ 2' },
+  { value: 'tuesday', label: 'Thứ 3' },
+  { value: 'wednesday', label: 'Thứ 4' },
+  { value: 'thursday', label: 'Thứ 5' },
+  { value: 'friday', label: 'Thứ 6' },
+  { value: 'saturday', label: 'Thứ 7' },
+  { value: 'sunday', label: 'Chủ nhật' },
 ];
 
 const timeSlots = [
-  "06:00", "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30",
-  "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30",
-  "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30",
-  "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"
-];
-
-// Temporary data - replace with API calls
-const dummyCourses = [
-  { id: 1, ten: "Tiếng Anh Cơ Bản" },
-  { id: 2, ten: "Tiếng Anh Nâng Cao" },
-  { id: 3, ten: "IELTS Preparation" },
-  { id: 4, ten: "TOEIC Intensive" }
-];
-
-const dummyTeachers = [
-  { id: 1, ten: "Nguyễn Văn A" },
-  { id: 2, ten: "Trần Thị B" },
-  { id: 3, ten: "Lê Văn C" },
-  { id: 4, ten: "Phạm Thị D" }
+  '06:00',
+  '06:30',
+  '07:00',
+  '07:30',
+  '08:00',
+  '08:30',
+  '09:00',
+  '09:30',
+  '10:00',
+  '10:30',
+  '11:00',
+  '11:30',
+  '12:00',
+  '12:30',
+  '13:00',
+  '13:30',
+  '14:00',
+  '14:30',
+  '15:00',
+  '15:30',
+  '16:00',
+  '16:30',
+  '17:00',
+  '17:30',
+  '18:00',
+  '18:30',
+  '19:00',
+  '19:30',
+  '20:00',
+  '20:30',
+  '21:00',
+  '21:30',
 ];
 
 export default function CreateClassForm({ onClose, onSuccess }) {
   const [formData, setFormData] = useState({
-    name: "",
-    courseId: "",
-    teacherId: "",
-    startDate: "",
-    endDate: "",
-    room: "",
-    maxStudents: "",
-    status: "Chờ mở lớp",
+    name: '',
+    courseId: '',
+    teacherId: '',
+    startDate: '',
+    endDate: '',
+    room: '',
+    maxStudents: '',
+    status: 'Chờ mở lớp',
     schedule: [],
   });
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [courses, setCourses] = useState([]);
+  const [teachers, setTeachers] = useState([]);
+  const [loadingCourses, setLoadingCourses] = useState(true);
+  const [loadingTeachers, setLoadingTeachers] = useState(true);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      setLoadingCourses(true);
+      try {
+        const response = await courseService.getCourses();
+        console.log('response ', response);
+        setCourses(response || []);
+      } catch (error) {
+        setCourses([]);
+      } finally {
+        setLoadingCourses(false);
+      }
+    };
+    fetchCourses();
+  }, []);
+
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      setLoadingTeachers(true);
+      try {
+        const response = await courseService.getTeachers();
+        setTeachers(response || []);
+      } catch (error) {
+        setTeachers([]);
+      } finally {
+        setLoadingTeachers(false);
+      }
+    };
+    fetchTeachers();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -61,7 +110,7 @@ export default function CreateClassForm({ onClose, onSuccess }) {
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
-        [name]: "",
+        [name]: '',
       }));
     }
   };
@@ -78,15 +127,7 @@ export default function CreateClassForm({ onClose, onSuccess }) {
   const addScheduleItem = () => {
     setFormData((prev) => ({
       ...prev,
-      schedule: [...prev.schedule, { day: "", time: "" }],
-    }));
-  };
-
-  const removeScheduleItem = (index) => {
-    const newSchedule = formData.schedule.filter((_, i) => i !== index);
-    setFormData((prev) => ({
-      ...prev,
-      schedule: newSchedule,
+      schedule: [...prev.schedule, { day: '', startTime: '', endTime: '' }],
     }));
   };
 
@@ -94,44 +135,50 @@ export default function CreateClassForm({ onClose, onSuccess }) {
     const newErrors = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "Tên lớp là bắt buộc";
+      newErrors.name = 'Tên lớp là bắt buộc';
     }
 
     if (!formData.courseId) {
-      newErrors.courseId = "Khóa học là bắt buộc";
+      newErrors.courseId = 'Khóa học là bắt buộc';
     }
 
     if (!formData.teacherId) {
-      newErrors.teacherId = "Giáo viên là bắt buộc";
+      newErrors.teacherId = 'Giáo viên là bắt buộc';
     }
 
     if (!formData.startDate) {
-      newErrors.startDate = "Ngày bắt đầu là bắt buộc";
+      newErrors.startDate = 'Ngày bắt đầu là bắt buộc';
     }
 
     if (!formData.endDate) {
-      newErrors.endDate = "Ngày kết thúc là bắt buộc";
+      newErrors.endDate = 'Ngày kết thúc là bắt buộc';
     }
 
     if (!formData.room.trim()) {
-      newErrors.room = "Phòng học là bắt buộc";
+      newErrors.room = 'Phòng học là bắt buộc';
     }
 
     if (!formData.maxStudents || formData.maxStudents < 1) {
-      newErrors.maxStudents = "Số học viên tối đa phải lớn hơn 0";
+      newErrors.maxStudents = 'Số học viên tối đa phải lớn hơn 0';
     }
 
     if (formData.schedule.length === 0) {
-      newErrors.schedule = "Lịch học là bắt buộc";
+      newErrors.schedule = 'Lịch học là bắt buộc';
     }
 
     // Validate schedule items
     formData.schedule.forEach((item, index) => {
       if (!item.day) {
-        newErrors[`schedule_${index}_day`] = "Ngày học là bắt buộc";
+        newErrors[`schedule_${index}_day`] = 'Ngày học là bắt buộc';
       }
-      if (!item.time) {
-        newErrors[`schedule_${index}_time`] = "Giờ học là bắt buộc";
+      if (!item.startTime) {
+        newErrors[`schedule_${index}_startTime`] = 'Giờ bắt đầu là bắt buộc';
+      }
+      if (!item.endTime) {
+        newErrors[`schedule_${index}_endTime`] = 'Giờ kết thúc là bắt buộc';
+      }
+      if (item.startTime && item.endTime && item.startTime >= item.endTime) {
+        newErrors[`schedule_${index}_endTime`] = 'Giờ kết thúc phải sau giờ bắt đầu';
       }
     });
 
@@ -149,15 +196,38 @@ export default function CreateClassForm({ onClose, onSuccess }) {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Prepare data for API - map field names to backend format
+      const apiData = {
+        ten: formData.name,
+        khoa_hoc: formData.courseId,
+        giang_vien: formData.teacherId,
+        ngay_bat_dau: formData.startDate,
+        ngay_ket_thuc: formData.endDate,
+        phong_hoc: formData.room,
+        so_hoc_vien_toi_da: parseInt(formData.maxStudents),
+        trang_thai: formData.status,
+        mo_ta: '',
+        // Send schedule with start and end time
+        schedule: formData.schedule.map(s => ({
+          day: s.day,
+          time: `${s.startTime}-${s.endTime}`
+        }))
+      };
 
-      // In real app, this would be an API call
-      console.log("Creating class:", formData);
+      console.log('Creating class with data:', apiData);
 
+      const response = await courseService.createClass(apiData);
+      
+      console.log('Class created successfully:', response);
+      
       onSuccess();
     } catch (error) {
-      console.error("Error creating class:", error);
+      console.error('Error creating class:', error);
+      
+      // Show error message to user
+      setErrors({
+        submit: error.message || 'Có lỗi xảy ra khi tạo lớp học. Vui lòng thử lại.'
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -199,7 +269,7 @@ export default function CreateClassForm({ onClose, onSuccess }) {
                   value={formData.name}
                   onChange={handleChange}
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
-                    errors.name ? "border-red-300" : "border-slate-300"
+                    errors.name ? 'border-red-300' : 'border-slate-300'
                   }`}
                   placeholder="Ví dụ: TOEIC-A1"
                 />
@@ -217,13 +287,14 @@ export default function CreateClassForm({ onClose, onSuccess }) {
                   value={formData.courseId}
                   onChange={handleChange}
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
-                    errors.courseId ? "border-red-300" : "border-slate-300"
+                    errors.courseId ? 'border-red-300' : 'border-slate-300'
                   }`}
+                  disabled={loadingCourses}
                 >
                   <option value="">Chọn khóa học</option>
-                  {dummyCourses.map((course) => (
+                  {courses.map((course) => (
                     <option key={course.id} value={course.id}>
-                      {course.name}
+                      {course.ten}
                     </option>
                   ))}
                 </select>
@@ -243,11 +314,12 @@ export default function CreateClassForm({ onClose, onSuccess }) {
                   value={formData.teacherId}
                   onChange={handleChange}
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
-                    errors.teacherId ? "border-red-300" : "border-slate-300"
+                    errors.teacherId ? 'border-red-300' : 'border-slate-300'
                   }`}
+                  disabled={loadingTeachers}
                 >
                   <option value="">Chọn giáo viên</option>
-                  {dummyTeachers.map((teacher) => (
+                  {teachers.map((teacher) => (
                     <option key={teacher.id} value={teacher.id}>
                       {teacher.name}
                     </option>
@@ -270,7 +342,7 @@ export default function CreateClassForm({ onClose, onSuccess }) {
                   value={formData.room}
                   onChange={handleChange}
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
-                    errors.room ? "border-red-300" : "border-slate-300"
+                    errors.room ? 'border-red-300' : 'border-slate-300'
                   }`}
                   placeholder="Ví dụ: Phòng A101"
                 />
@@ -291,7 +363,7 @@ export default function CreateClassForm({ onClose, onSuccess }) {
                   value={formData.startDate}
                   onChange={handleChange}
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
-                    errors.startDate ? "border-red-300" : "border-slate-300"
+                    errors.startDate ? 'border-red-300' : 'border-slate-300'
                   }`}
                 />
                 {errors.startDate && (
@@ -311,7 +383,7 @@ export default function CreateClassForm({ onClose, onSuccess }) {
                   value={formData.endDate}
                   onChange={handleChange}
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
-                    errors.endDate ? "border-red-300" : "border-slate-300"
+                    errors.endDate ? 'border-red-300' : 'border-slate-300'
                   }`}
                 />
                 {errors.endDate && (
@@ -330,7 +402,7 @@ export default function CreateClassForm({ onClose, onSuccess }) {
                   onChange={handleChange}
                   min="1"
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
-                    errors.maxStudents ? "border-red-300" : "border-slate-300"
+                    errors.maxStudents ? 'border-red-300' : 'border-slate-300'
                   }`}
                   placeholder="20"
                 />
@@ -344,7 +416,7 @@ export default function CreateClassForm({ onClose, onSuccess }) {
           </div>
 
           {/* Schedule */}
-          <div className="space-y-4">
+                 <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium text-slate-900 flex items-center gap-2">
                 <Calendar className="h-5 w-5" />
@@ -368,18 +440,18 @@ export default function CreateClassForm({ onClose, onSuccess }) {
                   <select
                     value={item.day}
                     onChange={(e) =>
-                      handleScheduleChange(index, "day", e.target.value)
+                      handleScheduleChange(index, 'day', e.target.value)
                     }
                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
                       errors[`schedule_${index}_day`]
-                        ? "border-red-300"
-                        : "border-slate-300"
+                        ? 'border-red-300'
+                        : 'border-slate-300'
                     }`}
                   >
                     <option value="">Chọn ngày</option>
                     {daysOfWeek.map((day) => (
-                      <option key={day} value={day}>
-                        {day}
+                      <option key={day.value} value={day.value}>
+                        {day.label}
                       </option>
                     ))}
                   </select>
@@ -392,26 +464,52 @@ export default function CreateClassForm({ onClose, onSuccess }) {
 
                 <div className="flex-1">
                   <select
-                    value={item.time}
+                    value={item.startTime || ''}
                     onChange={(e) =>
-                      handleScheduleChange(index, "time", e.target.value)
+                      handleScheduleChange(index, 'startTime', e.target.value)
                     }
                     className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
-                      errors[`schedule_${index}_time`]
-                        ? "border-red-300"
-                        : "border-slate-300"
+                      errors[`schedule_${index}_startTime`]
+                        ? 'border-red-300'
+                        : 'border-slate-300'
                     }`}
                   >
-                    <option value="">Chọn giờ</option>
+                    <option value="">Giờ bắt đầu</option>
                     {timeSlots.map((time) => (
                       <option key={time} value={time}>
                         {time}
                       </option>
                     ))}
                   </select>
-                  {errors[`schedule_${index}_time`] && (
+                  {errors[`schedule_${index}_startTime`] && (
                     <p className="mt-1 text-sm text-red-600">
-                      {errors[`schedule_${index}_time`]}
+                      {errors[`schedule_${index}_startTime`]}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex-1">
+                  <select
+                    value={item.endTime || ''}
+                    onChange={(e) =>
+                      handleScheduleChange(index, 'endTime', e.target.value)
+                    }
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
+                      errors[`schedule_${index}_endTime`]
+                        ? 'border-red-300'
+                        : 'border-slate-300'
+                    }`}
+                  >
+                    <option value="">Giờ kết thúc</option>
+                    {timeSlots.map((time) => (
+                      <option key={time} value={time}>
+                        {time}
+                      </option>
+                    ))}
+                  </select>
+                  {errors[`schedule_${index}_endTime`] && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors[`schedule_${index}_endTime`]}
                     </p>
                   )}
                 </div>
@@ -430,9 +528,13 @@ export default function CreateClassForm({ onClose, onSuccess }) {
               <p className="text-sm text-red-600">{errors.schedule}</p>
             )}
           </div>
-
-          {/* Actions */}
+         {/* Actions */}
           <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-200">
+            {/* Show submit error if exists */}
+            {errors.submit && (
+              <p className="flex-1 text-sm text-red-600">{errors.submit}</p>
+            )}
+            
             <button
               type="button"
               onClick={onClose}
@@ -446,7 +548,7 @@ export default function CreateClassForm({ onClose, onSuccess }) {
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-main border border-transparent rounded-lg hover:bg-primary-dark focus:ring-2 focus:ring-primary-main focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               <Save className="h-4 w-4" />
-              {isSubmitting ? "Đang tạo..." : "Tạo lớp học"}
+              {isSubmitting ? 'Đang tạo...' : 'Tạo lớp học'}
             </button>
           </div>
         </form>
