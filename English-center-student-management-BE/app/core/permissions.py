@@ -145,3 +145,59 @@ class CanManageCRM(permissions.BasePermission):
     def has_permission(self, request, view):
         return (request.user and request.user.is_authenticated and 
                 (request.user.is_admin or request.user.is_sales_staff))
+
+
+# === FINANCE PERMISSIONS ===
+
+class CanManageFinance(permissions.BasePermission):
+    """
+    Admin và Finance Staff có thể quản lý tài chính đầy đủ
+    """
+    def has_permission(self, request, view):
+        return (request.user and request.user.is_authenticated and 
+                (request.user.is_admin or request.user.is_finance_staff))
+
+
+class CanViewFinance(permissions.BasePermission):
+    """
+    Admin, Finance Staff, Academic Staff, Sales Staff có thể xem thống kê tài chính
+    """
+    def has_permission(self, request, view):
+        return (request.user and request.user.is_authenticated and 
+                request.user.role in ['admin', 'finance_staff', 'academic_staff', 'sales_staff'])
+
+
+class CanCreatePayment(permissions.BasePermission):
+    """
+    Admin, Finance Staff, Academic Staff có thể tạo thanh toán
+    """
+    def has_permission(self, request, view):
+        return (request.user and request.user.is_authenticated and 
+                request.user.role in ['admin', 'finance_staff', 'academic_staff'])
+
+
+class FinancePermission(permissions.BasePermission):
+    """
+    Custom permission cho Finance module
+    - Admin: Full CRUD
+    - Finance Staff: Full CRUD  
+    - Academic Staff: Read + Create
+    - Sales Staff: Read only
+    """
+    def has_permission(self, request, view):
+        if not (request.user and request.user.is_authenticated):
+            return False
+        
+        # Admin và Finance Staff có full quyền
+        if request.user.role in ['admin', 'finance_staff']:
+            return True
+            
+        # Academic Staff có thể xem và tạo
+        if request.user.role == 'academic_staff':
+            return request.method in ['GET', 'POST']
+            
+        # Sales Staff chỉ được xem
+        if request.user.role == 'sales_staff':
+            return request.method == 'GET'
+            
+        return False

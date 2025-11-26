@@ -1,91 +1,26 @@
 import React, { useState } from 'react';
 
-// Dummy data for debt management
-const generateDebtData = () => {
-  const students = [
-    {
-      id: 1,
-      name: 'Nguyễn Văn An',
-      code: 'HV001',
-      email: 'an.nguyen@email.com',
-      phone: '0901234567',
-      totalDebt: 2500000,
-      overdueDebt: 1000000,
-      nextDueDate: '2024-05-01',
-      status: 'overdue',
-      coursesOwed: ['IELTS Preparation'],
-      lastContact: '2024-04-15',
-      paymentHistory: 'Đã thanh toán 2/3 đợt',
-    },
-    {
-      id: 2,
-      name: 'Trần Thị Bình',
-      code: 'HV002',
-      email: 'binh.tran@email.com',
-      phone: '0901234568',
-      totalDebt: 1500000,
-      overdueDebt: 0,
-      nextDueDate: '2024-06-01',
-      status: 'due_soon',
-      coursesOwed: ['English Conversation A2'],
-      lastContact: '2024-04-20',
-      paymentHistory: 'Đã thanh toán 1/2 đợt',
-    },
-    {
-      id: 3,
-      name: 'Lê Minh Cường',
-      code: 'HV003',
-      email: 'cuong.le@email.com',
-      phone: '0901234569',
-      totalDebt: 3000000,
-      overdueDebt: 3000000,
-      nextDueDate: '2024-03-15',
-      status: 'overdue',
-      coursesOwed: ['Business English', 'IELTS Preparation'],
-      lastContact: '2024-03-10',
-      paymentHistory: 'Chưa thanh toán lần nào',
-    },
-    {
-      id: 4,
-      name: 'Phạm Thị Dung',
-      code: 'HV004',
-      email: 'dung.pham@email.com',
-      phone: '0901234570',
-      totalDebt: 500000,
-      overdueDebt: 0,
-      nextDueDate: '2024-05-15',
-      status: 'current',
-      coursesOwed: ['English for Beginners A1'],
-      lastContact: '2024-04-25',
-      paymentHistory: 'Đã thanh toán 90% học phí',
-    },
-    {
-      id: 5,
-      name: 'Hoàng Văn Ê',
-      code: 'HV005',
-      email: 'e.hoang@email.com',
-      phone: '0901234571',
-      totalDebt: 4000000,
-      overdueDebt: 2000000,
-      nextDueDate: '2024-04-01',
-      status: 'overdue',
-      coursesOwed: ['IELTS Preparation', 'Business English'],
-      lastContact: '2024-03-25',
-      paymentHistory: 'Đã thanh toán 1/3 đợt',
-    },
-  ];
-
-  return students;
-};
-
 const statusLabels = {
   overdue: { name: 'Quá hạn', color: 'red', bgColor: 'bg-red-100', textColor: 'text-red-800', priority: 1 },
   due_soon: { name: 'Sắp đến hạn', color: 'yellow', bgColor: 'bg-yellow-100', textColor: 'text-yellow-800', priority: 2 },
   current: { name: 'Trong hạn', color: 'green', bgColor: 'bg-green-100', textColor: 'text-green-800', priority: 3 },
+  paid: { name: 'Đã thanh toán', color: 'blue', bgColor: 'bg-blue-100', textColor: 'text-blue-800', priority: 4 },
 };
 
-const DebtManagement = ({ onContactStudent, onCreatePaymentReminder, onViewStudentDetail }) => {
-  const [students] = useState(generateDebtData());
+const DebtManagement = ({ 
+  onContactStudent, 
+  onCreatePaymentReminder, 
+  onViewStudentDetail,
+  students = [],
+  loading = false,
+  error = null,
+  stats = {
+    totalStudentsWithDebt: 0,
+    totalDebtAmount: 0,
+    totalOverdueAmount: 0,
+    overdueStudents: 0
+  }
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('debt_desc');
@@ -162,10 +97,10 @@ const DebtManagement = ({ onContactStudent, onCreatePaymentReminder, onViewStude
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedStudents = filteredStudents.slice(startIndex, startIndex + itemsPerPage);
 
-  // Statistics
-  const totalDebt = students.reduce((sum, student) => sum + student.totalDebt, 0);
-  const totalOverdue = students.reduce((sum, student) => sum + student.overdueDebt, 0);
-  const overdueCount = students.filter(s => s.status === 'overdue').length;
+  // Statistics - use API stats or calculate from students
+  const totalDebt = stats.totalDebtAmount || students.reduce((sum, student) => sum + student.totalDebt, 0);
+  const totalOverdue = stats.totalOverdueAmount || students.reduce((sum, student) => sum + student.overdueDebt, 0);
+  const overdueCount = stats.overdueStudents || students.filter(s => s.status === 'overdue').length;
   const dueSoonCount = students.filter(s => s.status === 'due_soon').length;
 
   const handleSelectStudent = (studentId, isSelected) => {
@@ -248,8 +183,17 @@ const DebtManagement = ({ onContactStudent, onCreatePaymentReminder, onViewStude
         </div>
       </div>
 
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-12">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <p className="mt-2 text-sm text-gray-500">Đang tải dữ liệu công nợ...</p>
+        </div>
+      )}
+
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {!loading && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-lg shadow border-l-4 border-red-500">
           <div className="flex items-center">
             <div className="p-2 bg-red-100 rounded-md">
@@ -305,10 +249,12 @@ const DebtManagement = ({ onContactStudent, onCreatePaymentReminder, onViewStude
             </div>
           </div>
         </div>
-      </div>
+        </div>
+      )}
 
       {/* Filters and Search */}
-      <div className="bg-white p-6 rounded-lg shadow">
+      {!loading && !error && (
+        <div className="bg-white p-6 rounded-lg shadow">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -369,10 +315,12 @@ const DebtManagement = ({ onContactStudent, onCreatePaymentReminder, onViewStude
             </button>
           </div>
         </div>
-      </div>
+        </div>
+      )}
 
       {/* Debt List */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      {!loading && !error && (
+        <div className="bg-white shadow rounded-lg overflow-hidden">
         <div className="overflow-x-auto finance-table-scrollbar">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -601,7 +549,8 @@ const DebtManagement = ({ onContactStudent, onCreatePaymentReminder, onViewStude
             </div>
           </div>
         )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

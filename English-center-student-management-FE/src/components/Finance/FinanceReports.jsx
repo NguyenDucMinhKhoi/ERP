@@ -1,70 +1,28 @@
 import React, { useState } from 'react';
 
-// Dummy data for reports
-const monthlyRevenue = [
-  { month: 'T1/2024', revenue: 25000000, payments: 12 },
-  { month: 'T2/2024', revenue: 30000000, payments: 15 },
-  { month: 'T3/2024', revenue: 28000000, payments: 14 },
-  { month: 'T4/2024', revenue: 35000000, payments: 18 },
-  { month: 'T5/2024', revenue: 40000000, payments: 20 },
-  { month: 'T6/2024', revenue: 32000000, payments: 16 },
-];
-
-const overdueCustomers = [
-  {
-    id: 1,
-    studentName: 'Hoàng Văn Minh',
-    studentCode: 'HV005',
-    courseName: 'Tiếng Anh Cơ bản A1',
-    totalFee: 2500000,
-    paidAmount: 1000000,
-    overdueAmount: 1500000,
-    daysPastDue: 15,
-    lastPaymentDate: '2024-01-10',
+const FinanceReports = ({ 
+  detailed = false, 
+  reportData = {
+    monthlyRevenue: [],
+    overdueCustomers: [],
+    arAging: [],
+    topCourses: [],
+    stats: {
+      totalRevenue: 0,
+      totalPayments: 0,
+      averageMonthlyRevenue: 0,
+      totalDebt: 0
+    }
   },
-  {
-    id: 2,
-    studentName: 'Nguyễn Thị Lan',
-    studentCode: 'HV006',
-    courseName: 'IELTS Preparation',
-    totalFee: 5000000,
-    paidAmount: 2500000,
-    overdueAmount: 2500000,
-    daysPastDue: 30,
-    lastPaymentDate: '2023-12-15',
-  },
-  {
-    id: 3,
-    studentName: 'Trần Quốc Khánh',
-    studentCode: 'HV007',
-    courseName: 'Tiếng Anh Giao tiếp A2',
-    totalFee: 3000000,
-    paidAmount: 0,
-    overdueAmount: 3000000,
-    daysPastDue: 45,
-    lastPaymentDate: null,
-  },
-];
-
-const arAging = [
-  { range: '0-30 ngày', amount: 15000000, count: 8 },
-  { range: '31-60 ngày', amount: 8000000, count: 4 },
-  { range: '61-90 ngày', amount: 5000000, count: 2 },
-  { range: '>90 ngày', amount: 3000000, count: 1 },
-];
-
-const topCourses = [
-  { courseName: 'IELTS Preparation', revenue: 25000000, students: 8 },
-  { courseName: 'Tiếng Anh Giao tiếp A2', revenue: 18000000, students: 12 },
-  { courseName: 'Tiếng Anh Cơ bản A1', revenue: 15000000, students: 15 },
-  { courseName: 'Tiếng Anh Trung cấp B1', revenue: 12000000, students: 6 },
-];
-
-const FinanceReports = ({ detailed = false }) => {
+  loading = false,
+  error = null,
+  onRefresh = () => {}
+}) => {
   const [selectedPeriod, setSelectedPeriod] = useState('6months');
   const [reportType, setReportType] = useState('revenue');
 
   const formatCurrency = (amount) => {
+    if (!amount) return '-';
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND'
@@ -76,9 +34,47 @@ const FinanceReports = ({ detailed = false }) => {
     return new Date(dateString).toLocaleDateString('vi-VN');
   };
 
-  const totalRevenue = monthlyRevenue.reduce((sum, month) => sum + month.revenue, 0);
-  const totalPayments = monthlyRevenue.reduce((sum, month) => sum + month.payments, 0);
-  const averageMonthlyRevenue = totalRevenue / monthlyRevenue.length;
+  const { monthlyRevenue, overdueCustomers, arAging, topCourses, stats } = reportData;
+  const { totalRevenue, totalPayments, averageMonthlyRevenue } = stats;
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <p className="mt-2 text-sm text-gray-500">Đang tải báo cáo...</p>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-md p-4">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <span className="text-red-400">⚠️</span>
+          </div>
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-red-800">
+              Lỗi tải báo cáo
+            </h3>
+            <div className="mt-2 text-sm text-red-700">
+              <p>{error}</p>
+            </div>
+            <div className="mt-4">
+              <button
+                onClick={onRefresh}
+                className="bg-red-100 px-3 py-1 rounded-md text-sm text-red-800 hover:bg-red-200"
+              >
+                Thử lại
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!detailed) {
     return (
@@ -108,7 +104,7 @@ const FinanceReports = ({ detailed = false }) => {
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Công nợ</span>
               <span className="text-lg font-semibold text-red-600">
-                {formatCurrency(31000000)}
+                {formatCurrency(stats.totalDebt)}
               </span>
             </div>
           </div>

@@ -1,35 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-// Dummy data
-const students = [
-  { id: 1, name: 'Nguyễn Văn An', code: 'HV001' },
-  { id: 2, name: 'Trần Thị Bình', code: 'HV002' },
-  { id: 3, name: 'Lê Minh Cường', code: 'HV003' },
-  { id: 4, name: 'Phạm Thị Dung', code: 'HV004' },
-];
-
-const courses = [
-  { id: 1, name: 'Tiếng Anh Cơ bản A1', fee: 2500000 },
-  { id: 2, name: 'Tiếng Anh Giao tiếp A2', fee: 3000000 },
-  { id: 3, name: 'Tiếng Anh Trung cấp B1', fee: 3500000 },
-  { id: 4, name: 'IELTS Preparation', fee: 5000000 },
-];
-
+// Payment methods constants
 const paymentMethods = [
-  { id: 'cash', name: 'Tiền mặt', icon: '💵' },
-  { id: 'transfer', name: 'Chuyển khoản', icon: '🏦' },
-  { id: 'card', name: 'Thẻ tín dụng', icon: '💳' },
-  { id: 'e-wallet', name: 'Ví điện tử', icon: '📱' },
+  { id: 'tienmat', name: 'Tiền mặt', icon: '💵' },
+  { id: 'chuyenkhoan', name: 'Chuyển khoản', icon: '🏦' },
+  { id: 'the', name: 'Thẻ', icon: '💳' },
 ];
 
-const PaymentForm = ({ onClose }) => {
+const PaymentForm = ({ 
+  onClose, 
+  onSuccess, 
+  students = [], 
+  onCreatePayment,
+  generateReceiptNumber,
+  validatePaymentData
+}) => {
   const [formData, setFormData] = useState({
-    studentId: '',
-    courseId: '',
-    amount: '',
-    paymentMethod: '',
-    description: '',
-    paymentDate: new Date().toISOString().split('T')[0],
+    hocvien: '',
+    so_tien: '',
+    hinh_thuc: '',
+    so_bien_lai: '',
+    ghi_chu: '',
   });
 
   const [errors, setErrors] = useState({});
@@ -38,14 +29,22 @@ const PaymentForm = ({ onClose }) => {
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [successData, setSuccessData] = useState(null);
 
-  const selectedCourse = courses.find(course => course.id === parseInt(formData.courseId));
+  // Generate receipt number on component mount
+  useEffect(() => {
+    if (generateReceiptNumber) {
+      setFormData(prev => ({
+        ...prev,
+        so_bien_lai: generateReceiptNumber()
+      }));
+    }
+  }, [generateReceiptNumber]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     
     // Special handling for amount field - remove dots for number formatting
     let processedValue = value;
-    if (name === 'amount') {
+    if (name === 'so_tien') {
       // Remove all dots from the input value
       processedValue = value.replace(/\./g, '');
     }
@@ -78,32 +77,19 @@ const PaymentForm = ({ onClose }) => {
   };
 
   const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.studentId) {
-      newErrors.studentId = 'Vui lòng chọn học viên';
+    if (validatePaymentData) {
+      const validation = validatePaymentData(formData);
+      setErrors(validation.errors);
+      return validation.isValid;
     }
-
-    if (!formData.courseId) {
-      newErrors.courseId = 'Vui lòng chọn khóa học';
-    }
-
-    if (!formData.amount) {
-      newErrors.amount = 'Vui lòng nhập số tiền';
-    } else if (isNaN(formData.amount) || parseFloat(formData.amount) <= 0) {
-      newErrors.amount = 'Số tiền phải là số dương';
-    }
-
-    if (!formData.paymentMethod) {
-      newErrors.paymentMethod = 'Vui lòng chọn phương thức thanh toán';
-    }
-
-    if (!formData.paymentDate) {
-      newErrors.paymentDate = 'Vui lòng chọn ngày thanh toán';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    // Simple validation fallback
+    const errors = {};
+    if (!formData.hocvien) errors.hocvien = 'Vui lòng chọn học viên';
+    if (!formData.so_tien) errors.so_tien = 'Vui lòng nhập số tiền';
+    if (!formData.hinh_thuc) errors.hinh_thuc = 'Vui lòng chọn hình thức thanh toán';
+    
+    setErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e) => {
@@ -116,27 +102,34 @@ const PaymentForm = ({ onClose }) => {
     setIsSubmitting(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Call API to create payment
+      const paymentData = {
+        ...formData,
+        so_tien: parseFloat(formData.so_tien)
+      };
       
-      console.log('Payment data:', formData);
+      if (onCreatePayment) {
+        await onCreatePayment(paymentData);
+      }
       
       // Prepare success data
-      const selectedStudent = students.find(s => s.id === parseInt(formData.studentId));
-      const selectedCourse = courses.find(c => c.id === parseInt(formData.courseId));
-      const selectedPaymentMethod = paymentMethods.find(m => m.id === formData.paymentMethod);
+      const selectedStudent = students.find(s => s.id === formData.hocvien);
+      const selectedPaymentMethod = paymentMethods.find(m => m.id === formData.hinh_thuc);
       
       setSuccessData({
-        studentName: selectedStudent?.name,
-        studentCode: selectedStudent?.code,
-        courseName: selectedCourse?.name,
-        amount: parseFloat(formData.amount),
+        studentName: selectedStudent?.ten || 'N/A',
+        amount: parseFloat(formData.so_tien),
         paymentMethod: selectedPaymentMethod?.name,
-        paymentDate: formData.paymentDate,
-        description: formData.description
+        receiptNumber: formData.so_bien_lai,
+        description: formData.ghi_chu
       });
       
       setShowSuccessDialog(true);
+      
+      // Call success callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       console.error('Error submitting payment:', error);
       setShowErrorDialog(true);
@@ -160,83 +153,52 @@ const PaymentForm = ({ onClose }) => {
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Student Selection */}
       <div>
-        <label htmlFor="studentId" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="hocvien" className="block text-sm font-medium text-gray-700">
           Học viên <span className="text-red-500">*</span>
         </label>
         <select
-          id="studentId"
-          name="studentId"
-          value={formData.studentId}
+          id="hocvien"
+          name="hocvien"
+          value={formData.hocvien}
           onChange={handleInputChange}
           className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-            errors.studentId ? 'border-red-300' : 'border-gray-300'
+            errors.hocvien ? 'border-red-300' : 'border-gray-300'
           }`}
         >
           <option value="">Chọn học viên</option>
           {students.map(student => (
             <option key={student.id} value={student.id}>
-              {student.code} - {student.name}
+              {student.ten}
             </option>
           ))}
         </select>
-        {errors.studentId && (
-          <p className="mt-1 text-sm text-red-600">{errors.studentId}</p>
-        )}
-      </div>
-
-      {/* Course Selection */}
-      <div>
-        <label htmlFor="courseId" className="block text-sm font-medium text-gray-700">
-          Khóa học <span className="text-red-500">*</span>
-        </label>
-        <select
-          id="courseId"
-          name="courseId"
-          value={formData.courseId}
-          onChange={handleInputChange}
-          className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-            errors.courseId ? 'border-red-300' : 'border-gray-300'
-          }`}
-        >
-          <option value="">Chọn khóa học</option>
-          {courses.map(course => (
-            <option key={course.id} value={course.id}>
-              {course.name} - {formatCurrency(course.fee)}
-            </option>
-          ))}
-        </select>
-        {errors.courseId && (
-          <p className="mt-1 text-sm text-red-600">{errors.courseId}</p>
-        )}
-        {selectedCourse && (
-          <p className="mt-1 text-sm text-blue-600">
-            Học phí khóa học: {formatCurrency(selectedCourse.fee)}
-          </p>
+        {errors.hocvien && (
+          <p className="mt-1 text-sm text-red-600">{errors.hocvien}</p>
         )}
       </div>
 
       {/* Payment Amount */}
       <div>
-        <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="so_tien" className="block text-sm font-medium text-gray-700">
           Số tiền thanh toán (VNĐ) <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
-          id="amount"
-          name="amount"
-          value={formData.amount ? formatNumberWithDots(formData.amount) : ''}
+          id="so_tien"
+          name="so_tien"
+          value={formData.so_tien ? formatNumberWithDots(formData.so_tien) : ''}
           onChange={handleInputChange}
           placeholder="0"
           className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-            errors.amount ? 'border-red-300' : 'border-gray-300'
+            errors.so_tien ? 'border-red-300' : 'border-gray-300'
           }`}
         />
-        {errors.amount && (
-          <p className="mt-1 text-sm text-red-600">{errors.amount}</p>
+        {errors.so_tien && (
+          <p className="mt-1 text-sm text-red-600">{errors.so_tien}</p>
         )}
-        {formData.amount && !isNaN(formData.amount) && (
+        {formData.so_tien && !isNaN(formData.so_tien) && (
           <p className="mt-1 text-sm text-green-600">
-            {formatCurrency(parseFloat(formData.amount))}
+            {formatCurrency(parseFloat(formData.so_tien))}
           </p>
         )}
       </div>
@@ -251,16 +213,16 @@ const PaymentForm = ({ onClose }) => {
             <label
               key={method.id}
               className={`relative flex cursor-pointer rounded-lg border p-4 focus:outline-none ${
-                formData.paymentMethod === method.id
+                formData.hinh_thuc === method.id
                   ? 'border-blue-600 ring-2 ring-blue-600'
                   : 'border-gray-300'
               }`}
             >
               <input
                 type="radio"
-                name="paymentMethod"
+                name="hinh_thuc"
                 value={method.id}
-                checked={formData.paymentMethod === method.id}
+                checked={formData.hinh_thuc === method.id}
                 onChange={handleInputChange}
                 className="sr-only"
               />
@@ -275,41 +237,42 @@ const PaymentForm = ({ onClose }) => {
             </label>
           ))}
         </div>
-        {errors.paymentMethod && (
-          <p className="mt-1 text-sm text-red-600">{errors.paymentMethod}</p>
+        {errors.hinh_thuc && (
+          <p className="mt-1 text-sm text-red-600">{errors.hinh_thuc}</p>
         )}
       </div>
 
-      {/* Payment Date */}
+      {/* Receipt Number */}
       <div>
-        <label htmlFor="paymentDate" className="block text-sm font-medium text-gray-700">
-          Ngày thanh toán <span className="text-red-500">*</span>
+        <label htmlFor="so_bien_lai" className="block text-sm font-medium text-gray-700">
+          Số biên lai <span className="text-red-500">*</span>
         </label>
         <input
-          type="date"
-          id="paymentDate"
-          name="paymentDate"
-          value={formData.paymentDate}
+          type="text"
+          id="so_bien_lai"
+          name="so_bien_lai"
+          value={formData.so_bien_lai}
           onChange={handleInputChange}
+          placeholder="Tự động tạo"
           className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-            errors.paymentDate ? 'border-red-300' : 'border-gray-300'
+            errors.so_bien_lai ? 'border-red-300' : 'border-gray-300'
           }`}
         />
-        {errors.paymentDate && (
-          <p className="mt-1 text-sm text-red-600">{errors.paymentDate}</p>
+        {errors.so_bien_lai && (
+          <p className="mt-1 text-sm text-red-600">{errors.so_bien_lai}</p>
         )}
       </div>
 
       {/* Description */}
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="ghi_chu" className="block text-sm font-medium text-gray-700">
           Ghi chú
         </label>
         <textarea
-          id="description"
-          name="description"
+          id="ghi_chu"
+          name="ghi_chu"
           rows={3}
-          value={formData.description}
+          value={formData.ghi_chu}
           onChange={handleInputChange}
           placeholder="Ghi chú thêm về khoản thanh toán này..."
           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
