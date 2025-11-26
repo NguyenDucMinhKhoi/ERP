@@ -154,6 +154,19 @@ class CRMService {
       throw error;
     }
   }
+
+  /**
+   * Get aggregated leads report (total, contacted, converted, by source)
+   */
+  async getLeadsReport(params = {}) {
+    try {
+      const { data } = await http.get('/hocviens/leads/report/', { params });
+      return data;
+    } catch (error) {
+      console.error('Error fetching leads report:', error);
+      throw error;
+    }
+  }
 }
 
 const crmService = new CRMService();

@@ -365,3 +365,44 @@ class StudentCountByCourseView(APIView):
             return Response(courses, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class HocVienLeadsReportView(APIView):
+    """
+    GET /api/hocviens/leads/report/
+    Returns:
+      {
+        "total_leads": int,
+        "contacted": int,
+        "converted": int,
+        "sources": [{"sourced": "Facebook", "count": 120}, ...]
+      }
+    """
+    permission_classes = [CanManageStudents]
+
+    def get(self, request):
+        try:
+            # total leads created as leads (regardless converted)
+            total_leads = HocVien.objects.filter(created_as_lead=True).count()
+
+            # total contact notes rows
+            contacted = LeadContactNote.objects.count()
+
+            # leads that were created as lead and converted to student
+            converted = HocVien.objects.filter(created_as_lead=True, is_converted=True).count()
+
+            # group by sourced (lead source) for created_as_lead=True
+            sources_qs = HocVien.objects.filter(created_as_lead=True).values('sourced').annotate(count=Count('id'))
+            sources = []
+            for s in sources_qs:
+                label = s['sourced'] or 'Khác'
+                sources.append({'sourced': label, 'count': s['count']})
+
+            return Response({
+                'total_leads': total_leads,
+                'contacted': contacted,
+                'converted': converted,
+                'sources': sources
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
