@@ -9,62 +9,59 @@ export default function StudentSchedule() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock data - replace with real API call
-    const mockSchedule = [
-      {
-        id: 1,
-        course: 'English Grammar Advanced',
-        teacher: 'Ms. Sarah Johnson',
-        room: 'Room 201',
-        date: '2024-01-15',
-        startTime: '14:00',
-        endTime: '16:00',
-        status: 'scheduled', // scheduled, completed, cancelled, in-progress
-        attendance: 'present', // present, absent, late
-        notes: 'Lesson: Present Perfect Tense'
-      },
-      {
-        id: 2,
-        course: 'Speaking Practice',
-        teacher: 'Mr. David Smith',
-        room: 'Room 105',
-        date: '2024-01-16',
-        startTime: '09:00',
-        endTime: '11:00',
-        status: 'completed',
-        attendance: 'present',
-        notes: 'Practice pronunciation and basic communication'
-      },
-      {
-        id: 3,
-        course: 'English Grammar Advanced',
-        teacher: 'Ms. Sarah Johnson',
-        room: 'Room 201',
-        date: '2024-01-17',
-        startTime: '14:00',
-        endTime: '16:00',
-        status: 'scheduled',
-        attendance: null,
-        notes: 'Lesson: Past Perfect Tense'
-      },
-      {
-        id: 4,
-        course: 'Speaking Practice',
-        teacher: 'Mr. David Smith',
-        room: 'Room 105',
-        date: '2024-01-18',
-        startTime: '09:00',
-        endTime: '11:00',
-        status: 'cancelled',
-        attendance: null,
-        notes: 'Class cancelled due to teacher sickness'
-      }
-    ];
+    const fetchSchedule = async () => {
+      try {
+        const token = localStorage.getItem('ecsm_access_token') || sessionStorage.getItem('ecsm_access_token');
+        const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-    setTimeout(() => {
-      setSchedule(mockSchedule);
-      setLoading(false);
-    }, 1000);
+        // Fetch enrollments first to get lop_hoc IDs
+        const enrollResponse = await fetch(`${API_BASE_URL}/dangky/me/`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!enrollResponse.ok) {
+          throw new Error('Failed to fetch enrollments');
+        }
+
+        const enrollments = await enrollResponse.json();
+        
+        // Fetch schedule for all classes
+        const schedulePromises = enrollments.map(async (enrollment) => {
+          if (!enrollment.lop_hoc) return [];
+          
+          const scheduleResponse = await fetch(
+            `${API_BASE_URL}/lichhocs/?lop_hoc=${enrollment.lop_hoc}`,
+            { headers: { 'Authorization': `Bearer ${token}` } }
+          );
+          
+          if (scheduleResponse.ok) {
+            const schedules = await scheduleResponse.json();
+            return schedules.map(s => ({
+              id: s.id,
+              course: enrollment.khoahoc?.ten || 'Course',
+              teacher: 'Teacher',
+              room: s.phong_hoc || 'TBD',
+              date: s.ngay_hoc,
+              startTime: s.gio_bat_dau,
+              endTime: s.gio_ket_thuc,
+              status: new Date(s.ngay_hoc) < new Date() ? 'completed' : 'scheduled',
+              attendance: null,
+              notes: s.noi_dung || ''
+            }));
+          }
+          return [];
+        });
+
+        const allSchedules = await Promise.all(schedulePromises);
+        setSchedule(allSchedules.flat());
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching schedule:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchSchedule();
   }, []);
 
   const handleDateChange = (newDate) => {

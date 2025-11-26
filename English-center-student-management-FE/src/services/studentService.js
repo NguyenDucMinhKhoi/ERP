@@ -1,26 +1,15 @@
 // Student-specific services
 import authService from './authService';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const http = authService.client;
 
 // Course Service
 export const courseService = {
   // Lấy danh sách khóa học của học viên
   async getMyCourses() {
     try {
-      const token = authService.getAccessToken();
-      const response = await fetch(`${API_BASE_URL}/student/courses`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch courses');
-      }
-
-      return await response.json();
+      const { data } = await http.get('/dangky/me/');
+      return data;
     } catch (error) {
       console.error('Error fetching courses:', error);
       throw error;
@@ -102,24 +91,30 @@ export const scheduleService = {
   // Lấy lịch học của học viên
   async getMySchedule(startDate, endDate) {
     try {
-      const token = authService.getAccessToken();
-      const params = new URLSearchParams({
-        startDate: startDate.toISOString().split('T')[0],
-        endDate: endDate.toISOString().split('T')[0],
-      });
-
-      const response = await fetch(`${API_BASE_URL}/student/schedule?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch schedule');
+      // Get enrollments first to get lop_hoc IDs
+      const enrollments = await http.get('/dangky/me/');
+      
+      // Get all schedules for enrolled classes
+      const schedules = [];
+      for (const enroll of enrollments.data) {
+        if (enroll.lop_hoc) {
+          const { data } = await http.get(`/lichhocs/?lop_hoc=${enroll.lop_hoc.id}`);
+          schedules.push(...data);
+        }
       }
-
-      return await response.json();
+      
+      // Filter by date range if provided
+      let filtered = schedules;
+      if (startDate || endDate) {
+        filtered = schedules.filter(item => {
+          const scheduleDate = new Date(item.ngay_hoc);
+          if (startDate && scheduleDate < startDate) return false;
+          if (endDate && scheduleDate > endDate) return false;
+          return true;
+        });
+      }
+      
+      return filtered;
     } catch (error) {
       console.error('Error fetching schedule:', error);
       throw error;
@@ -170,19 +165,8 @@ export const paymentService = {
   // Lấy thông tin thanh toán của học viên
   async getMyPayments() {
     try {
-      const token = authService.getAccessToken();
-      const response = await fetch(`${API_BASE_URL}/student/payments`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch payments');
-      }
-
-      return await response.json();
+      const { data } = await http.get('/thanhtoans/me/');
+      return data;
     } catch (error) {
       console.error('Error fetching payments:', error);
       throw error;

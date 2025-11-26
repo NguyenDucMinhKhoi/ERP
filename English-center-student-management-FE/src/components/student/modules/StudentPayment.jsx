@@ -10,65 +10,40 @@ export default function StudentPayment() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   useEffect(() => {
-    // Mock data - replace with real API call
-    const mockPayments = [
-      {
-        id: 1,
-        course: 'English Grammar Advanced',
-        amount: 2500000,
-        dueDate: '2024-01-15',
-        status: 'paid', // paid, pending, overdue
-        paymentDate: '2024-01-10',
-        paymentMethod: 'Bank transfer',
-        transactionId: 'TXN001234567',
-        description: 'Tuition fee for 01/2024'
-      },
-      {
-        id: 2,
-        course: 'Speaking Practice',
-        amount: 1800000,
-        dueDate: '2024-01-20',
-        status: 'pending',
-        paymentDate: null,
-        paymentMethod: null,
-        transactionId: null,
-        description: 'Tuition fee for 01/2024'
-      },
-      {
-        id: 3,
-        course: 'Business English',
-        amount: 3000000,
-        dueDate: '2023-12-15',
-        status: 'overdue',
-        paymentDate: null,
-        paymentMethod: null,
-        transactionId: null,
-        description: 'Tuition fee for 12/2023'
+    const fetchPayments = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/thanhtoans/me/`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('ecsm_access_token')}`,
+          },
+        });
+        const data = await response.json();
+        
+        const today = new Date();
+        
+        const formattedPayments = data.map(payment => ({
+          id: payment.id,
+          course: payment.dangky?.khoahoc?.ten || 'Unknown Course',
+          amount: payment.so_tien_thanh_toan || 0,
+          dueDate: payment.ngay_dong || payment.created_at,
+          status: payment.hinh_thuc === 'full' ? 'paid' : 
+                  new Date(payment.ngay_dong) < today ? 'overdue' : 'pending',
+          paymentDate: payment.ngay_thanh_toan || payment.ngay_dong,
+          paymentMethod: payment.hinh_thuc || 'N/A',
+          transactionId: payment.so_bien_lai || 'N/A',
+          description: `Học phí ${new Date(payment.created_at).toLocaleDateString('vi-VN')}`
+        }));
+        
+        setPayments(formattedPayments);
+        setUpcomingPayments([]); // BE doesn't have upcoming payments endpoint
+      } catch (error) {
+        console.error('Error fetching payments:', error);
+      } finally {
+        setLoading(false);
       }
-    ];
-
-    const mockUpcomingPayments = [
-      {
-        id: 4,
-        course: 'English Grammar Advanced',
-        amount: 2500000,
-        dueDate: '2024-02-15',
-        description: 'Tuition fee for 02/2024'
-      },
-      {
-        id: 5,
-        course: 'Speaking Practice',
-        amount: 1800000,
-        dueDate: '2024-02-20',
-        description: 'Tuition fee for 02/2024'
-      }
-    ];
-
-    setTimeout(() => {
-      setPayments(mockPayments);
-      setUpcomingPayments(mockUpcomingPayments);
-      setLoading(false);
-    }, 1000);
+    };
+    
+    fetchPayments();
   }, []);
 
   const formatCurrency = (amount) => {

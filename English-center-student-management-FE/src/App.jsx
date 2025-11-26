@@ -108,6 +108,10 @@ const MainRoute = () => {
       // Tài chính: Quản lý thanh toán và học phí
       return <Navigate to="/finance" replace />;
       
+    case ROLES.HOCVIEN:
+      // Học viên: Student portal
+      return <Navigate to="/student" replace />;
+      
     default:
       // Fallback: CRM page
       return <Navigate to="/crm" replace />;

@@ -3,35 +3,84 @@ import { User, Mail, Phone, MapPin, Calendar, Edit, Save, X, Lock, Eye, EyeOff, 
 import { ProfileForm } from '../index';
 
 export default function StudentProfile() {
-  const [profile, setProfile] = useState({
-    id: 1,
-    fullName: 'Nguyễn Văn An',
-    email: 'nguyenvanan@email.com',
-    phone: '0123456789',
-    address: '123 Đường ABC, Quận 1, TP.HCM',
-    dateOfBirth: '1995-05-15',
-    gender: 'male',
-    studentId: 'HV001234',
-    joinDate: '2023-09-01',
-    level: 'Intermediate',
-    courses: ['English Grammar Advanced', 'Speaking Practice'],
-    avatar: null
-  });
-
+  const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem('ecsm_access_token') || sessionStorage.getItem('ecsm_access_token');
+        const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+        // Fetch profile from real API
+        const response = await fetch(`${API_BASE_URL}/hocviens/me/`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch profile');
+        }
+
+        const data = await response.json();
+        
+        // Transform API data to component format
+        setProfile({
+          id: data.id,
+          fullName: data.ten || '',
+          email: data.email || '',
+          phone: data.sdt || '',
+          address: data.address || '',
+          dateOfBirth: data.ngay_sinh || '',
+          gender: 'male',
+          studentId: data.id,
+          joinDate: data.created_at?.split('T')[0] || '',
+          level: 'Intermediate',
+          courses: [],
+          avatar: null
+        });
+        
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const handleSaveProfile = async (profileData) => {
     setLoading(true);
     try {
-      // API call to save profile info
-      console.log('Saving profile:', profileData);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const token = localStorage.getItem('ecsm_access_token') || sessionStorage.getItem('ecsm_access_token');
+      const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+      // Update profile via API
+      const response = await fetch(`${API_BASE_URL}/hocviens/${profile.id}/`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ten: profileData.fullName,
+          email: profileData.email,
+          sdt: profileData.phone,
+          address: profileData.address,
+          ngay_sinh: profileData.dateOfBirth
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+
       setProfile(prev => ({ ...prev, ...profileData }));
       setIsEditing(false);
     } catch (error) {
       console.error('Error saving profile:', error);
+      alert('Không thể cập nhật thông tin. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }
@@ -46,25 +95,27 @@ export default function StudentProfile() {
   };
 
   function QuickStats() {
+    if (!profile) return null;
+    
     return (
       <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick stats</h3>
         <div className="space-y-3">
           <div className="flex justify-between">
             <span className="text-sm text-gray-600">Courses in progress:</span>
-            <span className="text-sm font-medium text-gray-900">2</span>
+            <span className="text-sm font-medium text-gray-900">{profile.courses?.length || 0}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-sm text-gray-600">Completed lessons:</span>
-            <span className="text-sm font-medium text-gray-900">15</span>
+            <span className="text-sm font-medium text-gray-900">-</span>
           </div>
           <div className="flex justify-between">
             <span className="text-sm text-gray-600">Total hours:</span>
-            <span className="text-sm font-medium text-gray-900">45h</span>
+            <span className="text-sm font-medium text-gray-900">-</span>
           </div>
           <div className="flex justify-between">
             <span className="text-sm text-gray-600">Attendance:</span>
-            <span className="text-sm font-medium text-green-600">95%</span>
+            <span className="text-sm font-medium text-green-600">-</span>
           </div>
         </div>
       </div>
@@ -97,6 +148,22 @@ export default function StudentProfile() {
           <p>• Log out after use</p>
           <p>• Update information regularly</p>
         </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-main"></div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-600">Không thể tải thông tin cá nhân</p>
       </div>
     );
   }

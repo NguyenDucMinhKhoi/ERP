@@ -7,10 +7,11 @@ export const ROLES = {
   ACADEMIC_STAFF: 'academic_staff',
   SALES_STAFF: 'sales_staff',
   FINANCE_STAFF: 'finance_staff',
+  HOCVIEN: 'hocvien', // Student role - can have user accounts
   
   // Deprecated - for backward compatibility
   STAFF: 'nhanvien', // Old role, should not be used
-  STUDENT: 'hocvien', // Students don't have User accounts by default
+  STUDENT: 'hocvien', // Alias for HOCVIEN
 };
 
 // Permission policy by module/resource
@@ -64,6 +65,10 @@ export function isSalesStaff(role) {
 
 export function isFinanceStaff(role) {
   return role === ROLES.FINANCE_STAFF;
+}
+
+export function isHocVien(role) {
+  return role === ROLES.HOCVIEN;
 }
 
 export function isStaffMember(role) {

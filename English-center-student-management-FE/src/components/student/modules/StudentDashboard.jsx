@@ -111,52 +111,107 @@ function RecentActivitiesCard({ activities }) {
 export default function StudentDashboard() {
   const { setCurrentModule } = useStudentContext();
   const [stats, setStats] = useState({
-    enrolledCourses: 3,
-    completedLessons: 15,
-    upcomingClasses: 2,
-    totalHours: 45
+    enrolledCourses: 0,
+    completedLessons: 0,
+    upcomingClasses: 0,
+    totalHours: 0
   });
+  const [recentActivities, setRecentActivities] = useState([]);
+  const [upcomingClasses, setUpcomingClasses] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [recentActivities] = useState([
-    {
-      id: 1,
-      type: 'lesson',
-      title: 'Completed lesson: Present Perfect',
-      time: '2 hours ago',
-      course: 'English Grammar Advanced'
-    },
-    {
-      id: 2,
-      type: 'payment',
-      title: 'Paid tuition for December',
-      time: '1 day ago',
-      amount: '2,500,000 VNĐ'
-    },
-    {
-      id: 3,
-      type: 'notification',
-      title: 'Schedule change: Tue, 14:00-16:00',
-      time: '2 days ago',
-      course: 'Speaking Practice'
-    }
-  ]);
-
-  const [upcomingClasses] = useState([
-    {
-      id: 1,
-      course: 'English Grammar Advanced',
-      teacher: 'Ms. Sarah Johnson',
-      time: 'Mon, 14:00-16:00',
-      room: 'Room 201'
-    },
-    {
-      id: 2,
-      course: 'Speaking Practice',
-      teacher: 'Mr. David Smith',
-      time: 'Wed, 09:00-11:00',
-      room: 'Room 105'
-    }
-  ]);
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        // Fetch enrollments for stats
+        const enrollmentsResponse = await fetch(`${import.meta.env.VITE_API_URL}/dangky/me/`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('ecsm_access_token')}`,
+          },
+        });
+        const enrollments = await enrollmentsResponse.json();
+        
+        // Calculate stats
+        const enrolledCount = enrollments.length;
+        const completedCount = enrollments.filter(e => e.trang_thai === 'hoan_thanh').length;
+        const totalHrs = enrolledCount * 15; // Estimate 15 hours per course
+        
+        // Fetch upcoming schedules
+        const today = new Date();
+        const nextWeek = new Date(today);
+        nextWeek.setDate(today.getDate() + 7);
+        
+        const upcomingSchedules = [];
+        for (const enroll of enrollments.slice(0, 2)) {
+          if (enroll.lop_hoc && enroll.trang_thai === 'dang_hoc') {
+            try {
+              const scheduleResponse = await fetch(
+                `${import.meta.env.VITE_API_URL}/lichhocs/?lop_hoc=${enroll.lop_hoc.id}`,
+                {
+                  headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('ecsm_access_token')}`,
+                  },
+                }
+              );
+              const schedules = await scheduleResponse.json();
+              const upcoming = schedules.filter(s => new Date(s.ngay_hoc) >= today);
+              if (upcoming.length > 0) {
+                upcomingSchedules.push({
+                  id: upcoming[0].id,
+                  course: enroll.khoahoc?.ten || 'Unknown Course',
+                  teacher: enroll.lop_hoc?.giang_vien?.ten || 'TBA',
+                  time: `${new Date(upcoming[0].ngay_hoc).toLocaleDateString('vi-VN')}, ${upcoming[0].gio_bat_dau?.slice(0,5)}-${upcoming[0].gio_ket_thuc?.slice(0,5)}`,
+                  room: upcoming[0].phong_hoc || 'TBA'
+                });
+              }
+            } catch (err) {
+              console.error('Error fetching schedule:', err);
+            }
+          }
+        }
+        
+        // Fetch recent activities (payments + enrollments)
+        const paymentsResponse = await fetch(`${import.meta.env.VITE_API_URL}/thanhtoans/me/`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('ecsm_access_token')}`,
+          },
+        });
+        const payments = await paymentsResponse.json();
+        
+        const activities = [
+          ...enrollments.slice(0, 2).map(e => ({
+            id: `enroll-${e.id}`,
+            type: 'lesson',
+            title: `Đăng ký khóa học: ${e.khoahoc?.ten || 'Unknown'}`,
+            time: new Date(e.created_at).toLocaleString('vi-VN'),
+            course: e.khoahoc?.ten || 'Unknown'
+          })),
+          ...payments.slice(0, 2).map(p => ({
+            id: `payment-${p.id}`,
+            type: 'payment',
+            title: `Thanh toán học phí: ${p.so_tien_thanh_toan?.toLocaleString('vi-VN')} VNĐ`,
+            time: new Date(p.ngay_thanh_toan || p.created_at).toLocaleString('vi-VN'),
+            amount: `${p.so_tien_thanh_toan?.toLocaleString('vi-VN')} VNĐ`
+          }))
+        ].sort((a, b) => new Date(b.time) - new Date(a.time)).slice(0, 5);
+        
+        setStats({
+          enrolledCourses: enrolledCount,
+          completedLessons: completedCount,
+          upcomingClasses: upcomingSchedules.length,
+          totalHours: totalHrs
+        });
+        setRecentActivities(activities);
+        setUpcomingClasses(upcomingSchedules);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchDashboardData();
+  }, []);
 
   const quickActions = [
     {

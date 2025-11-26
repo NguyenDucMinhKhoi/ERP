@@ -51,6 +51,7 @@ export default function Sidebar() {
   const isAcademicStaff = role === ROLES.ACADEMIC_STAFF;
   const isSalesStaff = role === ROLES.SALES_STAFF;
   const isFinanceStaff = role === ROLES.FINANCE_STAFF;
+  const isStudent = role === ROLES.HOCVIEN;
 
   // Permission checks using POLICY
   const canDashboard = isAdmin; // Only Admin
@@ -59,9 +60,6 @@ export default function Sidebar() {
   const canFinance = isAllowed(role, "billing"); // Admin, Finance
   const canReports = isAllowed(role, "reports");
   const canNotifications = isAllowed(role, "notifications");
-
-  // No student accounts by default
-  const isStudent = false;
   const handleNavigation = (path) => {
     navigate(path);
   };
@@ -78,17 +76,22 @@ export default function Sidebar() {
         </div>
       </div>
       {isStudent ? (
-        // Student uses UI at /student
+        // Student Portal Menu
         <>
-          <NavSection title="Student">
+          <NavSection title="Học viên">
             <NavItem
-              icon={<Users size={18} />}
-              label="CRM - Student"
-              active={
-                location.pathname === "/student" ||
-                location.pathname.startsWith("/student/")
-              }
+              icon={<Home size={18} />}
+              label="Trang chủ"
+              active={location.pathname === "/student"}
               onClick={() => handleNavigation("/student")}
+            />
+          </NavSection>
+          <NavSection title="Tài Khoản">
+            <NavItem
+              icon={<UserRound size={18} />}
+              label="Hồ Sơ"
+              active={location.pathname === "/profile"}
+              onClick={() => handleNavigation("/profile")}
             />
           </NavSection>
         </>

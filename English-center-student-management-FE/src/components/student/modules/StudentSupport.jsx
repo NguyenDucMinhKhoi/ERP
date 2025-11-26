@@ -15,7 +15,41 @@ export default function StudentSupport() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock data - replace with real API call
+    const fetchNotifications = async () => {
+      try {
+        const token = localStorage.getItem('ecsm_access_token') || sessionStorage.getItem('ecsm_access_token');
+        const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+        // Fetch notifications from real API
+        const response = await fetch(`${API_BASE_URL}/thongbaos/public/`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const apiNotifications = await response.json();
+          
+          // Transform API data to component format
+          const transformedNotifications = apiNotifications.map(notif => ({
+            id: notif.id,
+            type: notif.loai_thong_bao === 'thong_bao' ? 'announcement' : 'notification',
+            title: notif.tieu_de,
+            message: notif.noi_dung,
+            date: notif.ngay_gui || notif.created_at,
+            read: false
+          }));
+          
+          setNotifications(transformedNotifications);
+        }
+        
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchNotifications();
+    // Original mock data comment removed
     const mockNotifications = [
       {
         id: 1,
