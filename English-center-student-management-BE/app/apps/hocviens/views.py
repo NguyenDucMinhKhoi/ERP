@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.views import APIView
+from django.db import transaction
 from django.db.models import Count
 from django.db.models.functions import TruncDate
 from django.db.models import Q
@@ -12,11 +13,13 @@ from django.utils.timezone import now
 from django.apps import apps
 
 from app.core.permissions import CanManageStudents, IsOwnerOrStaff, CanManageCourses
-from .models import HocVien, LeadContactNote, KhoaHoc
+from .models import HocVien, LeadContactNote
+from app.apps.khoahocs.models import KhoaHoc
 from .serializers import (
     HocVienSerializer, HocVienCreateSerializer,
     HocVienUpdateSerializer, HocVienDetailSerializer, LeadContactNoteSerializer
 )
+from app.apps.users.models import User
 
 
 class HocVienListView(generics.ListCreateAPIView):
@@ -35,6 +38,61 @@ class HocVienListView(generics.ListCreateAPIView):
         if self.request.method == 'POST':
             return HocVienCreateSerializer
         return HocVienSerializer
+
+    def create(self, request, *args, **kwargs):
+        """
+        Create a HocVien and optionally create/attach a User account when 'password' + 'email' provided.
+        - If a user with the email exists, reuse that user and update password.
+        - Otherwise create a new User with role='hocvien', username from email (add suffix if needed).
+        - Save HocVien with user attached, is_converted=True, created_as_lead=False.
+        """
+        data = request.data.copy() if isinstance(request.data, dict) else dict(request.data)
+        password = data.pop('password', None)
+        email = data.get('email') or data.get('email'.lower())  # defensive
+
+        user = None
+        try:
+            with transaction.atomic():
+                if password and email:
+                    # reuse existing user by email if present
+                    user_qs = User.objects.filter(email__iexact=email)
+                    if user_qs.exists():
+                        user = user_qs.first()
+                        user.set_password(password)
+                        user.role = getattr(user, 'role', 'hocvien') or 'hocvien'
+                        user.is_active = True
+                        user.save()
+                    else:
+                        # derive candidate username from email local part; ensure uniqueness
+                        base = email.split('@')[0]
+                        username = base
+                        i = 1
+                        while User.objects.filter(username=username).exists():
+                            username = f"{base}{i}"
+                            i += 1
+                        user = User(username=username, email=email, is_active=True)
+                        # set role if model has role field
+                        if hasattr(user, 'role'):
+                            try:
+                                user.role = 'hocvien'
+                            except Exception:
+                                pass
+                        user.set_password(password)
+                        user.save()
+
+                # create HocVien via serializer, attach user if present
+                serializer = self.get_serializer(data=data)
+                serializer.is_valid(raise_exception=True)
+                save_kwargs = {'is_converted': True, 'created_as_lead': False}
+                if user:
+                    save_kwargs['user'] = user
+                hv = serializer.save(**save_kwargs)
+                out_serializer = HocVienSerializer(hv)
+                headers = self.get_success_headers(out_serializer.data)
+                return Response(out_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        except Exception as exc:
+            # return validation-like response for API consumers
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class HocVienDetailView(generics.RetrieveUpdateDestroyAPIView):

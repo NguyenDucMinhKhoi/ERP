@@ -14,6 +14,7 @@ class User(AbstractUser):
         ('academic_staff', 'Nhân viên Học vụ'),
         ('sales_staff', 'Nhân viên Tư vấn'),
         ('finance_staff', 'Nhân viên Tài chính'),
+        ('student', 'Học viên'),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

@@ -31,6 +31,7 @@ export default function AddStudentForm({ onClose, onSuccess }) {
     trang_thai_hoc_phi: 'chuadong',
     lop_hoc: '',
     ghi_chu: '',
+    password: '', // new
   });
 
   const [errors, setErrors] = useState({});
@@ -105,6 +106,7 @@ export default function AddStudentForm({ onClose, onSuccess }) {
       newErrors.ten = 'Tên học viên là bắt buộc';
     }
 
+    // ngay_sinh may be optional elsewhere; keep existing check if desired
     if (!formData.ngay_sinh) {
       newErrors.ngay_sinh = 'Ngày sinh là bắt buộc';
     }
@@ -119,6 +121,13 @@ export default function AddStudentForm({ onClose, onSuccess }) {
       newErrors.email = 'Email là bắt buộc';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Email không hợp lệ';
+    }
+
+    // Password: required for create (when no formData.id). Minimum length 6 if provided.
+    if (!formData.id && !formData.password) {
+      newErrors.password = 'Mật khẩu là bắt buộc để học viên có thể đăng nhập';
+    } else if (formData.password && formData.password.length < 6) {
+      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
     }
 
     setErrors(newErrors);
@@ -147,6 +156,8 @@ export default function AddStudentForm({ onClose, onSuccess }) {
         trang_thai_hoc_phi: formData.trang_thai_hoc_phi,
         lop_hoc: formData.lop_hoc,
         ghi_chu: formData.ghi_chu,
+        // include password if present
+        ...(formData.password ? { password: formData.password } : {}),
       };
 
       // If formData.id exists -> update flow (verify using getStudent), else create
@@ -279,6 +290,26 @@ export default function AddStudentForm({ onClose, onSuccess }) {
                   />
                   {errors.email && (
                     <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                  )}
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Mật khẩu {formData.id ? <span className="text-sm text-slate-500">(để cập nhật mật khẩu, nhập mới)</span> : '*'}
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-main focus:border-transparent ${
+                      errors.password ? 'border-red-300' : 'border-slate-300'
+                    }`}
+                    placeholder={formData.id ? 'Để trống nếu không đổi' : 'Nhập mật khẩu tối thiểu 6 ký tự'}
+                  />
+                  {errors.password && (
+                    <p className="mt-1 text-sm text-red-600">{errors.password}</p>
                   )}
                 </div>
               </div>
