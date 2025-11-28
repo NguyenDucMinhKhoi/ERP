@@ -2,60 +2,21 @@
  * Finance Service - API layer for financial operations
  * Handles payments, debt management, and financial reporting
  */
+import authService from './authService';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+// Sử dụng axios client từ authService để có auto refresh token
+const http = authService.client;
 
 class FinanceService {
   constructor() {
     this.baseURL = API_BASE_URL;
   }
 
-  // Helper method to get auth headers
-  getAuthHeaders() {
-    // Use the same token keys as authService
-    const token = localStorage.getItem('ecsm_access_token') || 
-                 sessionStorage.getItem('ecsm_access_token') ||
-                 localStorage.getItem('access_token'); // fallback
-    
-    if (!token) {
-      console.warn('No access token found in storage');
-    }
-    
-    return {
-      'Authorization': token ? `Bearer ${token}` : '',
-      'Content-Type': 'application/json',
-    };
-  }
-
-  // Helper method to handle API responses
-  async handleResponse(response) {
-    if (!response.ok) {
-      if (response.status === 401) {
-        // Handle unauthorized - might need to redirect to login
-        console.error('Unauthorized access - token may be invalid or expired');
-        // Clear potentially invalid token
-        localStorage.removeItem('ecsm_access_token');
-        localStorage.removeItem('ecsm_refresh_token');
-        sessionStorage.removeItem('ecsm_access_token');
-        sessionStorage.removeItem('ecsm_refresh_token');
-        
-        throw new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-      }
-      
-      const error = await response.json().catch(() => ({ 
-        message: `HTTP error! status: ${response.status}` 
-      }));
-      throw new Error(error.message || `HTTP error! status: ${response.status}`);
-    }
-    return response.json();
-  }
-
   // Helper method to check if user is authenticated
   isAuthenticated() {
-    const token = localStorage.getItem('ecsm_access_token') || 
-                 sessionStorage.getItem('ecsm_access_token') ||
-                 localStorage.getItem('access_token'); // fallback
-    return !!token;
+    return authService.isAuthenticated();
   }
 
   // === PAYMENT MANAGEMENT ===
@@ -65,23 +26,13 @@ class FinanceService {
    * @param {Object} params - Query parameters
    */
   async getPayments(params = {}) {
-    const searchParams = new URLSearchParams();
-    
-    if (params.search) searchParams.append('search', params.search);
-    if (params.hinh_thuc) searchParams.append('hinh_thuc', params.hinh_thuc);
-    if (params.hocvien) searchParams.append('hocvien', params.hocvien);
-    if (params.ordering) searchParams.append('ordering', params.ordering);
-    if (params.page) searchParams.append('page', params.page);
-    if (params.page_size) searchParams.append('page_size', params.page_size);
-
-    const url = `${this.baseURL}/thanhtoans/?${searchParams}`;
-    
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: this.getAuthHeaders(),
-    });
-
-    return this.handleResponse(response);
+    try {
+      const { data } = await http.get('/thanhtoans/', { params });
+      return data;
+    } catch (error) {
+      console.error('Error fetching payments:', error);
+      throw error;
+    }
   }
 
   /**
@@ -89,12 +40,13 @@ class FinanceService {
    * @param {string} paymentId - Payment ID
    */
   async getPayment(paymentId) {
-    const response = await fetch(`${this.baseURL}/thanhtoans/${paymentId}/`, {
-      method: 'GET',
-      headers: this.getAuthHeaders(),
-    });
-
-    return this.handleResponse(response);
+    try {
+      const { data } = await http.get(`/thanhtoans/${paymentId}/`);
+      return data;
+    } catch (error) {
+      console.error('Error fetching payment:', error);
+      throw error;
+    }
   }
 
   /**
@@ -102,13 +54,13 @@ class FinanceService {
    * @param {Object} paymentData - Payment data
    */
   async createPayment(paymentData) {
-    const response = await fetch(`${this.baseURL}/thanhtoans/`, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(paymentData),
-    });
-
-    return this.handleResponse(response);
+    try {
+      const { data } = await http.post('/thanhtoans/', paymentData);
+      return data;
+    } catch (error) {
+      console.error('Error creating payment:', error);
+      throw error;
+    }
   }
 
   /**
@@ -117,13 +69,13 @@ class FinanceService {
    * @param {Object} paymentData - Updated payment data
    */
   async updatePayment(paymentId, paymentData) {
-    const response = await fetch(`${this.baseURL}/thanhtoans/${paymentId}/`, {
-      method: 'PATCH',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(paymentData),
-    });
-
-    return this.handleResponse(response);
+    try {
+      const { data } = await http.patch(`/thanhtoans/${paymentId}/`, paymentData);
+      return data;
+    } catch (error) {
+      console.error('Error updating payment:', error);
+      throw error;
+    }
   }
 
   /**
@@ -131,28 +83,26 @@ class FinanceService {
    * @param {string} paymentId - Payment ID
    */
   async deletePayment(paymentId) {
-    const response = await fetch(`${this.baseURL}/thanhtoans/${paymentId}/`, {
-      method: 'DELETE',
-      headers: this.getAuthHeaders(),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    try {
+      await http.delete(`/thanhtoans/${paymentId}/`);
+      return true;
+    } catch (error) {
+      console.error('Error deleting payment:', error);
+      throw error;
     }
-    
-    return response.status === 204;
   }
 
   /**
    * Get my payments (for students)
    */
   async getMyPayments() {
-    const response = await fetch(`${this.baseURL}/thanhtoans/me/`, {
-      method: 'GET',
-      headers: this.getAuthHeaders(),
-    });
-
-    return this.handleResponse(response);
+    try {
+      const { data } = await http.get('/thanhtoans/me/');
+      return data;
+    } catch (error) {
+      console.error('Error fetching my payments:', error);
+      throw error;
+    }
   }
 
   // === FINANCIAL STATISTICS ===
@@ -161,12 +111,13 @@ class FinanceService {
    * Get financial statistics and overview
    */
   async getPaymentStats() {
-    const response = await fetch(`${this.baseURL}/thanhtoans/stats/`, {
-      method: 'GET',
-      headers: this.getAuthHeaders(),
-    });
-
-    return this.handleResponse(response);
+    try {
+      const { data } = await http.get('/thanhtoans/stats/');
+      return data;
+    } catch (error) {
+      console.error('Error fetching payment stats:', error);
+      throw error;
+    }
   }
 
   /**
@@ -238,14 +189,10 @@ class FinanceService {
    */
   async getStudentsWithDebt() {
     try {
-      // This might need a custom endpoint in the future
-      // For now, we'll simulate it by getting students and checking payment status
-      const response = await fetch(`${this.baseURL}/hocviens/?trang_thai_hoc_phi=conno,chuadong`, {
-        method: 'GET',
-        headers: this.getAuthHeaders(),
+      const { data } = await http.get('/hocviens/', { 
+        params: { trang_thai_hoc_phi: 'conno,chuadong' }
       });
-
-      return this.handleResponse(response);
+      return data;
     } catch (error) {
       console.error('Error fetching students with debt:', error);
       throw error;
@@ -257,12 +204,15 @@ class FinanceService {
    * @param {string} studentId - Student ID
    */
   async getStudentPaymentHistory(studentId) {
-    const response = await fetch(`${this.baseURL}/thanhtoans/?hocvien=${studentId}`, {
-      method: 'GET',
-      headers: this.getAuthHeaders(),
-    });
-
-    return this.handleResponse(response);
+    try {
+      const { data } = await http.get('/thanhtoans/', { 
+        params: { hocvien: studentId }
+      });
+      return data;
+    } catch (error) {
+      console.error('Error fetching student payment history:', error);
+      throw error;
+    }
   }
 
   // === INVOICE MANAGEMENT ===
@@ -298,16 +248,24 @@ class FinanceService {
   }
 
   /**
-   * Generate unique receipt number
+   * Generate unique receipt number for a student
+   * @param {number} studentId - Student ID
    */
-  generateReceiptNumber() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const timestamp = Date.now().toString().slice(-4);
-    
-    return `BL${year}${month}${day}${timestamp}`;
+  async generateReceiptNumber(studentId) {
+    try {
+      const { data } = await http.post('/thanhtoans/generate-receipt/', { hocvien: studentId });
+      return data;
+    } catch (error) {
+      console.error('Error generating receipt number:', error);
+      // Fallback to client-side generation if API fails
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const timestamp = Date.now().toString().slice(-4);
+      
+      return { receipt_number: `BL${year}${month}${day}${timestamp}` };
+    }
   }
 
   /**
@@ -355,14 +313,7 @@ class FinanceService {
       if (params.page) searchParams.append('page', params.page);
       if (params.page_size) searchParams.append('page_size', params.page_size);
 
-      const url = `${this.baseURL}/hocviens/?${searchParams}`;
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: this.getAuthHeaders(),
-      });
-
-      const data = await this.handleResponse(response);
+      const { data } = await http.get('/hocviens/', { params: Object.fromEntries(searchParams) });
       
       // Transform data to include debt calculations
       if (data.results) {
@@ -439,15 +390,10 @@ class FinanceService {
    */
   async sendPaymentReminder(studentId, message) {
     try {
-      const url = `${this.baseURL}/hocviens/${studentId}/send-reminder/`;
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: this.getAuthHeaders(),
-        body: JSON.stringify({ message }),
-      });
 
-      return await this.handleResponse(response);
+      
+      const { data } = await http.post(`/hocviens/${studentId}/send-reminder/`, { message });
+      return data;
     } catch (error) {
       console.error('Error sending payment reminder:', error);
       throw error;

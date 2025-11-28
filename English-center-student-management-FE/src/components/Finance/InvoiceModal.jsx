@@ -289,6 +289,10 @@ const InvoiceModal = ({ invoice, onClose }) => {
     transfer: 'Chuyển khoản',
     card: 'Thẻ tín dụng',
     'e-wallet': 'Ví điện tử',
+    tienmat: 'Tiền mặt',
+    chuyenkhoan: 'Chuyển khoản',
+    the: 'Thẻ tín dụng',
+    '': 'Chưa xác định', // For empty/blank payment method
   };
 
   return (
@@ -590,20 +594,21 @@ const InvoiceModal = ({ invoice, onClose }) => {
                 </div>
                 <div className="info-item" style={{display: 'flex', marginBottom: '12px', alignItems: 'center'}}>
                   <span className="info-label" style={{fontWeight: 'bold', color: '#475569', minWidth: '100px'}}>Phương thức:</span>
-                  <span className="info-value" style={{color: '#1e293b', fontWeight: '600'}}>{paymentMethodLabels[invoice.paymentMethod]}</span>
+                  <span className="info-value" style={{color: '#1e293b', fontWeight: '600'}}>{paymentMethodLabels[invoice.paymentMethod] || 'Chưa xác định'}</span>
                 </div>
                 <div className="info-item" style={{display: 'flex', marginBottom: '12px', alignItems: 'center'}}>
                   <span className="info-label" style={{fontWeight: 'bold', color: '#475569', minWidth: '100px'}}>Trạng thái:</span>
                   <span className="info-value" style={{
-                    color: '#059669', 
+                    color: invoice.status === 'unpaid' ? '#dc2626' : '#059669', 
                     fontWeight: 'bold',
-                    background: '#ecfdf5',
+                    background: invoice.status === 'unpaid' ? '#fef2f2' : '#ecfdf5',
                     padding: '4px 12px',
                     borderRadius: '20px',
                     fontSize: '12px',
-                    border: '1px solid #a7f3d0'
+                    border: invoice.status === 'unpaid' ? '1px solid #fca5a5' : '1px solid #a7f3d0'
                   }}>
-                    ✅ Đã thanh toán
+                    {invoice.status === 'unpaid' ? '⏳ Chưa thanh toán' : 
+                     invoice.status === 'pending' ? '⏳ Chờ xử lý' : '✅ Đã thanh toán'}
                   </span>
                 </div>
               </div>

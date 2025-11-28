@@ -423,6 +423,27 @@ const FinancePage = () => {
     loadStats();
   };
 
+  // Handle invoice creation success
+  const handleInvoiceSuccess = () => {
+    setShowInvoiceCreation(false);
+    // Reload data based on current tab
+    if (activeTab === 'payments') {
+      fetchPayments();
+    } else if (activeTab === 'debt') {
+      fetchDebtData();
+    }
+    // Also reload stats
+    const loadStats = async () => {
+      try {
+        const data = await financeService.getPaymentStats();
+        setStats(data);
+      } catch (err) {
+        console.error('Error reloading stats:', err);
+      }
+    };
+    loadStats();
+  };
+
   // Prevent body scroll when any modal is open
   useEffect(() => {
     const isAnyModalOpen = showPaymentForm || showInvoiceModal || showInvoiceCreation;
@@ -730,6 +751,7 @@ const FinancePage = () => {
       {showInvoiceCreation && (
         <InvoiceCreation 
           onClose={() => setShowInvoiceCreation(false)}
+          onSubmit={handleInvoiceSuccess}
         />
       )}
     </div>

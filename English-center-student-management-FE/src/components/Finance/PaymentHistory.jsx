@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import financeService from '../../services/financeService';
 
 const paymentMethodLabels = {
   tienmat: { name: 'Tiền mặt', icon: '💵' },
@@ -18,15 +19,11 @@ const statusLabels = {
 
 const PaymentHistory = ({ 
   onViewInvoice,
-  payments = [],
-  loading = false,
+  payments = null, // if parent passes payments array use it, otherwise component will fetch
+  loading = null,
   error = null,
-  stats = {
-    totalAmount: 0,
-    totalPayments: 0,
-    completedPayments: 0,
-    pendingPayments: 0
-  }
+  stats = null,
+  refreshTrigger = 0, // when this increments, reload payments
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -34,6 +31,52 @@ const PaymentHistory = ({
   const [dateRange, setDateRange] = useState({ from: '', to: '' });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  // Internal state when parent doesn't provide data
+  const [localPayments, setLocalPayments] = useState([]);
+  const [localLoading, setLocalLoading] = useState(false);
+  const [localError, setLocalError] = useState(null);
+  const [localStats, setLocalStats] = useState({
+    totalAmount: 0,
+    totalPayments: 0,
+    completedPayments: 0,
+    pendingPayments: 0
+  });
+
+  const usePayments = Array.isArray(payments) ? payments : localPayments;
+  const useLoading = loading !== null ? loading : localLoading;
+  const useError = error !== null ? error : localError;
+  const useStats = stats !== null ? stats : localStats;
+
+  // Load payments when component mounts or when refreshTrigger changes (if parent didn't supply)
+  useEffect(() => {
+    if (Array.isArray(payments)) return; // parent controls data
+
+    const load = async () => {
+      try {
+        setLocalLoading(true);
+        setLocalError(null);
+        const response = await financeService.getPayments({ page_size: 100 });
+        const paymentsData = Array.isArray(response) ? response : (response.results || response.data || []);
+        setLocalPayments(paymentsData);
+
+        const totalAmount = paymentsData.reduce((sum, p) => sum + (parseFloat(p.so_tien) || 0), 0);
+        setLocalStats({
+          totalAmount,
+          totalPayments: paymentsData.length,
+          completedPayments: paymentsData.length,
+          pendingPayments: 0
+        });
+      } catch (err) {
+        console.error('❌ Error loading payments in PaymentHistory:', err);
+        setLocalError('Không thể tải dữ liệu thanh toán');
+      } finally {
+        setLocalLoading(false);
+      }
+    };
+
+    load();
+  }, [payments, refreshTrigger]);
 
 
 
@@ -51,7 +94,7 @@ const PaymentHistory = ({
   };
 
   // Transform API data to match frontend format
-  const transformedPayments = payments.map(payment => {
+  const transformedPayments = (usePayments || []).map(payment => {
     console.log('🔄 Transforming payment:', payment);
     // Handle both old and new API structure
     const studentInfo = payment.hocvien_info || payment.hocvien;
@@ -137,7 +180,7 @@ const PaymentHistory = ({
                     Tổng thu
                   </dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {formatCurrency(stats.totalAmount)}
+                    {formatCurrency(useStats.totalAmount)}
                   </dd>
                 </dl>
               </div>
@@ -157,7 +200,7 @@ const PaymentHistory = ({
                     Số giao dịch
                   </dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {stats.totalPayments}
+                    {useStats.totalPayments}
                   </dd>
                 </dl>
               </div>
@@ -177,7 +220,7 @@ const PaymentHistory = ({
                     Đã thanh toán
                   </dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {stats.completedPayments}
+                    {useStats.completedPayments}
                   </dd>
                 </dl>
               </div>
@@ -197,7 +240,7 @@ const PaymentHistory = ({
                     Đang xử lý
                   </dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {stats.pendingPayments}
+                    {useStats.pendingPayments}
                   </dd>
                 </dl>
               </div>
@@ -207,7 +250,7 @@ const PaymentHistory = ({
       </div>
 
       {/* Loading State */}
-      {loading && (
+      {useLoading && (
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           <p className="mt-2 text-sm text-gray-500">Đang tải dữ liệu...</p>
@@ -215,7 +258,7 @@ const PaymentHistory = ({
       )}
 
       {/* Filters */}
-      {!loading && (
+      {!useLoading && (
         <div className="bg-white shadow rounded-lg p-6">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {/* Search */}
@@ -315,7 +358,7 @@ const PaymentHistory = ({
       )}
 
       {/* Payment Table */}
-      {!loading && !error && (
+      {!useLoading && !useError && (
         <div className="bg-white shadow rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
