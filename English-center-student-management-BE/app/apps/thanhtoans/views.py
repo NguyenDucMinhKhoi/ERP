@@ -129,3 +129,31 @@ def thanhtoan_stats(request):
         'the': the,
         'thang_nay': thang_nay
     })
+
+
+class ThanhToanListCreateView(generics.ListCreateAPIView):
+    """
+    GET /thanhtoans/  -> list payments (finance staff/admin)
+    POST /thanhtoans/ -> create a payment. If hinh_thuc + so_bien_lai provided and trang_thai not provided,
+                         serializer will mark trang_thai='paid' so model.save() sets ngay_dong and updates HocVien.
+    """
+    queryset = ThanhToan.objects.all().order_by('-created_at')
+    serializer_class = ThanhToanSerializer
+    permission_classes = [CanManageFinance]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        obj = serializer.save()
+        out = ThanhToanSerializer(obj)
+        return Response(out.data, status=status.HTTP_201_CREATED)
+
+
+class ThanhToanDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    GET/PUT/PATCH/DELETE on /thanhtoans/<pk>/
+    Updating hinh_thuc + so_bien_lai will set trang_thai='paid' by serializer logic if not provided.
+    """
+    queryset = ThanhToan.objects.all()
+    serializer_class = ThanhToanSerializer
+    permission_classes = [CanManageFinance]

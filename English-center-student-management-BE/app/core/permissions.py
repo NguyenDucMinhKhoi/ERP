@@ -201,3 +201,46 @@ class FinancePermission(permissions.BasePermission):
             return request.method == 'GET'
             
         return False
+
+
+# New composite permissions: allow manage-role OR finance read-only for GET
+class CanManageStudentsOrFinanceRead(permissions.BasePermission):
+    """
+    Allow users who Pass CanManageStudents (admin/academic/sales) for any method,
+    OR allow finance staff (CanManageFinance) for GET requests only.
+    """
+    def has_permission(self, request, view):
+        # full manage roles
+        try:
+            if CanManageStudents().has_permission(request, view):
+                return True
+        except Exception:
+            pass
+        # finance can view (GET) only
+        if request.method == 'GET':
+            try:
+                if CanManageFinance().has_permission(request, view):
+                    return True
+            except Exception:
+                pass
+        return False
+
+
+class CanManageCoursesOrFinanceRead(permissions.BasePermission):
+    """
+    Allow users who Pass CanManageCourses (admin/academic/giangvien) for any method,
+    OR allow finance staff (CanManageFinance) for GET requests only.
+    """
+    def has_permission(self, request, view):
+        try:
+            if CanManageCourses().has_permission(request, view):
+                return True
+        except Exception:
+            pass
+        if request.method == 'GET':
+            try:
+                if CanManageFinance().has_permission(request, view):
+                    return True
+            except Exception:
+                pass
+        return False

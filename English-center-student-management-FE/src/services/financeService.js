@@ -126,7 +126,7 @@ class FinanceService {
    */
   async getMonthlyRevenue(months = 12) {
     try {
-      const payments = await this.getPayments({ 
+      const payments = await this.getPayments({
         page_size: 1000,
         ordering: '-ngay_dong'
       });
@@ -134,7 +134,7 @@ class FinanceService {
       // Process payments into monthly data
       const monthlyData = {};
       const now = new Date();
-      
+
       // Initialize last N months
       for (let i = 0; i < months; i++) {
         const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -150,7 +150,7 @@ class FinanceService {
       payments.results?.forEach(payment => {
         const paymentDate = new Date(payment.ngay_dong);
         const key = `${paymentDate.getFullYear()}-${String(paymentDate.getMonth() + 1).padStart(2, '0')}`;
-        
+
         if (monthlyData[key]) {
           monthlyData[key].total += parseFloat(payment.so_tien);
           monthlyData[key].count += 1;
@@ -170,7 +170,7 @@ class FinanceService {
   async getPaymentMethodStats() {
     try {
       const stats = await this.getPaymentStats();
-      
+
       return [
         { name: 'Tiền mặt', value: stats.tien_mat || 0, color: '#8884d8' },
         { name: 'Chuyển khoản', value: stats.chuyen_khoan || 0, color: '#82ca9d' },
@@ -189,7 +189,7 @@ class FinanceService {
    */
   async getStudentsWithDebt() {
     try {
-      const { data } = await http.get('/hocviens/', { 
+      const { data } = await http.get('/hocviens/', {
         params: { trang_thai_hoc_phi: 'conno,chuadong' }
       });
       return data;
@@ -205,7 +205,7 @@ class FinanceService {
    */
   async getStudentPaymentHistory(studentId) {
     try {
-      const { data } = await http.get('/thanhtoans/', { 
+      const { data } = await http.get('/thanhtoans/', {
         params: { hocvien: studentId }
       });
       return data;
@@ -224,7 +224,7 @@ class FinanceService {
   async generateInvoice(paymentId) {
     // This would need to be implemented in the backend
     const payment = await this.getPayment(paymentId);
-    
+
     // For now, return formatted data for invoice generation
     return {
       invoice_number: payment.so_bien_lai,
@@ -251,21 +251,19 @@ class FinanceService {
    * Generate unique receipt number for a student
    * @param {number} studentId - Student ID
    */
-  async generateReceiptNumber(studentId) {
-    try {
-      const { data } = await http.post('/thanhtoans/generate-receipt/', { hocvien: studentId });
-      return data;
-    } catch (error) {
-      console.error('Error generating receipt number:', error);
-      // Fallback to client-side generation if API fails
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      const timestamp = Date.now().toString().slice(-4);
-      
-      return { receipt_number: `BL${year}${month}${day}${timestamp}` };
-    }
+  generateReceiptNumber() {
+    return `BL-${Date.now().toString().slice(-6)}`;
+  }
+
+  /**
+   * Get available payment methods
+   */
+  getPaymentMethods() {
+    return [
+      { id: 'tienmat', label: 'Tiền mặt' },
+      { id: 'chuyenkhoan', label: 'Chuyển khoản' },
+      { id: 'the', label: 'Thẻ' }
+    ];
   }
 
   /**
@@ -306,7 +304,7 @@ class FinanceService {
   async getStudentDebtInfo(params = {}) {
     try {
       const searchParams = new URLSearchParams();
-      
+
       if (params.search) searchParams.append('search', params.search);
       if (params.trang_thai_hoc_phi) searchParams.append('trang_thai_hoc_phi', params.trang_thai_hoc_phi);
       if (params.ordering) searchParams.append('ordering', params.ordering);
@@ -314,25 +312,25 @@ class FinanceService {
       if (params.page_size) searchParams.append('page_size', params.page_size);
 
       const { data } = await http.get('/hocviens/', { params: Object.fromEntries(searchParams) });
-      
+
       // Transform data to include debt calculations
       if (data.results) {
         const studentsWithDebt = await Promise.all(
           data.results.map(async (student) => {
             // Get payment history for this student
-            const paymentHistory = await this.getPayments({ 
+            const paymentHistory = await this.getPayments({
               hocvien: student.id,
-              page_size: 100 
+              page_size: 100
             });
-            
+
             const payments = paymentHistory.data?.results || [];
             const totalPaid = payments.reduce((sum, payment) => sum + Number(payment.so_tien || 0), 0);
-            
+
             // Calculate debt based on course fee and payments
             const courseFee = student.khoahoc?.hoc_phi || 0;
             const totalDebt = Math.max(0, courseFee - totalPaid);
             const overdueDebt = student.trang_thai_hoc_phi === 'conno' ? totalDebt : 0;
-            
+
             return {
               ...student,
               totalDebt,
@@ -343,13 +341,13 @@ class FinanceService {
             };
           })
         );
-        
+
         return {
           ...data,
           results: studentsWithDebt
         };
       }
-      
+
       return data;
     } catch (error) {
       console.error('Error fetching student debt info:', error);
@@ -364,12 +362,12 @@ class FinanceService {
     try {
       const studentsResponse = await this.getStudentDebtInfo({ page_size: 1000 });
       const students = studentsResponse.results || [];
-      
+
       const totalStudentsWithDebt = students.filter(s => s.totalDebt > 0).length;
       const totalDebtAmount = students.reduce((sum, s) => sum + s.totalDebt, 0);
       const totalOverdueAmount = students.reduce((sum, s) => sum + s.overdueDebt, 0);
       const overdueStudents = students.filter(s => s.overdueDebt > 0).length;
-      
+
       return {
         totalStudentsWithDebt,
         totalDebtAmount,
@@ -391,7 +389,7 @@ class FinanceService {
   async sendPaymentReminder(studentId, message) {
     try {
 
-      
+
       const { data } = await http.post(`/hocviens/${studentId}/send-reminder/`, { message });
       return data;
     } catch (error) {
@@ -418,12 +416,12 @@ class FinanceService {
    */
   calculateDaysOverdue(student) {
     if (!student.khoahoc?.ngay_bat_dau) return 0;
-    
+
     const today = new Date();
     const courseStart = new Date(student.khoahoc.ngay_bat_dau);
     const diffTime = today - courseStart;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     return Math.max(0, diffDays - 30); // Assume 30 days grace period
   }
 }

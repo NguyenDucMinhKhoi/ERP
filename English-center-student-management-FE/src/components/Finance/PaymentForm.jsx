@@ -9,13 +9,13 @@ const paymentMethods = [
   { id: 'the', name: 'Thẻ', icon: '💳' },
 ];
 
-const PaymentForm = ({ 
-  onClose, 
-  onSuccess, 
-  students = [], 
+const PaymentForm = ({
+  onClose,
+  onSuccess,
+  students = [],
   onCreatePayment,
   generateReceiptNumber,
-  validatePaymentData
+  validatePaymentData,
 }) => {
   const [formData, setFormData] = useState({
     hocvien: '',
@@ -31,95 +31,82 @@ const PaymentForm = ({
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [successData, setSuccessData] = useState(null);
-  
-  // Student search states
+
+  // Student search states (server-side, debounced)
   const [searchResults, setSearchResults] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [loadingInvoiceData, setLoadingInvoiceData] = useState(false);
-  
-  // Load all students once and filter client-side (like InvoiceCreation.jsx)
-  const [allStudents, setAllStudents] = useState([]);
-  const [studentsLoaded, setStudentsLoaded] = useState(false);
+  const [studentsLoadedCount, setStudentsLoadedCount] = useState(0);
+  const [studentsLoaded, setStudentsLoaded] = useState(true); // server search available immediately
 
-  // Load students from PaymentHistory (only students with invoices/payments)
+  // Server-side debounced search for students using crmService.getStudents
   useEffect(() => {
-    const loadStudentsFromPaymentHistory = async () => {
-      try {
-        console.log('📥 Loading students from PaymentHistory for PaymentForm...');
-        const response = await financeService.getPayments({ page_size: 1000 });
-        const paymentsData = Array.isArray(response) ? response : (response.results || response.data || []);
-        
-        // Extract unique students from payment history
-        const uniqueStudentsMap = new Map();
-        paymentsData.forEach(payment => {
-          const studentInfo = payment.hocvien_info || payment.hocvien;
-          if (studentInfo && studentInfo.id) {
-            const student = {
-              id: studentInfo.id,
-              ten: studentInfo.ten || studentInfo.ho_ten || 'N/A',
-              ma_hoc_vien: studentInfo.ma_hoc_vien || studentInfo.ma_hocvien || `HV${String(studentInfo.id).slice(-6)}`,
-              email: studentInfo.email || '',
-              sdt: studentInfo.sdt || '',
-              trang_thai_hoc_phi: studentInfo.trang_thai_hoc_phi || 'chuadong',
-              khoahoc: studentInfo.khoahoc || null
-            };
-            uniqueStudentsMap.set(student.id, student);
-          }
-        });
-        
-        const studentsFromPayments = Array.from(uniqueStudentsMap.values());
-        console.log('👥 Loaded students from PaymentHistory:', studentsFromPayments.length, studentsFromPayments.slice(0, 2));
-        setAllStudents(studentsFromPayments);
-        setStudentsLoaded(true);
-      } catch (error) {
-        console.error('❌ Error loading students from PaymentHistory:', error);
-        setAllStudents([]);
-        setStudentsLoaded(true);
-      }
-    };
+    let mounted = true;
+    let timer = null;
+    const term = formData.studentSearchTerm?.trim();
 
-    loadStudentsFromPaymentHistory();
-  }, []);
-
-  // Search for students (client-side filtering)
-  useEffect(() => {
-    if (!studentsLoaded) return;
-
-    if (formData.studentSearchTerm.trim().length < 2) {
-      setSearchResults([]);
+    // Do not perform search when a student is already selected
+    if (selectedStudent) {
+      // ensure dropdown closed if a student is selected
       setShowSearchDropdown(false);
+      setIsSearching(false);
       return;
     }
 
-    const searchTerm = formData.studentSearchTerm.toLowerCase().trim();
-    console.log('🔍 PaymentForm filtering students for term:', searchTerm);
-    
-    const filteredStudents = allStudents.filter(student => {
-      const matchesName = student.ten?.toLowerCase().includes(searchTerm);
-      const matchesPhone = student.sdt?.includes(searchTerm);
-      const matchesEmail = student.email?.toLowerCase().includes(searchTerm);
-      const matchesCode = student.ma_hoc_vien?.toLowerCase().includes(searchTerm);
-      
-      return matchesName || matchesPhone || matchesEmail || matchesCode;
-    });
+    if (!term || term.length < 2) {
+      setSearchResults([]);
+      setStudentsLoadedCount(0);
+      setShowSearchDropdown(false);
+      setIsSearching(false);
+      return;
+    }
 
-    console.log('🎯 PaymentForm filtered results:', filteredStudents.length, filteredStudents);
-    setSearchResults(filteredStudents);
-    setShowSearchDropdown(filteredStudents.length > 0);
-  }, [formData.studentSearchTerm, allStudents, studentsLoaded]);
+    setIsSearching(true);
+    setShowSearchDropdown(true);
 
-  // Original search logic (keeping for compatibility)
-  useEffect(() => {
-    const debounceTimer = setTimeout(() => {}, 300);
-    return () => clearTimeout(debounceTimer);
-  }, [formData.studentSearchTerm]);
+    timer = setTimeout(async () => {
+      try {
+        const params = { search: term, page_size: 50 };
+        const resp = await crmService.getStudents(params);
+        const items = Array.isArray(resp) ? resp : resp.results || resp;
+        const total =
+          resp.count ||
+          (Array.isArray(resp)
+            ? resp.length
+            : resp.results
+            ? resp.count
+            : items.length);
+        if (!mounted) return;
+        setSearchResults(items || []);
+        setStudentsLoadedCount(total || (items ? items.length : 0));
+        setStudentsLoaded(true);
+      } catch (err) {
+        console.error('Error searching students (PaymentForm):', err);
+        if (mounted) {
+          setSearchResults([]);
+          setStudentsLoadedCount(0);
+          setStudentsLoaded(true);
+        }
+      } finally {
+        if (mounted) setIsSearching(false);
+      }
+    }, 300);
+
+    return () => {
+      mounted = false;
+      clearTimeout(timer);
+    };
+  }, [formData.studentSearchTerm, selectedStudent]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (showSearchDropdown && !event.target.closest('.student-search-container')) {
+      if (
+        showSearchDropdown &&
+        !event.target.closest('.student-search-container')
+      ) {
         setShowSearchDropdown(false);
       }
     };
@@ -131,44 +118,44 @@ const PaymentForm = ({
   // Generate receipt number on component mount
   useEffect(() => {
     if (generateReceiptNumber) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        so_bien_lai: generateReceiptNumber()
+        so_bien_lai: generateReceiptNumber(),
       }));
     }
   }, [generateReceiptNumber]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
+
     // Special handling for amount field - remove dots for number formatting
     let processedValue = value;
     if (name === 'so_tien') {
       // Remove all dots from the input value
       processedValue = value.replace(/\./g, '');
     }
-    
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
-      [name]: processedValue
+      [name]: processedValue,
     }));
-    
+
     // Clear selected student when search term changes
     if (name === 'studentSearchTerm' && selectedStudent) {
       setSelectedStudent(null);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         hocvien: '',
         so_bien_lai: generateReceiptNumber?.() || '',
-        so_tien: ''
+        so_tien: '',
       }));
     }
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: '',
       }));
     }
   };
@@ -177,14 +164,15 @@ const PaymentForm = ({
   const handleStudentSelect = async (student) => {
     console.log('👤 Student selected in PaymentForm:', student);
     setSelectedStudent(student);
-    setFormData(prev => ({
+    // Clear the visible input term (we display selected student separately)
+    setFormData((prev) => ({
       ...prev,
       hocvien: student.id,
-      studentSearchTerm: `${student.ten} (${student.ma_hoc_vien})`,
+      studentSearchTerm: '',
     }));
     setShowSearchDropdown(false);
-    setErrors(prev => ({ ...prev, hocvien: '', studentSearchTerm: '' }));
-    
+    setErrors((prev) => ({ ...prev, hocvien: '', studentSearchTerm: '' }));
+
     // Auto-generate new receipt number for this student
     await loadStudentReceiptNumber(student.id);
   };
@@ -192,19 +180,19 @@ const PaymentForm = ({
   // Clear student selection
   const clearStudentSelection = () => {
     setSelectedStudent(null);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       hocvien: '',
       studentSearchTerm: '',
       so_bien_lai: generateReceiptNumber?.() || '',
-      so_tien: ''
+      so_tien: '',
     }));
   };
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
-      currency: 'VND'
+      currency: 'VND',
     }).format(amount);
   };
 
@@ -219,22 +207,22 @@ const PaymentForm = ({
     setLoadingInvoiceData(true);
     try {
       console.log('📝 Loading receipt number for student:', studentId);
-      
+
       // Always generate a new receipt number for new payment
-      const newReceiptNumber = generateReceiptNumber?.() || financeService.generateReceiptNumber();
-      
+      const newReceiptNumber =
+        generateReceiptNumber?.() || financeService.generateReceiptNumber();
+
       console.log('🎫 Generated new receipt number:', newReceiptNumber);
-      
-      setFormData(prev => ({
+
+      setFormData((prev) => ({
         ...prev,
         so_bien_lai: newReceiptNumber,
       }));
-      
     } catch (error) {
       console.error('❌ Error generating receipt number:', error);
       // Fallback receipt number
       const fallbackReceipt = `BL${Date.now()}`;
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         so_bien_lai: fallbackReceipt,
       }));
@@ -248,21 +236,24 @@ const PaymentForm = ({
     setLoadingInvoiceData(true);
     try {
       // Get student's payment history to find existing invoices
-      const paymentHistory = await financeService.getStudentPaymentHistory(studentId);
-      
+      const paymentHistory = await financeService.getStudentPaymentHistory(
+        studentId
+      );
+
       if (paymentHistory.results && paymentHistory.results.length > 0) {
         // Get the most recent payment/invoice
         const latestPayment = paymentHistory.results[0];
-        
+
         // Update form with existing invoice data
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          so_bien_lai: latestPayment.so_bien_lai || generateReceiptNumber?.() || '',
+          so_bien_lai:
+            latestPayment.so_bien_lai || generateReceiptNumber?.() || '',
           so_tien: latestPayment.so_tien?.toString() || '',
         }));
       } else {
         // No existing invoices, generate new receipt number
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           so_bien_lai: generateReceiptNumber?.() || '',
           so_tien: '',
@@ -271,7 +262,7 @@ const PaymentForm = ({
     } catch (error) {
       console.error('Error loading student invoice data:', error);
       // Fallback to generating new receipt number
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         so_bien_lai: generateReceiptNumber?.() || '',
       }));
@@ -290,50 +281,64 @@ const PaymentForm = ({
     const errors = {};
     if (!selectedStudent) errors.hocvien = 'Vui lòng chọn học viên';
     if (!formData.so_tien) errors.so_tien = 'Vui lòng nhập số tiền';
-    if (!formData.hinh_thuc) errors.hinh_thuc = 'Vui lòng chọn hình thức thanh toán';
-    
+    if (!formData.hinh_thuc)
+      errors.hinh_thuc = 'Vui lòng chọn hình thức thanh toán';
+
     setErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     setIsSubmitting(true);
-    
+
     try {
-      // Call API to create payment
+      // Build payload and explicitly mark as paid so backend will set ngay_dong and update HocVien
       const paymentData = {
         ...formData,
-        so_tien: parseFloat(formData.so_tien)
+        so_tien: parseFloat(formData.so_tien),
+        // ensure backend marks this record as paid
+        trang_thai: 'paid',
       };
-      
-      if (onCreatePayment) {
-        await onCreatePayment(paymentData);
-      }
-      
-      // Prepare success data
-      const selectedStudent = students.find(s => s.id === formData.hocvien);
-      const selectedPaymentMethod = paymentMethods.find(m => m.id === formData.hinh_thuc);
-      
+
+      // Create payment (use parent callback if provided, else call service directly)
+      const savedPayment = onCreatePayment
+        ? await onCreatePayment(paymentData)
+        : await financeService.createPayment(paymentData);
+
+      // savedPayment may be the created object (or undefined depending on parent); attempt to read fields safely
+      const paymentDate =
+        (savedPayment && (savedPayment.ngay_dong || savedPayment.created_at)) ||
+        new Date().toISOString();
+
+      // Prepare success data using savedPayment when available
+      const selectedStudentObj =
+        selectedStudent ||
+        students.find((s) => s.id === formData.hocvien) ||
+        {};
+      const selectedPaymentMethod = paymentMethods.find(
+        (m) => m.id === formData.hinh_thuc
+      );
+
       setSuccessData({
-        studentName: selectedStudent?.ten || 'N/A',
+        studentName: selectedStudentObj.ten || 'N/A',
         amount: parseFloat(formData.so_tien),
         paymentMethod: selectedPaymentMethod?.name,
         receiptNumber: formData.so_bien_lai,
-        description: formData.ghi_chu
+        description: formData.ghi_chu,
+        paymentDate,
+        raw: savedPayment || null,
       });
-      
+
       setShowSuccessDialog(true);
-      
+
       // Call success callback if provided
-      if (onSuccess) {
-        onSuccess();
-      }
+      if (onSuccess) onSuccess();
     } catch (error) {
       console.error('Error submitting payment:', error);
       setShowErrorDialog(true);
@@ -357,10 +362,14 @@ const PaymentForm = ({
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Student Search */}
       <div className="student-search-container relative">
-        <label htmlFor="studentSearchTerm" className="block text-sm font-medium text-gray-700">
-          Học viên <span className="text-red-500">*</span> {!studentsLoaded && '(Đang tải danh sách học viên có hóa đơn...)'}
+        <label
+          htmlFor="studentSearchTerm"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Học viên <span className="text-red-500">*</span>{' '}
+          {!studentsLoaded && '(Đang tải danh sách học viên có hóa đơn...)'}
         </label>
-        
+
         {!selectedStudent ? (
           <>
             <input
@@ -369,10 +378,16 @@ const PaymentForm = ({
               name="studentSearchTerm"
               value={formData.studentSearchTerm}
               onChange={handleInputChange}
-              placeholder={studentsLoaded ? "Nhập tên học viên có hóa đơn..." : "Đang tải danh sách học viên..."}
+              placeholder={
+                studentsLoaded
+                  ? 'Nhập tên học viên có hóa đơn...'
+                  : 'Đang tải danh sách học viên...'
+              }
               disabled={!studentsLoaded}
               className={`mt-1 block w-full px-3 py-2 pr-10 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                errors.hocvien || errors.studentSearchTerm ? 'border-red-300' : 'border-gray-300'
+                errors.hocvien || errors.studentSearchTerm
+                  ? 'border-red-300'
+                  : 'border-gray-300'
               } ${!studentsLoaded ? 'bg-gray-100 cursor-not-allowed' : ''}`}
               autoComplete="off"
             />
@@ -386,7 +401,6 @@ const PaymentForm = ({
           <div className="mt-1 flex items-center space-x-2">
             <div className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm">
               <span className="font-medium">{selectedStudent.ten}</span>
-              <span className="text-gray-500 ml-2">({selectedStudent.ma_hoc_vien})</span>
             </div>
             <button
               type="button"
@@ -398,7 +412,7 @@ const PaymentForm = ({
             </button>
           </div>
         )}
-        
+
         {/* Loading indicator for receipt generation */}
         {loadingInvoiceData && (
           <div className="mt-2 flex items-center space-x-2 text-sm text-gray-600">
@@ -406,7 +420,7 @@ const PaymentForm = ({
             <span>Đang tạo mã biên lai...</span>
           </div>
         )}
-        
+
         {/* Search Results Dropdown */}
         {showSearchDropdown && searchResults.length > 0 && !selectedStudent && (
           <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
@@ -418,10 +432,16 @@ const PaymentForm = ({
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{student.ten}</p>
-                    <p className="text-xs text-gray-500">Mã: {student.ma_hoc_vien}</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {student.ten}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Mã: {student.ma_hoc_vien}
+                    </p>
                     {student.khoahoc?.ten_khoa_hoc && (
-                      <p className="text-xs text-gray-500">Khóa: {student.khoahoc.ten_khoa_hoc}</p>
+                      <p className="text-xs text-gray-500">
+                        Khóa: {student.khoahoc.ten_khoa_hoc}
+                      </p>
                     )}
                   </div>
                   <div>
@@ -446,26 +466,39 @@ const PaymentForm = ({
             ))}
           </div>
         )}
-        
+
         {/* No results message */}
-        {showSearchDropdown && searchResults.length === 0 && !isSearching && formData.studentSearchTerm.trim().length >= 2 && studentsLoaded && (
-          <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg">
-            <div className="px-4 py-3 text-sm text-gray-500 text-center">
-              Không tìm thấy học viên có hóa đơn với từ khóa "{formData.studentSearchTerm}"
-              <br />
-              <small>Tổng số học viên có hóa đơn: {allStudents.length}</small>
-            </div>
-          </div>
-        )}
-        
+        {showSearchDropdown &&
+          searchResults.length === 0 &&
+          !isSearching &&
+          (() => {
+            const trimmedTerm = (formData.studentSearchTerm || '').trim();
+            return trimmedTerm.length >= 2 && studentsLoaded ? (
+              <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg">
+                <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                  Không tìm thấy học viên có hóa đơn với từ khóa "{trimmedTerm}"
+                  <br />
+                  <small>
+                    Tổng số học viên có hóa đơn: {studentsLoadedCount}
+                  </small>
+                </div>
+              </div>
+            ) : null;
+          })()}
+
         {(errors.hocvien || errors.studentSearchTerm) && (
-          <p className="mt-1 text-sm text-red-600">{errors.hocvien || errors.studentSearchTerm}</p>
+          <p className="mt-1 text-sm text-red-600">
+            {errors.hocvien || errors.studentSearchTerm}
+          </p>
         )}
       </div>
 
       {/* Payment Amount */}
       <div>
-        <label htmlFor="so_tien" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="so_tien"
+          className="block text-sm font-medium text-gray-700"
+        >
           Số tiền thanh toán (VNĐ) <span className="text-red-500">*</span>
         </label>
         <input
@@ -495,7 +528,7 @@ const PaymentForm = ({
           Phương thức thanh toán <span className="text-red-500">*</span>
         </label>
         <div className="grid grid-cols-2 gap-3">
-          {paymentMethods.map(method => (
+          {paymentMethods.map((method) => (
             <label
               key={method.id}
               className={`relative flex cursor-pointer rounded-lg border p-4 focus:outline-none ${
@@ -530,7 +563,10 @@ const PaymentForm = ({
 
       {/* Receipt Number */}
       <div>
-        <label htmlFor="so_bien_lai" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="so_bien_lai"
+          className="block text-sm font-medium text-gray-700"
+        >
           Số biên lai <span className="text-red-500">*</span>
         </label>
         <input
@@ -551,7 +587,10 @@ const PaymentForm = ({
 
       {/* Description */}
       <div>
-        <label htmlFor="ghi_chu" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="ghi_chu"
+          className="block text-sm font-medium text-gray-700"
+        >
           Ghi chú
         </label>
         <textarea
@@ -590,8 +629,18 @@ const PaymentForm = ({
             {/* Success Icon */}
             <div className="flex justify-center mb-4">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <svg
+                  className="w-8 h-8 text-green-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               </div>
             </div>
@@ -603,7 +652,9 @@ const PaymentForm = ({
 
             {/* Content */}
             <div className="text-center text-gray-600 mb-6">
-              <p className="font-medium mb-3">Thanh toán đã được ghi nhận vào hệ thống</p>
+              <p className="font-medium mb-3">
+                Thanh toán đã được ghi nhận vào hệ thống
+              </p>
               <div className="bg-gray-50 rounded-lg p-4 text-sm space-y-2">
                 <div className="flex justify-between">
                   <span>Học viên:</span>
@@ -611,24 +662,36 @@ const PaymentForm = ({
                 </div>
                 <div className="flex justify-between">
                   <span>Số biên lai:</span>
-                  <span className="font-medium">{successData.receiptNumber}</span>
+                  <span className="font-medium">
+                    {successData.receiptNumber}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Số tiền:</span>
-                  <span className="font-bold text-teal-600">{formatCurrency(successData.amount)}</span>
+                  <span className="font-bold text-teal-600">
+                    {formatCurrency(successData.amount)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Phương thức:</span>
-                  <span className="font-medium">{successData.paymentMethod}</span>
+                  <span className="font-medium">
+                    {successData.paymentMethod}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Ngày thanh toán:</span>
-                  <span className="font-medium">{new Date(successData.paymentDate).toLocaleDateString('vi-VN')}</span>
+                  <span className="font-medium">
+                    {new Date(successData.paymentDate).toLocaleDateString(
+                      'vi-VN'
+                    )}
+                  </span>
                 </div>
                 {successData.description && (
                   <div className="flex justify-between">
                     <span>Ghi chú:</span>
-                    <span className="font-medium">{successData.description}</span>
+                    <span className="font-medium">
+                      {successData.description}
+                    </span>
                   </div>
                 )}
               </div>
@@ -654,8 +717,18 @@ const PaymentForm = ({
             {/* Error Icon */}
             <div className="flex justify-center mb-4">
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-8 h-8 text-red-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </div>
             </div>
@@ -667,7 +740,9 @@ const PaymentForm = ({
 
             {/* Content */}
             <div className="text-center text-gray-600 mb-6">
-              <p className="font-medium">Không thể ghi nhận thanh toán. Vui lòng thử lại sau.</p>
+              <p className="font-medium">
+                Không thể ghi nhận thanh toán. Vui lòng thử lại sau.
+              </p>
             </div>
 
             {/* Actions */}
