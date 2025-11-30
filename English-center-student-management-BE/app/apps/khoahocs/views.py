@@ -6,7 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db import models
 
-from app.core.permissions import CanManageCourses
+from app.core.permissions import CanManageCourses, CanManageCoursesOrFinanceRead
 from .models import KhoaHoc
 from .serializers import (
     KhoaHocSerializer, KhoaHocCreateSerializer,
@@ -20,7 +20,8 @@ class KhoaHocListView(generics.ListCreateAPIView):
     """
     queryset = KhoaHoc.objects.all()
     serializer_class = KhoaHocSerializer
-    permission_classes = [CanManageCourses]
+    # allow finance staff to GET the list (read-only), other methods require CanManageCourses
+    permission_classes = [CanManageCoursesOrFinanceRead]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['trang_thai', 'giang_vien']
     search_fields = ['ten', 'giang_vien']

@@ -1,73 +1,13 @@
-import React, { useState } from 'react';
-
-// Dummy payment data
-const paymentsData = [
-  {
-    id: 1,
-    studentName: 'Nguyễn Văn An',
-    studentCode: 'HV001',
-    courseName: 'Tiếng Anh Cơ bản A1',
-    amount: 2500000,
-    paymentMethod: 'cash',
-    paymentDate: '2024-01-15',
-    status: 'completed',
-    description: 'Thanh toán đầy đủ học phí',
-    invoiceNumber: 'INV-001',
-  },
-  {
-    id: 2,
-    studentName: 'Trần Thị Bình',
-    studentCode: 'HV002',
-    courseName: 'Tiếng Anh Giao tiếp A2',
-    amount: 1500000,
-    paymentMethod: 'transfer',
-    paymentDate: '2024-01-20',
-    status: 'completed',
-    description: 'Thanh toán đợt 1',
-    invoiceNumber: 'INV-002',
-  },
-  {
-    id: 3,
-    studentName: 'Lê Minh Cường',
-    studentCode: 'HV003',
-    courseName: 'IELTS Preparation',
-    amount: 2500000,
-    paymentMethod: 'card',
-    paymentDate: '2024-01-25',
-    status: 'completed',
-    description: 'Thanh toán đợt 1',
-    invoiceNumber: 'INV-003',
-  },
-  {
-    id: 4,
-    studentName: 'Phạm Thị Dung',
-    studentCode: 'HV004',
-    courseName: 'Tiếng Anh Trung cấp B1',
-    amount: 3500000,
-    paymentMethod: 'e-wallet',
-    paymentDate: '2024-02-01',
-    status: 'completed',
-    description: 'Thanh toán đầy đủ học phí',
-    invoiceNumber: 'INV-004',
-  },
-  {
-    id: 5,
-    studentName: 'Nguyễn Văn An',
-    studentCode: 'HV001',
-    courseName: 'Tiếng Anh Giao tiếp A2',
-    amount: 1500000,
-    paymentMethod: 'cash',
-    paymentDate: '2024-02-05',
-    status: 'pending',
-    description: 'Thanh toán đợt 1',
-    invoiceNumber: 'INV-005',
-  },
-];
+import React, { useState, useEffect } from 'react';
+import financeService from '../../services/financeService';
 
 const paymentMethodLabels = {
-  cash: { name: 'Tiền mặt', icon: '💵' },
-  transfer: { name: 'Chuyển khoản', icon: '🏦' },
-  card: { name: 'Thẻ tín dụng', icon: '💳' },
+  tienmat: { name: 'Tiền mặt', icon: '💵' },
+  chuyenkhoan: { name: 'Chuyển khoản', icon: '🏦' },
+  the: { name: 'Thẻ tín dụng', icon: '💳' },
+  cash: { name: 'Tiền mặt', icon: '💵' }, // fallback
+  transfer: { name: 'Chuyển khoản', icon: '🏦' }, // fallback
+  card: { name: 'Thẻ tín dụng', icon: '💳' }, // fallback
   'e-wallet': { name: 'Ví điện tử', icon: '📱' },
 };
 
@@ -77,7 +17,14 @@ const statusLabels = {
   failed: { name: 'Thất bại', color: 'red' },
 };
 
-const PaymentHistory = ({ onViewInvoice }) => {
+const PaymentHistory = ({ 
+  onViewInvoice,
+  payments = null, // if parent passes payments array use it, otherwise component will fetch
+  loading = null,
+  error = null,
+  stats = null,
+  refreshTrigger = 0, // when this increments, reload payments
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [methodFilter, setMethodFilter] = useState('all');
@@ -85,7 +32,56 @@ const PaymentHistory = ({ onViewInvoice }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  // Internal state when parent doesn't provide data
+  const [localPayments, setLocalPayments] = useState([]);
+  const [localLoading, setLocalLoading] = useState(false);
+  const [localError, setLocalError] = useState(null);
+  const [localStats, setLocalStats] = useState({
+    totalAmount: 0,
+    totalPayments: 0,
+    completedPayments: 0,
+    pendingPayments: 0
+  });
+
+  const usePayments = Array.isArray(payments) ? payments : localPayments;
+  const useLoading = loading !== null ? loading : localLoading;
+  const useError = error !== null ? error : localError;
+  const useStats = stats !== null ? stats : localStats;
+
+  // Load payments when component mounts or when refreshTrigger changes (if parent didn't supply)
+  useEffect(() => {
+    if (Array.isArray(payments)) return; // parent controls data
+
+    const load = async () => {
+      try {
+        setLocalLoading(true);
+        setLocalError(null);
+        const response = await financeService.getPayments({ page_size: 100 });
+        const paymentsData = Array.isArray(response) ? response : (response.results || response.data || []);
+        setLocalPayments(paymentsData);
+
+        const totalAmount = paymentsData.reduce((sum, p) => sum + (parseFloat(p.so_tien) || 0), 0);
+        setLocalStats({
+          totalAmount,
+          totalPayments: paymentsData.length,
+          completedPayments: paymentsData.length,
+          pendingPayments: 0
+        });
+      } catch (err) {
+        console.error('❌ Error loading payments in PaymentHistory:', err);
+        setLocalError('Không thể tải dữ liệu thanh toán');
+      } finally {
+        setLocalLoading(false);
+      }
+    };
+
+    load();
+  }, [payments, refreshTrigger]);
+
+
+
   const formatCurrency = (amount) => {
+    if (!amount) return '-';
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND'
@@ -93,11 +89,35 @@ const PaymentHistory = ({ onViewInvoice }) => {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return '-';
     return new Date(dateString).toLocaleDateString('vi-VN');
   };
 
+  // Transform API data to match frontend format
+  const transformedPayments = (usePayments || []).map(payment => {
+    console.log('🔄 Transforming payment:', payment);
+    // Handle both old and new API structure
+    const studentInfo = payment.hocvien_info || payment.hocvien;
+    console.log('👤 Student info:', studentInfo);
+    
+    return {
+      id: payment.id,
+      studentName: studentInfo?.ten || studentInfo?.ho_ten || payment.hocvien_display_name || 'N/A',
+      studentCode: studentInfo?.ma_hocvien || `HV${String(studentInfo?.id || payment.id).slice(-6)}`,
+      courseName: studentInfo?.khoahoc?.ten_khoahoc || payment.khoahoc?.ten_khoahoc || 'Chưa có thông tin khóa học',
+      amount: parseFloat(payment.so_tien) || 0,
+      paymentMethod: payment.hinh_thuc || 'tienmat',
+      paymentDate: payment.ngay_dong || payment.ngay_thanhtoan || payment.created_at,
+      status: 'completed', // Default status since API doesn't provide this
+      description: payment.ghi_chu || '',
+      invoiceNumber: payment.so_bien_lai || `HĐ-${String(payment.id).slice(-6)}`,
+    };
+  });
+
+  console.log('✅ Transformed payments:', transformedPayments);
+
   // Filter payments
-  const filteredPayments = paymentsData.filter(payment => {
+  const filteredPayments = transformedPayments.filter(payment => {
     const matchesSearch = 
       payment.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       payment.studentCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -160,7 +180,7 @@ const PaymentHistory = ({ onViewInvoice }) => {
                     Tổng thu
                   </dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {formatCurrency(paymentsData.reduce((sum, p) => sum + p.amount, 0))}
+                    {formatCurrency(useStats.totalAmount)}
                   </dd>
                 </dl>
               </div>
@@ -180,7 +200,7 @@ const PaymentHistory = ({ onViewInvoice }) => {
                     Số giao dịch
                   </dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {paymentsData.length}
+                    {useStats.totalPayments}
                   </dd>
                 </dl>
               </div>
@@ -200,7 +220,7 @@ const PaymentHistory = ({ onViewInvoice }) => {
                     Đã thanh toán
                   </dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {paymentsData.filter(p => p.status === 'completed').length}
+                    {useStats.completedPayments}
                   </dd>
                 </dl>
               </div>
@@ -220,7 +240,7 @@ const PaymentHistory = ({ onViewInvoice }) => {
                     Đang xử lý
                   </dt>
                   <dd className="text-lg font-medium text-gray-900">
-                    {paymentsData.filter(p => p.status === 'pending').length}
+                    {useStats.pendingPayments}
                   </dd>
                 </dl>
               </div>
@@ -229,8 +249,17 @@ const PaymentHistory = ({ onViewInvoice }) => {
         </div>
       </div>
 
+      {/* Loading State */}
+      {useLoading && (
+        <div className="text-center py-12">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <p className="mt-2 text-sm text-gray-500">Đang tải dữ liệu...</p>
+        </div>
+      )}
+
       {/* Filters */}
-      <div className="bg-white shadow rounded-lg p-6">
+      {!useLoading && (
+        <div className="bg-white shadow rounded-lg p-6">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {/* Search */}
           <div>
@@ -325,10 +354,12 @@ const PaymentHistory = ({ onViewInvoice }) => {
             Xuất CSV
           </button>
         </div>
-      </div>
+        </div>
+      )}
 
       {/* Payment Table */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      {!useLoading && !useError && (
+        <div className="bg-white shadow rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -483,7 +514,8 @@ const PaymentHistory = ({ onViewInvoice }) => {
             </div>
           </div>
         )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

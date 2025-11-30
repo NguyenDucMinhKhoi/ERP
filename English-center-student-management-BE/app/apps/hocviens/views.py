@@ -11,7 +11,7 @@ from django.db.models import Q
 from django.utils.timezone import now
 from django.apps import apps
 
-from app.core.permissions import CanManageStudents, IsOwnerOrStaff, CanManageCourses
+from app.core.permissions import CanManageStudents, IsOwnerOrStaff, CanManageCourses, CanManageStudentsOrFinanceRead
 from .models import HocVien, LeadContactNote, KhoaHoc
 from .serializers import (
     HocVienSerializer, HocVienCreateSerializer,
@@ -25,7 +25,8 @@ class HocVienListView(generics.ListCreateAPIView):
     """
     queryset = HocVien.objects.all()
     serializer_class = HocVienSerializer
-    permission_classes = [CanManageStudents]
+    # allow finance staff to GET the list (read-only), other methods require CanManageStudents
+    permission_classes = [CanManageStudentsOrFinanceRead]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['trang_thai_hoc_phi']
     search_fields = ['ten', 'email', 'sdt']
